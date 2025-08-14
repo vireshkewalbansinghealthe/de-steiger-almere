@@ -19,8 +19,8 @@ RUN npm ci
 # Copy source code (including public directory with images)
 COPY . .
 
-# Ensure public directory permissions are correct
-RUN chmod -R 755 public/
+# Ensure public directory permissions are correct (if it exists)
+RUN if [ -d "public" ]; then chmod -R 755 public/; fi
 
 # Set environment variables
 ENV NODE_ENV=development
