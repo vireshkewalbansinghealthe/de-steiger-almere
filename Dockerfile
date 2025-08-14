@@ -1,5 +1,8 @@
-# Use the official Node.js 18 image
+# Fresh Dockerfile for development mode - Force rebuild
 FROM node:18-alpine
+
+# Add a unique layer to bust cache
+RUN echo "Build timestamp: $(date)" > /build-info.txt
 
 # Install dependencies for better compatibility
 RUN apk add --no-cache libc6-compat
@@ -7,21 +10,21 @@ RUN apk add --no-cache libc6-compat
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
+# Copy package files first for better caching
+COPY package*.json ./
 
-# Install ALL dependencies (including devDependencies for development)
+# Install ALL dependencies (including devDependencies)
 RUN npm ci
 
-# Copy all source code
+# Copy source code
 COPY . .
 
 # Set environment variables
 ENV NODE_ENV=development
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Expose port 3000
+# Expose port
 EXPOSE 3000
 
-# Use npm run dev for development mode (like Coolify expects)
+# Run in development mode
 CMD ["npm", "run", "dev"]
