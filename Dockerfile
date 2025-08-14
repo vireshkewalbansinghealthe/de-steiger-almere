@@ -16,15 +16,19 @@ COPY package*.json ./
 # Install ALL dependencies (including devDependencies)
 RUN npm ci
 
-# Copy source code
+# Copy source code (including public directory with images)
 COPY . .
+
+# Ensure public directory permissions are correct
+RUN chmod -R 755 public/
 
 # Set environment variables
 ENV NODE_ENV=development
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME=0.0.0.0
 
 # Expose port
 EXPOSE 3000
 
-# Run in development mode
-CMD ["npm", "run", "dev"]
+# Run in development mode with host binding
+CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
