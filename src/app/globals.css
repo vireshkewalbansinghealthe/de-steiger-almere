@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-gray-900;
+    font-family: 'Inter', 'Arial', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl;
+    font-family: 'Playfair Display', serif;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  .font-serif {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .font-sans {
+    font-family: 'Inter', 'Arial', sans-serif;
+  }
+}
+
+@layer components {
+  .unity-btn-primary {
+    @apply bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200;
+  }
+
+  .unity-btn-secondary {
+    @apply bg-white text-slate-800 border-2 border-slate-800 px-6 py-3 rounded-lg font-semibold hover:bg-slate-50 transition-colors duration-200;
+  }
+
+  .unity-card {
+    @apply bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300;
+  }
+
+  .unity-status-badge {
+    @apply px-3 py-1 rounded-full text-xs font-bold uppercase;
+  }
+
+  .status-nu-in-verkoop {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .status-coming-soon {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .status-uitverkocht {
+    @apply bg-red-100 text-red-800;
+  }
+
+  .status-laatste-units {
+    @apply bg-orange-100 text-orange-800;
+  }
+
+  .status-fase-2 {
+    @apply bg-blue-100 text-blue-800;
+  }
+
+  .status-nog-een-unit {
+    @apply bg-purple-100 text-purple-800;
+  }
+}
+
+@layer utilities {
+  /* Hero animations */
+  .animate-fade-in-up {
+    animation: fadeInUp 1s ease-out;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 1.2s ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 1.2s ease-out 0.2s both;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 1s ease-out;
+  }
+
+  .animate-ken-burns {
+    animation: kenBurns 20s ease-in-out infinite alternate;
+  }
+
+  .delay-300 {
+    animation-delay: 0.3s;
+  }
+
+  .delay-500 {
+    animation-delay: 0.5s;
+  }
+
+  .delay-700 {
+    animation-delay: 0.7s;
+  }
+
+  .delay-1000 {
+    animation-delay: 1s;
+  }
+
+  .duration-2000 {
+    transition-duration: 2s;
+  }
+
+  /* Custom line clamp for older browsers */
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes kenBurns {
+  0% {
+    transform: scale(1.1) translateX(0) translateY(0);
+  }
+  25% {
+    transform: scale(1.15) translateX(-2%) translateY(-1%);
+  }
+  50% {
+    transform: scale(1.2) translateX(1%) translateY(-2%);
+  }
+  75% {
+    transform: scale(1.15) translateX(-1%) translateY(1%);
+  }
+  100% {
+    transform: scale(1.1) translateX(0) translateY(0);
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
