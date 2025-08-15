@@ -29,45 +29,16 @@ const bedrijfsunitImages = [
   // Excluding opslagbox1.png and opslagbox2.png (those are for opslagboxen)
 ];
 
-// Function to distribute ALL 20 bedrijfsunit images across 12 types with MORE images per type
+// Function to distribute ALL 20 bedrijfsunit images across 12 types - GIVE EACH TYPE 6+ IMAGES!
 const getBedrijfsunitImages = (typeIndex: number) => {
-  // With 20 images and 12 types, let's give more images per type:
-  // - 8 types get 2 images each (16 images)  
-  // - 4 types get 1 image each (4 images)
-  // Total: 16 + 4 = 20 images (uses ALL bedrijfsunit images!)
-  // 
-  // But let's make it even better - some types get 3 images!
-  // - 4 types get 3 images each (12 images)
-  // - 4 types get 2 images each (8 images) 
-  // Total: 12 + 8 = 20 images
-  
-  const imagesPerType = [3, 3, 3, 3, 2, 2, 2, 2, 0, 0, 0, 0]; // First 4 get 3, next 4 get 2, rest get 0 (will cycle)
-  
-  // If we run out, cycle through all images
-  if (typeIndex >= 8) {
-    // For types 9-12, cycle through all images (each gets 5 images!)
-    const images = [];
-    for (let i = 0; i < 5; i++) {
-      images.push(bedrijfsunitImages[(typeIndex * 5 + i) % bedrijfsunitImages.length]);
-    }
-    return images;
-  }
-  
-  const imageCount = imagesPerType[typeIndex] || 2;
-  
-  // Calculate starting index by summing previous types' image counts
-  let startIndex = 0;
-  for (let i = 0; i < typeIndex; i++) {
-    if (i < 8) {
-      startIndex += imagesPerType[i];
-    }
-  }
-  
+  // Give each type 6-8 images by cycling through all 20 images multiple times
+  const imagesPerType = 7; // Each type gets 7 images
   const images = [];
-  for (let i = 0; i < imageCount; i++) {
-    if (startIndex + i < bedrijfsunitImages.length) {
-      images.push(bedrijfsunitImages[startIndex + i]);
-    }
+  
+  for (let i = 0; i < imagesPerType; i++) {
+    // Cycle through all bedrijfsunit images, starting at different points for each type
+    const imageIndex = (typeIndex * 3 + i) % bedrijfsunitImages.length;
+    images.push(bedrijfsunitImages[imageIndex]);
   }
   
   return images;
@@ -90,15 +61,16 @@ const opslagboxImages = [
   '/images/Image29.png'
 ];
 
-// Function to distribute opslagbox images across 16 types with MORE images
+// Function to distribute opslagbox images across 16 types - GIVE EACH TYPE 6+ IMAGES!
 const getOpslagboxImages = (typeIndex: number) => {
-  // With 13 images and 16 types, let's give 3-4 images per type!
-  const imagesPerType = 3; // Each type gets 3 images
-  const startIndex = (typeIndex * imagesPerType) % opslagboxImages.length;
-  
+  // Give each type 6 images by cycling through all 13 images multiple times
+  const imagesPerType = 6; // Each type gets 6 images
   const images = [];
+  
   for (let i = 0; i < imagesPerType; i++) {
-    images.push(opslagboxImages[(startIndex + i) % opslagboxImages.length]);
+    // Cycle through all opslagbox images, starting at different points for each type
+    const imageIndex = (typeIndex * 2 + i) % opslagboxImages.length;
+    images.push(opslagboxImages[imageIndex]);
   }
   
   return images;
