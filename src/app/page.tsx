@@ -5,7 +5,7 @@ import { projects } from '../data/projects';
 import ProjectCard from '../components/ProjectCard';
 import ProjectModal from '../components/ProjectModal';
 import { Project } from '../types';
-import { Filter, Search, ArrowDown, Play, Grid, List, Share2, Link as LinkIcon, Copy, Facebook, Twitter } from 'lucide-react';
+import { Filter, Search, ArrowDown, Play, Grid, List, Share2, Link as LinkIcon, Copy, Facebook, Twitter, X } from 'lucide-react';
 
 export default function HomePage() {
 
@@ -26,6 +26,7 @@ export default function HomePage() {
   const [priceMax, setPriceMax] = useState(900);
   const [areaMin, setAreaMin] = useState(90);
   const [areaMax, setAreaMax] = useState(400);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Dynamic filter ranges based on category
   const getFilterRanges = () => {
@@ -51,8 +52,8 @@ export default function HomePage() {
   const storageBoxTypesCount = 16;
 
   const heroImages = [
-    '/images/Image1.png',
-    '/images/Image2.png'
+    '/images/up/Image1.png',
+    '/images/up/Image2.png'
   ];
 
   useEffect(() => {
@@ -607,10 +608,30 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Mobile Filter Button */}
+          <div className="lg:hidden mb-6">
+            <button
+              onClick={() => setShowMobileFilters(true)}
+              className="w-full flex items-center justify-center px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Filter className="h-5 w-5 mr-2" />
+              Filters & Sortering
+              {(statusFilter !== 'all' || selectedTypes.length > 0 || sortBy !== 'name') && (
+                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                  {[
+                    statusFilter !== 'all' ? 1 : 0,
+                    selectedTypes.length,
+                    sortBy !== 'name' ? 1 : 0
+                  ].reduce((a, b) => a + b)}
+                </span>
+              )}
+            </button>
+          </div>
+
           {/* Content Area with Sidebar */}
-          <div className="flex gap-6">
-              {/* Filter Sidebar - Always visible */}
-              <div className="w-80 bg-white rounded-lg shadow-sm border p-6 space-y-6 shrink-0">
+          <div className="flex flex-col lg:flex-row gap-6">
+              {/* Desktop Filter Sidebar - Hidden on mobile */}
+              <div className="hidden lg:block w-80 bg-white rounded-lg shadow-sm border p-6 space-y-6 shrink-0">
                 <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
 
                 {/* Status Filter */}
@@ -769,7 +790,7 @@ export default function HomePage() {
               </div>
 
               {/* Main Content */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 w-full lg:w-auto">
                 {/* Top Controls */}
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
@@ -806,7 +827,7 @@ export default function HomePage() {
 
                           {/* Projects Grid/Table */}
                 {viewMode === 'grid' ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16">
             {filteredProjects.map((project) => (
               <ProjectCard
                 key={project.id}
@@ -962,6 +983,112 @@ export default function HomePage() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Filters Modal */}
+      {showMobileFilters && (
+        <div className="lg:hidden fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+              onClick={() => setShowMobileFilters(false)}
+            />
+            
+            {/* Modal Panel */}
+            <div className="relative transform overflow-hidden rounded-t-xl sm:rounded-xl bg-white text-left shadow-xl transition-all w-full max-w-lg">
+              {/* Header */}
+              <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Filters & Sortering</h3>
+                  <button
+                    onClick={() => setShowMobileFilters(false)}
+                    className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+                  >
+                    <X className="h-5 w-5 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="px-6 py-6 space-y-6 max-h-96 overflow-y-auto">
+                {/* Status Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all">Alle statussen</option>
+                    <option value="beschikbaar">Beschikbaar</option>
+                    <option value="gereserveerd">Gereserveerd</option>
+                    <option value="verkocht">Verkocht</option>
+                  </select>
+                </div>
+
+                {/* Sort By */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sorteren</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="name">Op naam</option>
+                    <option value="price">Op prijs (laag → hoog)</option>
+                    <option value="area">Op oppervlakte (groot → klein)</option>
+                    <option value="location">Op locatie</option>
+                  </select>
+                </div>
+
+                {/* Type Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Types</label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {Array.from(new Set(categoryProjects.map(p => p.name))).map(type => (
+                      <label key={type} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedTypes.includes(type)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedTypes([...selectedTypes, type]);
+                            } else {
+                              setSelectedTypes(selectedTypes.filter(t => t !== type));
+                            }
+                          }}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">{type}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex gap-3">
+                <button
+                  onClick={() => {
+                    setStatusFilter('all');
+                    setSelectedTypes([]);
+                    setSortBy('name');
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Toepassen
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

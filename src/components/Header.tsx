@@ -270,10 +270,34 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-200">
-            <div className="px-2 pt-4 pb-6 space-y-2">
+        {/* Modern Mobile Slide Menu */}
+        <div className={`lg:hidden fixed inset-0 z-50 transition-all duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsMenuOpen(false)}
+          />
+          
+          {/* Slide Panel */}
+          <div className={`fixed top-0 right-0 h-full w-[320px] bg-white shadow-2xl transform transition-transform duration-300 ease-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">De Steiger</h2>
+                  <p className="text-sm text-gray-500">Almere</p>
+                </div>
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <X className="h-5 w-5 text-gray-600" />
+                </button>
+              </div>
+              
+              {/* Navigation */}
+              <div className="flex-1 overflow-y-auto py-4">
+                <nav className="px-4 space-y-1">
               {/* Mobile Bedrijfsunits */}
               <Link
                 href="/bedrijfsunits"

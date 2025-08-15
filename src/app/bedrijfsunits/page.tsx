@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Building2, ArrowRight, MapPin, Zap, Shield, Calendar, Grid, List, Share2, Copy, Facebook, Twitter, Link as LinkIcon, Users, Phone, Mail, Search } from 'lucide-react';
 import { projects } from '../../data/projects';
@@ -19,6 +19,20 @@ export default function BedrijfsunitsPage() {
   const [areaMin, setAreaMin] = useState(90);
   const [areaMax, setAreaMax] = useState(400);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const heroImages = [
+    '/images/up/Image1.png',
+    '/images/up/Image2.png'
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
 
   // Filter projects to show only business units (exclude garage boxes)
   const businessUnits = projects.filter(project => project.units > 0 && project.location === 'Almere');
@@ -249,12 +263,17 @@ export default function BedrijfsunitsPage() {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <div className="relative h-screen overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center transform scale-105"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&h=1080&fit=crop&auto=format)'
-          }}
-        />
+        {heroImages.map((image, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 bg-cover bg-center transform scale-105 transition-opacity duration-1000 ${
+              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{
+              backgroundImage: `url(${image})`,
+            }}
+          />
+        ))}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
         

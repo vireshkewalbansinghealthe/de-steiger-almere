@@ -1,38 +1,37 @@
 import { Project, Location } from '../types';
 
-// Images for bedrijfsunits ONLY (excluding problematic images)
+// Images for bedrijfsunits ONLY - Image1-21 + beide1-2 from /up folder ONLY
 const bedrijfsunitImages = [
-  '/images/beide1.png',
-  '/images/beide2.png', 
-  '/images/Image1.png',
-  '/images/Image2.png',
-  // Excluding Image3.png (you mentioned to exclude)
-  '/images/Image4.png',
-  '/images/Image5.png',
-  // Excluding Image6.png (you mentioned to exclude)
-  // Excluding Image7.png (you mentioned to exclude)
-  '/images/Image8.png',
-  '/images/Image9.png',
-  '/images/Image10.png',
-  '/images/Image11.png',
-  '/images/Image12.png',
-  '/images/Image13.png',
-  '/images/Image14.png',
-  '/images/Image15.png',
-  '/images/Image16.png',
-  '/images/Image17.png',
-  '/images/Image18.png',
-  '/images/Image19.png',
-  '/images/Image20.png',
-  '/images/Image21.png'
-  // Excluding Image22.png - Image29.png (those are for opslagboxen)
-  // Excluding opslagbox1.png and opslagbox2.png (those are for opslagboxen)
+  '/images/up/beide1.png',
+  '/images/up/beide2.png', 
+  '/images/up/Image1.png',
+  '/images/up/Image2.png',
+  // Skip Image3.png - doesn't exist in up folder
+  '/images/up/Image4.png',
+  '/images/up/Image5.png',
+  // Skip Image6.png - deleted by user
+  // Skip Image7.png - deleted by user
+  '/images/up/Image8.png',
+  '/images/up/Image9.png',
+  '/images/up/Image10.png',
+  '/images/up/Image11.png',
+  '/images/up/Image12.png',
+  '/images/up/Image13.png',
+  '/images/up/Image14.png',
+  '/images/up/Image15.png',
+  '/images/up/Image16.png',
+  '/images/up/Image17.png',
+  '/images/up/Image18.png',
+  '/images/up/Image19.png',
+  '/images/up/Image20.png',
+  '/images/up/Image21.png'
+  // ONLY 20 images: beide1-2 + Image1-21 (missing Image3, Image6 & Image7) for bedrijfsunits!
 ];
 
-// Function to distribute ALL 20 bedrijfsunit images across 12 types - GIVE EACH TYPE 6+ IMAGES!
+// Function to distribute ALL 20 bedrijfsunit images across 12 types - GIVE EACH TYPE ALL IMAGES!
 const getBedrijfsunitImages = (typeIndex: number) => {
-  // Give each type 6-8 images by cycling through all 20 images multiple times
-  const imagesPerType = 7; // Each type gets 7 images
+  // Give each type ALL 20 images by cycling through them with different starting points  
+  const imagesPerType = 20; // Each type gets ALL 20 images!
   const images = [];
   
   for (let i = 0; i < imagesPerType; i++) {
