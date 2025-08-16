@@ -1,730 +1,543 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
-import { ArrowLeft, Check, CreditCard, FileText, User, Building, Euro, Calendar, Phone, Mail, MapPin } from 'lucide-react'
-import Image from 'next/image'
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft, Check, Building2, MapPin, User, CreditCard, FileText, Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { createClient } from '@/lib/supabase';
+import { projects } from '../../../data/projects';
 
-interface Property {
-  id: string
-  name: string
-  type: 'bedrijfsunit' | 'opslagbox'
-  unit_number: string
-  gross_area: number | null
-  net_area: number | null
-  industrie_net_area: number | null
-  industrie_gross_area: number | null
-  kantoor_net_area: number | null
-  kantoor_gross_area: number | null
-  sale_price: number
-  reservation_fee: number | null
-  ceiling_height: number | null
-  parking_spaces: number | null
-  images: any
-  features: any
-  specifications: any
-  location: string | null
-  description: string | null
-}
-
-interface User {
-  id: string
-  email: string
-  first_name?: string
-  last_name?: string
-  phone?: string
-  company_name?: string
-}
-
-const steps = [
-  { id: 1, name: 'Property Details', icon: Building },
-  { id: 2, name: 'Persoonlijke Gegevens', icon: User },
-  { id: 3, name: 'Contract Details', icon: FileText },
-  { id: 4, name: 'Betaling', icon: CreditCard },
-]
+// Step components
+import PropertyInfo from '../../../components/reservation/PropertyInfo';
+import CustomerInfo from '../../../components/reservation/CustomerInfo';
+import TermsConditions from '../../../components/reservation/TermsConditions';
+import PaymentStep from '../../../components/reservation/PaymentStep';
 
 export default function ReservationPage() {
-  const params = useParams()
-  const router = useRouter()
-  const [currentStep, setCurrentStep] = useState(1)
-  const [property, setProperty] = useState<Property | null>(null)
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
+  const params = useParams();
+  const router = useRouter();
+  const slug = params.slug as string;
+  const supabase = createClient();
+  
+  const [currentStep, setCurrentStep] = useState(1);
+  const [user, setUser] = useState<any>(null);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
+  const [authData, setAuthData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [reservationData, setReservationData] = useState({
+    propertySlug: slug,
+    unitNumber: null as number | null,
+    customerInfo: {
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
-    companyName: '',
+      company: '',
     address: '',
     city: '',
     postalCode: '',
-    country: 'Nederland',
-    intendedUse: '',
-    financingConfirmed: false,
-    agreeToTerms: false,
-    agreeToPrivacy: false,
-    marketingConsent: false,
-    notes: ''
-  })
+      country: 'Nederland'
+    },
+    preferences: {
+      moveInDate: '',
+      duration: '12',
+      additionalRequests: ''
+    },
+    termsAccepted: false,
+    signatureData: '',
+    paymentIntentId: ''
+  });
 
-  const supabase = createClient()
+  const project = projects.find(p => p.slug === slug);
+
+  const steps = [
+    { id: 1, title: 'Eigendom Info', icon: Building2, description: 'Bekijk eigendom details' },
+    { id: 2, title: 'Uw Gegevens', icon: User, description: 'Persoonlijke informatie' },
+    { id: 3, title: 'Voorwaarden', icon: FileText, description: 'Algemene voorwaarden' },
+    { id: 4, title: 'Betaling', icon: CreditCard, description: 'Veilige betaling' }
+  ];
+
+  const authStep = { id: 1.5, title: 'Account', icon: User, description: 'Inloggen of registreren' };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Get current user
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        
-        if (authUser) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', authUser.id)
-            .single()
+    checkUser();
+    
+    // Check for unit parameter in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const unitParam = urlParams.get('unit');
+    if (unitParam) {
+      const unitNumber = parseInt(unitParam, 10);
+      if (!isNaN(unitNumber)) {
+        setReservationData(prev => ({
+          ...prev,
+          unitNumber: unitNumber
+        }));
+      }
+    }
+  }, []);
 
-          if (profile) {
-            setUser({
-              id: profile.id,
-              email: profile.email,
-              first_name: profile.first_name,
-              last_name: profile.last_name,
-              phone: profile.phone,
-              company_name: profile.company_name
-            })
-
-            // Pre-fill form with user data
-            setFormData(prev => ({
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+    
+    // Only pre-fill data if user is logged in
+    if (user) {
+      setReservationData(prev => ({
               ...prev,
-              firstName: profile.first_name || '',
-              lastName: profile.last_name || '',
-              email: profile.email || '',
-              phone: profile.phone || '',
-              companyName: profile.company_name || ''
-            }))
-          }
+        customerInfo: {
+          ...prev.customerInfo,
+          firstName: user.user_metadata?.first_name || '',
+          lastName: user.user_metadata?.last_name || '',
+          email: user.email || '',
+          phone: user.user_metadata?.phone || ''
+        }
+      }));
+    }
+  };
+
+  const handleStepChange = (targetStep: number) => {
+    // If trying to go to step 2 or beyond without being logged in, go to auth step first
+    if (targetStep >= 2 && !user) {
+      setCurrentStep(1.5);
+      return;
+    }
+    setCurrentStep(targetStep);
+  };
+
+  const nextStep = () => {
+    if (currentStep === 1) {
+      handleStepChange(2); // This will go to 1.5 if not logged in, or 2 if logged in
+    } else if (currentStep === 1.5) {
+      // This is handled by the auth form submission
+      return;
+    } else if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep === 2) {
+      setCurrentStep(1); // Skip the auth step when going back
+    } else if (currentStep === 1.5) {
+      setCurrentStep(1);
+    } else if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const updateReservationData = (data: any) => {
+    setReservationData(prev => ({ ...prev, ...data }));
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError('');
+
+    try {
+      if (authMode === 'register') {
+        if (authData.password !== authData.confirmPassword) {
+          setAuthError('Wachtwoorden komen niet overeen');
+          return;
         }
 
-        // Get property details
-        const { data: propertyData, error } = await supabase
-          .from('properties')
-          .select('*')
-          .eq('slug', params.slug)
-          .single()
+        const { data, error } = await supabase.auth.signUp({
+          email: authData.email,
+          password: authData.password,
+          options: {
+            data: {
+              first_name: authData.firstName,
+              last_name: authData.lastName,
+            }
+          }
+        });
 
-        if (error) throw error
-        setProperty(propertyData)
-      } catch (error) {
-        console.error('Error fetching data:', error)
-        router.push('/404')
-      } finally {
-        setLoading(false)
+        if (error) throw error;
+
+        if (data.user && !data.user.email_confirmed_at) {
+          setAuthError('Controleer uw e-mail voor verificatie voordat u doorgaat.');
+        } else {
+          setUser(data.user);
+          setCurrentStep(2);
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: authData.email,
+          password: authData.password,
+        });
+
+        if (error) throw error;
+
+        setUser(data.user);
+        setCurrentStep(2);
       }
-    }
-
-    fetchData()
-  }, [params.slug, router, supabase])
-
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleNextStep = () => {
-    if (currentStep < steps.length) {
-      setCurrentStep(prev => prev + 1)
-    }
-  }
-
-  const handlePrevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1)
-    }
-  }
-
-  const handleSubmitReservation = async () => {
-    if (!property || !user) return
-
-    setSubmitting(true)
-    try {
-      const reservationData = {
-        property_id: property.id,
-        customer_id: user.id,
-        customer_first_name: formData.firstName,
-        customer_last_name: formData.lastName,
-        customer_email: formData.email,
-        customer_phone: formData.phone,
-        customer_company: formData.companyName,
-        customer_address: formData.address,
-        customer_city: formData.city,
-        customer_postal_code: formData.postalCode,
-        customer_country: formData.country,
-        reservation_fee_amount: property.reservation_fee || (property.type === 'opslagbox' ? 1500 : 5000),
-        total_property_price: property.sale_price,
-        status: 'pending',
-        intended_use: formData.intendedUse,
-        financing_confirmed: formData.financingConfirmed,
-        notes: formData.notes
-      }
-
-      const { data, error } = await supabase
-        .from('reservations')
-        .insert([reservationData])
-        .select()
-        .single()
-
-      if (error) throw error
-
-      // Redirect to payment page
-      router.push(`/betaling/${data.id}`)
-    } catch (error) {
-      console.error('Error creating reservation:', error)
-      alert('Er is een fout opgetreden bij het maken van de reservering. Probeer het opnieuw.')
+    } catch (error: any) {
+      setAuthError(error.message || 'Er is een fout opgetreden');
     } finally {
-      setSubmitting(false)
+      setAuthLoading(false);
     }
-  }
+  };
 
-  if (loading) {
+  const switchAuthMode = () => {
+    setAuthMode(authMode === 'login' ? 'register' : 'login');
+    setAuthError('');
+    setAuthData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    });
+  };
+
+  if (!project) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Eigendom niet gevonden</h1>
+          <Link href="/" className="text-yellow-600 hover:text-yellow-700">
+            Terug naar home
+          </Link>
+        </div>
       </div>
-    )
+    );
   }
 
-  if (!property) {
-    return <div>Property not found</div>
-  }
-
-  const reservationFee = property.reservation_fee || (property.type === 'opslagbox' ? 1500 : 5000)
+  // Handle URL step parameter for returning users after login
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const stepParam = urlParams.get('step');
+    if (stepParam && user) {
+      const targetStep = parseInt(stepParam, 10);
+      if (targetStep >= 1 && targetStep <= steps.length) {
+        setCurrentStep(targetStep);
+      }
+    }
+  }, [user]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Terug
-            </button>
-            <h1 className="text-lg font-semibold text-gray-900">Reservering</h1>
-            <div className="w-20"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 pt-16 sm:pt-20">
+      {/* Mobile-Optimized Reservation Info Bar */}
+      <div className="bg-white/90 backdrop-blur-sm border-b border-white/20 sticky top-16 sm:top-20 z-40">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center min-w-0 flex-1">
+              <Link 
+                href={`/${project.slug.includes('opslagbox') ? 'opslagbox' : 'bedrijfsunit'}/${slug}`}
+                className="flex items-center text-gray-600 hover:text-gray-800 mr-2 sm:mr-4 transition-colors flex-shrink-0"
+              >
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                <span className="text-xs sm:text-sm font-medium">Terug</span>
+              </Link>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm sm:text-lg font-semibold text-gray-900 truncate">
+                  <span className="hidden sm:inline">Reservering - </span>{project.name}
+                </h1>
+              </div>
+            </div>
+            
+            <div className="flex items-center ml-2 flex-shrink-0">
+              <div className="text-xs sm:text-sm text-gray-600 font-medium">
+                {currentStep}/{steps.length}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Progress Steps */}
+      {/* Mobile-Optimized Progress Bar */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <nav aria-label="Progress">
-              <ol className="flex items-center justify-center space-x-8">
-                {steps.map((step, index) => {
-                  const isCompleted = currentStep > step.id
-                  const isCurrent = currentStep === step.id
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          {/* Mobile: Simplified horizontal progress */}
+          <div className="sm:hidden py-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-medium text-gray-500">Voortgang</span>
+              <span className="text-xs font-medium text-yellow-600">{Math.round((currentStep / steps.length) * 100)}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${(currentStep / steps.length) * 100}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between mt-2">
+              {steps.map((step, index) => {
+                const isActive = currentStep === step.id || (currentStep === 1.5 && step.id === 2);
+                const isCompleted = currentStep > step.id && !(currentStep === 1.5 && step.id === 2);
+                return (
+                  <div key={step.id} className="flex flex-col items-center">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${
+                      isCompleted
+                        ? 'bg-green-500 text-white' 
+                        : isActive 
+                        ? 'bg-yellow-500 text-white' 
+                        : 'bg-gray-200 text-gray-400'
+                    }`}>
+                      {isCompleted ? '✓' : step.id}
+                    </div>
+                    <span className={`text-xs mt-1 font-medium transition-colors duration-300 ${
+                      isActive ? 'text-yellow-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                    }`}>
+                      {step.title}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop: Full progress bar */}
+          <div className="hidden sm:flex items-center justify-between py-6">
+            {steps.map((step, index) => {
+              const isActive = currentStep === step.id || (currentStep === 1.5 && step.id === 2);
+              const isCompleted = currentStep > step.id && !(currentStep === 1.5 && step.id === 2);
+              const IconComponent = step.icon;
                   
-                  return (
-                    <li key={step.id} className="flex items-center">
-                      <div className="flex flex-col items-center">
-                        <div
-                          className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
-                            isCompleted
-                              ? 'bg-yellow-400 border-yellow-400 text-white'
-                              : isCurrent
-                              ? 'border-yellow-400 text-yellow-400'
-                              : 'border-gray-300 text-gray-400'
-                          }`}
-                        >
-                          {isCompleted ? (
-                            <Check className="h-5 w-5" />
-                          ) : (
-                            <step.icon className="h-5 w-5" />
-                          )}
-                        </div>
-                        <span
-                          className={`mt-2 text-xs font-medium ${
-                            isCurrent ? 'text-yellow-600' : 'text-gray-500'
-                          }`}
-                        >
-                          {step.name}
-                        </span>
-                      </div>
-                      {index < steps.length - 1 && (
-                        <div className="ml-8 w-16 h-0.5 bg-gray-200"></div>
+              return (
+                <div key={step.id} className="flex items-center flex-1">
+                  <div className="flex items-center">
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+                      isCompleted
+                        ? 'bg-green-500 border-green-500 text-white' 
+                        : isActive 
+                        ? 'bg-yellow-500 border-yellow-500 text-white' 
+                        : 'bg-white border-gray-300 text-gray-400'
+                    }`}>
+                      {isCompleted ? (
+                        <Check className="h-5 w-5" />
+                      ) : (
+                        <IconComponent className="h-5 w-5" />
                       )}
-                    </li>
-                  )
-                })}
-              </ol>
-            </nav>
+                    </div>
+                    <div className="ml-3">
+                      <div className={`text-sm font-medium transition-colors duration-300 ${
+                        isActive ? 'text-yellow-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
+                      }`}>
+                        {step.title}
+                      </div>
+                      <div className="text-xs text-gray-400">{step.description}</div>
+                    </div>
+                  </div>
+                  
+                  {index < steps.length - 1 && (
+                    <div className="flex-1 mx-4">
+                      <div className={`h-1 rounded-full transition-all duration-500 ${
+                        currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'
+                      }`} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Step 1: Property Details */}
+      {/* Mobile-Optimized Main Content */}
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl overflow-hidden">
+          <div className="min-h-[400px] sm:min-h-[600px]">
+            {/* Step Content with Smooth Transitions */}
+            <div className="transition-all duration-500 ease-in-out">
           {currentStep === 1 && (
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Property Details</h2>
+                <PropertyInfo 
+                  project={project}
+                  reservationData={reservationData}
+                  updateData={updateReservationData}
+                  onNext={nextStep}
+                />
+              )}
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div>
-                  {property.images && property.images.length > 0 && (
-                    <div className="relative h-64 rounded-lg overflow-hidden mb-4">
-                      <Image
-                        src={property.images[0]}
-                        alt={property.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{property.name}</h3>
-                      <p className="text-gray-600">Unit {property.unit_number}</p>
-                    </div>
-                    
-                    {property.description && (
-                      <p className="text-gray-700">{property.description}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-6 rounded-lg">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Prijsinformatie</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-700">Verkoopprijs:</span>
-                        <span className="font-bold text-xl">€ {property.sale_price.toLocaleString()}</span>
+              {currentStep === 1.5 && (
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <div className="max-w-md mx-auto">
+                    <div className="text-center mb-6 sm:mb-8">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <User className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600" />
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-700">Reserveringskosten:</span>
-                        <span className="font-semibold text-yellow-600">€ {reservationFee.toLocaleString()}</span>
-                      </div>
+                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                        {authMode === 'register' ? 'Account aanmaken' : 'Inloggen'}
+                      </h2>
+                      <p className="text-sm sm:text-base text-gray-600 px-2">
+                        {authMode === 'register' 
+                          ? 'Maak een account aan om door te gaan met uw reservering'
+                          : 'Log in om door te gaan met uw reservering'
+                        }
+                      </p>
                     </div>
-                  </div>
 
-                  <div className="space-y-4">
-                    <h4 className="text-lg font-semibold text-gray-900">Specificaties</h4>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      {property.gross_area && (
-                        <div>
-                          <span className="text-gray-600">Bruto oppervlakte:</span>
-                          <p className="font-medium">{property.gross_area} m²</p>
-                        </div>
-                      )}
-                      {property.net_area && (
-                        <div>
-                          <span className="text-gray-600">Netto oppervlakte:</span>
-                          <p className="font-medium">{property.net_area} m²</p>
-                        </div>
-                      )}
-                      {property.ceiling_height && (
-                        <div>
-                          <span className="text-gray-600">Plafondhoogte:</span>
-                          <p className="font-medium">{property.ceiling_height}m</p>
-                        </div>
-                      )}
-                      {property.parking_spaces && (
-                        <div>
-                          <span className="text-gray-600">Parkeerplaatsen:</span>
-                          <p className="font-medium">{property.parking_spaces}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8 flex justify-end">
-                <button
-                  onClick={handleNextStep}
-                  className="px-6 py-3 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition-colors"
-                >
-                  Volgende Stap
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Personal Information */}
-          {currentStep === 2 && (
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Persoonlijke Gegevens</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Voornaam *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Achternaam *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    E-mailadres *
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Telefoonnummer *
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    required
-                  />
-                </div>
-                
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bedrijfsnaam
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.companyName}
-                    onChange={(e) => handleInputChange('companyName', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                  />
-                </div>
-                
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Adres *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stad *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Postcode *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.postalCode}
-                    onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="mt-8 flex justify-between">
-                <button
-                  onClick={handlePrevStep}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  Vorige
-                </button>
-                <button
-                  onClick={handleNextStep}
-                  disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.address || !formData.city || !formData.postalCode}
-                  className="px-6 py-3 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Volgende Stap
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Contract Details */}
-          {currentStep === 3 && (
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Contract Details</h2>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Beoogd gebruik van de {property.type === 'bedrijfsunit' ? 'bedrijfsunit' : 'opslagbox'}
-                  </label>
-                  <textarea
-                    value={formData.intendedUse}
-                    onChange={(e) => handleInputChange('intendedUse', e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    placeholder="Beschrijf waarvoor u de unit wilt gebruiken..."
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Aanvullende opmerkingen
-                  </label>
-                  <textarea
-                    value={formData.notes}
-                    onChange={(e) => handleInputChange('notes', e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    placeholder="Eventuele vragen of opmerkingen..."
-                  />
-                </div>
-
-                {property.type === 'bedrijfsunit' && (
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="flex items-start">
-                      <input
-                        type="checkbox"
-                        id="financing"
-                        checked={formData.financingConfirmed}
-                        onChange={(e) => handleInputChange('financingConfirmed', e.target.checked)}
-                        className="mt-1 h-4 w-4 text-yellow-400 focus:ring-yellow-400 border-gray-300 rounded"
-                      />
-                      <label htmlFor="financing" className="ml-3 text-sm text-gray-700">
-                        <strong>Financiering bevestigd:</strong> Ik bevestig dat ik de financiering voor deze aankoop heb geregeld of dat ik contant kan betalen.
-                      </label>
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <input
-                      type="checkbox"
-                      id="terms"
-                      checked={formData.agreeToTerms}
-                      onChange={(e) => handleInputChange('agreeToTerms', e.target.checked)}
-                      className="mt-1 h-4 w-4 text-yellow-400 focus:ring-yellow-400 border-gray-300 rounded"
-                      required
-                    />
-                    <label htmlFor="terms" className="ml-3 text-sm text-gray-700">
-                      Ik ga akkoord met de <a href="/algemene-voorwaarden" target="_blank" className="text-yellow-600 hover:text-yellow-700 underline">algemene voorwaarden</a> *
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <input
-                      type="checkbox"
-                      id="privacy"
-                      checked={formData.agreeToPrivacy}
-                      onChange={(e) => handleInputChange('agreeToPrivacy', e.target.checked)}
-                      className="mt-1 h-4 w-4 text-yellow-400 focus:ring-yellow-400 border-gray-300 rounded"
-                      required
-                    />
-                    <label htmlFor="privacy" className="ml-3 text-sm text-gray-700">
-                      Ik ga akkoord met het <a href="/privacybeleid" target="_blank" className="text-yellow-600 hover:text-yellow-700 underline">privacybeleid</a> *
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <input
-                      type="checkbox"
-                      id="marketing"
-                      checked={formData.marketingConsent}
-                      onChange={(e) => handleInputChange('marketingConsent', e.target.checked)}
-                      className="mt-1 h-4 w-4 text-yellow-400 focus:ring-yellow-400 border-gray-300 rounded"
-                    />
-                    <label htmlFor="marketing" className="ml-3 text-sm text-gray-700">
-                      Ik wil graag updates en aanbiedingen ontvangen van De Steiger
-                    </label>
-                  </div>
-                </div>
-
-                <div className="bg-yellow-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Reservering Overzicht</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Property:</span>
-                      <span className="font-medium">{property.name} - Unit {property.unit_number}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Verkoopprijs:</span>
-                      <span className="font-bold text-xl">€ {property.sale_price.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Reserveringskosten:</span>
-                      <span className="font-semibold text-yellow-600">€ {reservationFee.toLocaleString()}</span>
-                    </div>
-                    <div className="border-t pt-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-700">Nu te betalen:</span>
-                        <span className="font-bold text-xl text-yellow-600">€ {reservationFee.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8 flex justify-between">
-                <button
-                  onClick={handlePrevStep}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  Vorige
-                </button>
-                <button
-                  onClick={handleNextStep}
-                  disabled={!formData.agreeToTerms || !formData.agreeToPrivacy}
-                  className="px-6 py-3 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Naar Betaling
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Payment */}
-          {currentStep === 4 && (
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Betaling</h2>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div>
-                  <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-lg mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Te betalen bedrag</h3>
-                    <div className="text-3xl font-bold text-green-600">
-                      € {reservationFee.toLocaleString()}
-                    </div>
-                    <p className="text-sm text-gray-600 mt-2">
-                      Reserveringskosten voor {property.name}
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-gray-900">Betaalmethoden</h4>
-                    <div className="space-y-3">
-                      <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="payment" value="ideal" defaultChecked className="h-4 w-4 text-yellow-400 focus:ring-yellow-400" />
-                        <span className="ml-3 font-medium">iDEAL</span>
-                      </label>
-                      <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="payment" value="card" className="h-4 w-4 text-yellow-400 focus:ring-yellow-400" />
-                        <span className="ml-3 font-medium">Credit Card</span>
-                      </label>
-                      <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="payment" value="banktransfer" className="h-4 w-4 text-yellow-400 focus:ring-yellow-400" />
-                        <span className="ml-3 font-medium">Bankoverschrijving</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Reservering Samenvatting</h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Property:</span>
-                      <span className="font-medium">{property.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Unit:</span>
-                      <span className="font-medium">{property.unit_number}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Klant:</span>
-                      <span className="font-medium">{formData.firstName} {formData.lastName}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Email:</span>
-                      <span className="font-medium">{formData.email}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Telefoon:</span>
-                      <span className="font-medium">{formData.phone}</span>
-                    </div>
-                    {formData.companyName && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Bedrijf:</span>
-                        <span className="font-medium">{formData.companyName}</span>
+                    {authError && (
+                      <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+                        {authError}
                       </div>
                     )}
-                    <div className="border-t pt-3 mt-4">
-                      <div className="flex justify-between font-bold">
-                        <span>Totaal:</span>
-                        <span>€ {reservationFee.toLocaleString()}</span>
+
+                    <form onSubmit={handleAuthSubmit} className="space-y-4">
+                      {authMode === 'register' && (
+                        <>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Voornaam
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={authData.firstName}
+                              onChange={(e) => setAuthData(prev => ({ ...prev, firstName: e.target.value }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                              placeholder="Uw voornaam"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Achternaam
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={authData.lastName}
+                              onChange={(e) => setAuthData(prev => ({ ...prev, lastName: e.target.value }))}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                              placeholder="Uw achternaam"
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          E-mailadres
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          <input
+                            type="email"
+                            required
+                            value={authData.email}
+                            onChange={(e) => setAuthData(prev => ({ ...prev, email: e.target.value }))}
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="uw@email.com"
+                          />
+                        </div>
                       </div>
-                    </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Wachtwoord
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            required
+                            value={authData.password}
+                            onChange={(e) => setAuthData(prev => ({ ...prev, password: e.target.value }))}
+                            className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Uw wachtwoord"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {authMode === 'register' && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Wachtwoord bevestigen
+                          </label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <input
+                              type={showPassword ? 'text' : 'password'}
+                              required
+                              value={authData.confirmPassword}
+                              onChange={(e) => setAuthData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                              placeholder="Bevestig uw wachtwoord"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="text-center pt-4 border-t">
+                        <p className="text-sm text-gray-600 mb-4">
+                          {authMode === 'register' ? 'Heeft u al een account?' : 'Nog geen account?'}
+                          <button
+                            type="button"
+                            onClick={switchAuthMode}
+                            className="ml-1 text-yellow-600 hover:text-yellow-700 font-medium"
+                          >
+                            {authMode === 'register' ? 'Inloggen' : 'Account aanmaken'}
+                          </button>
+                        </p>
+                      </div>
+
+                      <div className="flex gap-3 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => setCurrentStep(1)}
+                          className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                        >
+                          Terug
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={authLoading}
+                          className="flex-1 bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 font-medium disabled:opacity-50"
+                        >
+                          {authLoading ? 'Bezig...' : (authMode === 'register' ? 'Account aanmaken' : 'Inloggen')}
+                        </button>
+                      </div>
+                    </form>
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-8 flex justify-between">
-                <button
-                  onClick={handlePrevStep}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  Vorige
-                </button>
-                <button
-                  onClick={handleSubmitReservation}
-                  disabled={submitting}
-                  className="px-8 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                >
-                  {submitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Verwerken...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="h-5 w-5 mr-2" />
-                      Reservering Bevestigen
-                    </>
-                  )}
-                </button>
+              )}
+              
+              {currentStep === 2 && (
+                <CustomerInfo
+                  reservationData={reservationData}
+                  updateData={updateReservationData}
+                  onNext={nextStep}
+                  onPrev={prevStep}
+                />
+              )}
+              
+              {currentStep === 3 && (
+                <TermsConditions
+                  reservationData={reservationData}
+                  updateData={updateReservationData}
+                  onNext={nextStep}
+                  onPrev={prevStep}
+                />
+              )}
+              
+              {currentStep === 4 && (
+                <PaymentStep
+                  project={project}
+                  reservationData={reservationData}
+                  updateData={updateReservationData}
+                  onPrev={prevStep}
+                />
+              )}
               </div>
             </div>
-          )}
         </div>
       </div>
+
+
     </div>
-  )
+  );
 }

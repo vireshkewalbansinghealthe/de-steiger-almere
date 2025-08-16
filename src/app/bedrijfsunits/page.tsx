@@ -264,15 +264,15 @@ export default function BedrijfsunitsPage() {
       {/* Hero Section */}
       <div className="relative h-screen overflow-hidden">
         {heroImages.map((image, index) => (
-          <div
+        <div 
             key={index}
             className={`absolute inset-0 bg-cover bg-center transform scale-105 transition-opacity duration-1000 ${
               index === currentImageIndex ? 'opacity-100' : 'opacity-0'
             }`}
-            style={{
+          style={{
               backgroundImage: `url(${image})`,
-            }}
-          />
+          }}
+        />
         ))}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
@@ -419,7 +419,7 @@ export default function BedrijfsunitsPage() {
                     ))}
                   </div>
                 </div>
-
+                
                 {/* Area Range */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -435,12 +435,12 @@ export default function BedrijfsunitsPage() {
                         step="5"
                         value={areaMin}
                         onChange={(e) => setAreaMin(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>90m²</span>
                         <span>400m²</span>
-                      </div>
+                  </div>
                     </div>
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Maximum</label>
@@ -451,7 +451,7 @@ export default function BedrijfsunitsPage() {
                         step="5"
                         value={areaMax}
                         onChange={(e) => setAreaMax(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>90m²</span>
@@ -459,8 +459,8 @@ export default function BedrijfsunitsPage() {
                       </div>
                     </div>
                   </div>
-                </div>
-
+                  </div>
+                  
                 {/* Price Range */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -476,7 +476,7 @@ export default function BedrijfsunitsPage() {
                         step="10"
                         value={priceMin}
                         onChange={(e) => setPriceMin(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>€200k</span>
@@ -492,7 +492,7 @@ export default function BedrijfsunitsPage() {
                         step="10"
                         value={priceMax}
                         onChange={(e) => setPriceMax(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>€200k</span>

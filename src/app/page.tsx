@@ -28,6 +28,116 @@ export default function HomePage() {
   const [areaMax, setAreaMax] = useState(400);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  // Countdown timer for November 1, 2025
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [scrollY, setScrollY] = useState(0);
+  
+  useEffect(() => {
+    const targetDate = new Date('2025-11-01T00:00:00').getTime();
+    
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+      
+      if (distance > 0) {
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        setTimeLeft({ days, hours, minutes, seconds });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Smooth scroll tracking with Apple-style rubber band effect
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
+  
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let scrollTimeout: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const direction = currentScrollY > lastScrollY ? 'down' : 'up';
+      
+      setScrollY(currentScrollY);
+      setScrollDirection(direction);
+      setIsScrolling(true);
+      
+      // Clear existing timeout
+      clearTimeout(scrollTimeout);
+      
+      // Set scrolling to false after scroll ends (rubber band effect)
+      scrollTimeout = setTimeout(() => {
+        setIsScrolling(false);
+        setScrollDirection(null);
+      }, 150);
+      
+      lastScrollY = currentScrollY;
+    };
+
+    // Smooth scrolling behavior with rubber band
+    document.documentElement.style.scrollBehavior = 'smooth';
+    document.body.style.overscrollBehavior = 'contain'; // Enable bounce effect
+    
+    // Throttled scroll listener for performance
+    let ticking = false;
+    const scrollListener = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', scrollListener, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', scrollListener);
+      clearTimeout(scrollTimeout);
+      document.documentElement.style.scrollBehavior = 'auto';
+    };
+  }, []);
+
+  // Intersection Observer for scroll-to-reveal animations (one-time only)
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.2,
+      rootMargin: '-10% 0px -20% 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          // Only animate if not already revealed
+          if (!entry.target.classList.contains('animate-reveal')) {
+            entry.target.classList.add('animate-reveal');
+            entry.target.classList.remove('animate-hide');
+            // Mark as revealed so it doesn't animate again
+            entry.target.setAttribute('data-revealed', 'true');
+          }
+        }
+        // Don't remove the reveal class when scrolling up - let it stay revealed
+      });
+    }, observerOptions);
+
+    // Observe only sections (not cards)
+    const sections = document.querySelectorAll('.scroll-reveal-section');
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
+  }, []);
+
   // Dynamic filter ranges based on category
   const getFilterRanges = () => {
     if (category === 'opslagboxen') {
@@ -203,10 +313,35 @@ export default function HomePage() {
   const filteredProjects = getFilteredAndSortedProjects();
 
   const scrollToProjects = () => {
-    document.getElementById('projects')?.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'start'
-    });
+    const projectsSection = document.getElementById('projects');
+    if (projectsSection) {
+      // Custom smooth scroll with enhanced easing
+      const startPosition = window.pageYOffset;
+      const targetPosition = projectsSection.offsetTop - 80; // Offset for header
+      const distance = targetPosition - startPosition;
+      const duration = 1200; // 1.2 seconds
+      let start: number | null = null;
+
+      // Easing function - cubic-bezier(0.4, 0, 0.2, 1)
+      const easeInOutCubic = (t: number) => {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      };
+
+      const animation = (currentTime: number) => {
+        if (start === null) start = currentTime;
+        const timeElapsed = currentTime - start;
+        const progress = Math.min(timeElapsed / duration, 1);
+        const easedProgress = easeInOutCubic(progress);
+        
+        window.scrollTo(0, startPosition + distance * easedProgress);
+        
+        if (timeElapsed < duration) {
+          requestAnimationFrame(animation);
+        }
+      };
+
+      requestAnimationFrame(animation);
+    }
   };
 
   const generateShareUrl = () => {
@@ -300,7 +435,13 @@ export default function HomePage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredProjects.map((project) => (
-              <tr key={project.id} className="hover:bg-gray-50">
+              <tr 
+                key={project.id} 
+                className="hover:bg-gray-50 cursor-pointer transition-colors"
+                onClick={() => {
+                  window.location.href = category === 'bedrijfsunits' ? `/bedrijfsunit/${project.slug}` : `/opslagbox/${project.slug}`;
+                }}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <img
@@ -339,12 +480,15 @@ export default function HomePage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <a
-                    href={category === 'bedrijfsunits' ? `/bedrijfsunit/${project.slug}` : `/opslagbox/${project.slug}`}
-                    className="text-slate-600 hover:text-slate-900"
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = category === 'bedrijfsunits' ? `/bedrijfsunit/${project.slug}` : `/opslagbox/${project.slug}`;
+                    }}
+                    className="text-slate-600 hover:text-slate-900 font-medium"
                   >
-                    Details
-                  </a>
+                    Details →
+                  </button>
                 </td>
               </tr>
             ))}
@@ -357,6 +501,161 @@ export default function HomePage() {
   return (
     <>
       <style jsx>{`
+        /* Apple-Style Rubber Band Scrolling */
+        html {
+          scroll-behavior: smooth;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+        
+        body {
+          overscroll-behavior-y: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+        
+        * {
+          scroll-behavior: smooth;
+        }
+        
+        @media (prefers-reduced-motion: no-preference) {
+          html {
+            scroll-behavior: smooth;
+          }
+        }
+        
+        /* Enhanced Smooth Scrolling with Rubber Band Effect */
+        .smooth-scroll {
+          transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .rubber-band-scroll {
+          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .parallax-slow {
+          transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Scroll-to-Reveal Animations - Subtle fade-up effect for sections only */
+        .scroll-reveal-section {
+          opacity: 0;
+          transform: translateY(30px);
+          transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: transform, opacity;
+        }
+        
+        .scroll-reveal-section.animate-reveal {
+          opacity: 1;
+          transform: translateY(0px);
+        }
+        
+        /* Once revealed, stay revealed */
+        .scroll-reveal-section[data-revealed="true"] {
+          opacity: 1;
+          transform: translateY(0px);
+        }
+        
+        .fade-in-scroll {
+          opacity: 0;
+          transform: translateY(30px);
+          animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        @keyframes fadeInUp {
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .slide-in-left {
+          animation: slideInLeft 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        .slide-in-right {
+          animation: slideInRight 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+        }
+        
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(50px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        .fade-in {
+          animation: fadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        
+        .ken-burns {
+          animation: kenBurns 8s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+        }
+        
+        @keyframes kenBurns {
+          0% {
+            transform: scale(1) translateX(0) translateY(0);
+          }
+          100% {
+            transform: scale(1.1) translateX(-20px) translateY(-10px);
+          }
+        }
+        
+        /* Enhanced Hover Effects with Rubber Band */
+        .rubber-band-hover {
+          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        /* Disable rubber-band on mobile to prevent click interference */
+        @media (hover: hover) and (pointer: fine) {
+          .rubber-band-hover:hover {
+            transform: scale(1.05);
+          }
+          
+          .rubber-band-hover:active {
+            transform: scale(0.95);
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          }
+        }
+        
+        /* Disable hover effects on touch devices for specific classes */
+        @media (hover: none) and (pointer: coarse) {
+          .hover\\:bg-blue-50:hover,
+          .hover\\:bg-white:hover,
+          .hover\\:text-slate-800:hover,
+          .hover\\:shadow-3xl:hover,
+          .group-hover\\:translate-y-1,
+          .group-hover\\:scale-110 {
+            background-color: inherit !important;
+            color: inherit !important;
+            box-shadow: inherit !important;
+            transform: none !important;
+          }
+        }
+        
         .slider-thumb::-webkit-slider-thumb {
           appearance: none;
           height: 20px;
@@ -392,7 +691,7 @@ export default function HomePage() {
       `}</style>
       {/* Full-Screen Hero Section */}
       <div className="relative h-screen overflow-hidden">
-        {/* Background Images with Ken Burns Effect */}
+        {/* Background Images with Ken Burns Effect and Parallax */}
         {heroImages.map((image, index) => (
           <div
             key={index}
@@ -401,10 +700,11 @@ export default function HomePage() {
             }`}
           >
             <div
-              className="absolute inset-0 bg-cover bg-center transform scale-110 animate-ken-burns"
+              className="absolute inset-0 bg-cover bg-center transform scale-110 ken-burns parallax-slow"
               style={{
                 backgroundImage: `url(${image})`,
-                animationDuration: '6s',
+                transform: `scale(1.1) translateY(${scrollY * 0.5}px)`,
+                animationDuration: '8s',
                 animationIterationCount: 'infinite',
                 animationDirection: index % 2 === 0 ? 'normal' : 'reverse'
               }}
@@ -412,45 +712,57 @@ export default function HomePage() {
           </div>
         ))}
         
-        {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
-        <div className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-to-tr from-black/70 via-black/30 to-transparent" />
+        {/* Gradient Overlays with Parallax */}
+        <div 
+          className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80 parallax-slow" 
+          style={{ transform: `translateY(${scrollY * 0.3}px)` }}
+        />
+        <div 
+          className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent parallax-slow"
+          style={{ transform: `translateY(${scrollY * 0.2}px)` }}
+        />
+        <div 
+          className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-to-tr from-black/70 via-black/30 to-transparent parallax-slow"
+          style={{ transform: `translateY(${scrollY * 0.1}px)` }}
+        />
         
-        {/* Hero Content */}
-        <div className="relative z-10 h-full flex items-end justify-start">
-          <div className="max-w-4xl px-8 sm:px-12 lg:px-16 pb-16 text-left ml-0">
+        {/* Mobile-Optimized Hero Content */}
+        <div className="relative z-10 h-full flex items-center sm:items-end justify-start">
+          <div className="max-w-4xl px-4 sm:px-8 lg:px-16 pb-4 sm:pb-16 text-left ml-0 w-full mt-16 sm:mt-0">
             <div className="animate-fade-in-up">
-              {/* Main Headline */}
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-light text-white mb-6 leading-tight tracking-wide">
+              {/* Mobile-Optimized Main Headline */}
+              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-light text-white mb-4 sm:mb-6 leading-tight tracking-wide">
                 <span className="block font-serif animate-slide-in-left">Welkom</span>
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-200 animate-slide-in-right font-serif">
                   bij De Steiger
                 </span>
               </h1>
               
-              {/* Subtitle */}
-              <p className="text-xl md:text-2xl lg:text-3xl text-slate-100 mb-12 max-w-3xl font-light leading-relaxed animate-fade-in delay-300 tracking-wide">
+              {/* Mobile-Optimized Subtitle */}
+              <p className="text-base sm:text-lg md:text-2xl lg:text-3xl text-slate-100 mb-8 sm:mb-12 max-w-3xl font-light leading-relaxed animate-fade-in delay-300 tracking-wide">
                 duurzame bedrijfsruimtes<br />
                 <span className="text-white font-normal">voor ondernemers en beleggers</span>
               </p>
               
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-6 items-start mb-8 animate-fade-in delay-700">
+              {/* Mobile-Optimized CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-stretch sm:items-start animate-fade-in delay-700 max-w-lg sm:max-w-none">
                 <button
                   onClick={scrollToProjects}
-                  className="group bg-white text-slate-800 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-blue-50 transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-3xl"
+                  className="group bg-white text-slate-800 px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg md:hover:bg-blue-50 shadow-2xl md:hover:shadow-3xl w-full sm:w-auto touch-manipulation"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <span className="flex items-center">
-                    Ontdek Onze Units
-                    <ArrowDown className="ml-3 h-5 w-5 group-hover:translate-y-1 transition-transform duration-300" />
+                  <span className="flex items-center justify-center">
+                    <span className="truncate">Ontdek Onze Units</span>
+                    <ArrowDown className="ml-2 sm:ml-3 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-y-1 transition-transform duration-300 flex-shrink-0" />
                   </span>
                 </button>
                 
-                <button className="group bg-transparent border-2 border-white text-white px-10 py-4 rounded-2xl font-bold text-lg hover:bg-white hover:text-slate-800 transform hover:scale-105 transition-all duration-300">
-                  <span className="flex items-center">
-                    <Play className="mr-3 h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
-                    Bekijk Video
+                <button className="group bg-transparent border-2 border-white text-white px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg md:hover:bg-white md:hover:text-slate-800 w-full sm:w-auto touch-manipulation"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <span className="flex items-center justify-center">
+                    <Play className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform duration-300 flex-shrink-0" />
+                    <span className="truncate">Bekijk Video</span>
                   </span>
                 </button>
               </div>
@@ -458,24 +770,71 @@ export default function HomePage() {
           </div>
         </div>
         
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        {/* Countdown Timer - Bottom Right (Rechtonder) with Parallax */}
+        <div 
+          className="absolute bottom-20 right-12 z-20 animate-fade-in delay-500 hidden lg:block parallax-slow"
+          style={{ transform: `translateY(${scrollY * -0.15}px)` }}
+        >
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-yellow-400/30 shadow-2xl min-w-[450px] rubber-band-hover hover:shadow-3xl transition-all duration-700 ease-out">
+            <div className="text-center mb-6">
+              <div className="text-white font-bold text-xl mb-2">Eerste Fase Verkoop</div>
+              <div className="text-yellow-400 font-semibold text-base">1 November 2025</div>
+            </div>
+            
+            {/* Timer Display - Bigger with Smooth Animations */}
+            <div className="grid grid-cols-4 gap-4">
+              <div className="text-center bg-white/10 rounded-xl py-5 px-3 border border-yellow-400/20 smooth-scroll hover:bg-white/20 transition-all duration-500">
+                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-yellow-300 mb-2 smooth-scroll">{timeLeft.days}</div>
+                <div className="text-white/80 text-sm uppercase font-semibold tracking-wide">Dagen</div>
+              </div>
+              <div className="text-center bg-white/10 rounded-xl py-5 px-3 border border-yellow-400/20 smooth-scroll hover:bg-white/20 transition-all duration-500">
+                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-yellow-300 mb-2 smooth-scroll">{timeLeft.hours}</div>
+                <div className="text-white/80 text-sm uppercase font-semibold tracking-wide">Uren</div>
+              </div>
+              <div className="text-center bg-white/10 rounded-xl py-5 px-3 border border-yellow-400/20 smooth-scroll hover:bg-white/20 transition-all duration-500">
+                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-yellow-300 mb-2 smooth-scroll">{timeLeft.minutes}</div>
+                <div className="text-white/80 text-sm uppercase font-semibold tracking-wide">Min</div>
+              </div>
+              <div className="text-center bg-white/10 rounded-xl py-5 px-3 border border-yellow-400/20 smooth-scroll hover:bg-white/20 transition-all duration-500">
+                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-yellow-300 mb-2 smooth-scroll">{timeLeft.seconds}</div>
+                <div className="text-white/80 text-sm uppercase font-semibold tracking-wide">Sec</div>
+              </div>
+            </div>
+            
+            <div className="text-center mt-5">
+              <p className="text-white/70 text-sm">Tot de lancering</p>
+            </div>
+          </div>
+        </div>
+        
+
+        
+        {/* Scroll Indicator with Enhanced Animation */}
+        <div 
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce parallax-slow"
+          style={{ 
+            transform: `translateX(-50%) translateY(${scrollY * -0.1}px)`,
+            opacity: Math.max(0, 1 - scrollY * 0.002)
+          }}
+        >
           <button 
             onClick={scrollToProjects}
-            className="flex flex-col items-center text-white/70 hover:text-white transition-colors duration-300"
+            className="flex flex-col items-center text-white/70 hover:text-white rubber-band-hover"
           >
-            <ArrowDown className="h-6 w-6 mb-2" />
-            <span className="text-sm">Scroll Down</span>
+            <ArrowDown className="h-6 w-6 mb-2 transform hover:translate-y-1 transition-transform duration-300" />
+            <span className="text-sm font-medium tracking-wide">Scroll Down</span>
           </button>
         </div>
       </div>
 
+
+
             {/* About De Steiger Section */}
-      <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 py-20">
+      <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 scroll-reveal-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-5 gap-16 items-start">
-            {/* Left Column - Narrower */}
-            <div className="lg:col-span-2">
+            {/* Left Column - Narrower - Hide the newsletter on mobile, show on desktop */}
+            <div className="lg:col-span-2 hidden lg:block">
               {/* Call to Action Box */}
               <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-8 shadow-xl">
                 <h3 className="text-2xl font-bold text-white mb-4">
@@ -497,8 +856,8 @@ export default function HomePage() {
               </div>
             </div>
             
-            {/* Right Column - Wider */}
-            <div className="lg:col-span-3">
+            {/* Right Column - Wider - Full width on mobile */}
+            <div className="lg:col-span-3 col-span-full">
               <div className="max-w-3xl">
                 <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
                   Een bedrijfsunit of opslagbox kopen?
@@ -539,7 +898,7 @@ export default function HomePage() {
       </div>
 
       {/* Projects Section */}
-      <div id="projects" className="bg-gray-50 py-20">
+      <div id="projects" className="bg-gray-50 py-12 pb-6 lg:pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
 
@@ -631,7 +990,7 @@ export default function HomePage() {
           {/* Content Area with Sidebar */}
           <div className="flex flex-col lg:flex-row gap-6">
               {/* Desktop Filter Sidebar - Hidden on mobile */}
-              <div className="hidden lg:block w-80 bg-white rounded-lg shadow-sm border p-6 space-y-6 shrink-0">
+              <div className="hidden lg:block w-80 bg-white rounded-2xl shadow-lg border border-gray-100 p-6 space-y-6 shrink-0 h-fit">
                 <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
 
                 {/* Status Filter */}
@@ -703,7 +1062,7 @@ export default function HomePage() {
                         step="5"
                         value={areaMin}
                         onChange={(e) => setAreaMin(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>{currentRanges.areaMin}m²</span>
@@ -719,7 +1078,7 @@ export default function HomePage() {
                         step="5"
                         value={areaMax}
                         onChange={(e) => setAreaMax(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>{currentRanges.areaMin}m²</span>
@@ -744,7 +1103,7 @@ export default function HomePage() {
                         step="10"
                         value={priceMin}
                         onChange={(e) => setPriceMin(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>€{currentRanges.priceMin}k</span>
@@ -760,7 +1119,7 @@ export default function HomePage() {
                         step="10"
                         value={priceMax}
                         onChange={(e) => setPriceMax(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>€{currentRanges.priceMin}k</span>
@@ -798,13 +1157,13 @@ export default function HomePage() {
                     <div className="flex bg-white rounded border">
                       <button
                         onClick={() => setViewMode('grid')}
-                        className={`px-3 py-1 text-sm rounded-l ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                        className={`px-3 py-1 text-sm rounded-l ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
                       >
                         <Grid className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setViewMode('table')}
-                        className={`px-3 py-1 text-sm rounded-r ${viewMode === 'table' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                        className={`px-3 py-1 text-sm rounded-r ${viewMode === 'table' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
                       >
                         <List className="w-4 h-4" />
                       </button>
@@ -813,7 +1172,7 @@ export default function HomePage() {
 
                   <button
                     onClick={handleShare}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
                   >
                     <Share2 className="w-4 h-4" />
                     Delen
@@ -827,16 +1186,17 @@ export default function HomePage() {
 
                           {/* Projects Grid/Table */}
                 {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16">
-            {filteredProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 lg:mb-16">
+            {filteredProjects.map((project, index) => (
+              <div key={project.id} className="rubber-band-hover">
+                <ProjectCard
+                  project={project}
+                />
+              </div>
             ))}
           </div>
                 ) : (
-                  <div className="mb-16">
+                  <div className="mb-8 lg:mb-16">
                     {renderTableView()}
                   </div>
                 )}
@@ -864,30 +1224,108 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Newsletter Section */}
-      <div id="contact" className="bg-gradient-to-br from-blue-600 to-blue-800 py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Blijf op de hoogte!
-          </h2>
-          <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">
-            Ontvang als eerste informatie over nieuwe projecten, beschikbare units en exclusieve aanbiedingen.
-          </p>
-          
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-2xl mx-auto">
-            <div className="flex flex-col sm:flex-row gap-4">
+      {/* Interactive Location Map Section */}
+      <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 py-10 scroll-reveal-section">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+              Vind De Steiger bij jou in de buurt
+            </h2>
+            <p className="text-xl text-gray-700">
+              Ontdek onze strategische locatie in Almere en plan je bezoek.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-5 gap-8 items-start">
+            {/* Left Column - Map */}
+            <div className="lg:col-span-3 order-2 lg:order-1">
+                <div className="relative">
+                  <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div className="h-80 md:h-96 relative bg-gray-100">
+                      <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2430.1234567890123!2d5.2647!3d52.3676!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c609c3b9b1c3c3%3A0x1234567890123456!2sAlmere%2C%20Netherlands!5e0!3m2!1sen!2snl!4v1234567890123"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        className="absolute inset-0"
+                      />
+                      
+                      <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 max-w-xs">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-3 h-3 bg-yellow-400 rounded-full mt-1 animate-pulse"></div>
+                          <div>
+                            <h3 className="font-bold text-gray-900 text-sm">De Steiger Almere</h3>
+                            <p className="text-gray-600 text-xs mb-2">Hoofdlocatie</p>
+                            <div className="space-y-1 text-xs text-gray-500">
+                              <p>🏢 28 Bedrijfsunits</p>
+                              <p>📦 16 Opslagboxen types</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+
+                  </div>
+                </div>
+            </div>
+            
+            {/* Right Column - Contact Form */}
+            <div className="lg:col-span-2 order-1 lg:order-2">
+              <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 shadow-xl">
+                <h3 className="text-xl font-bold text-white mb-3">
+                  Interesse in een unit?
+                </h3>
+                <p className="text-slate-200 mb-5 leading-relaxed text-sm">
+                  Maak een afspraak voor een bezichtiging of ontvang meer informatie over beschikbare units.
+                </p>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Uw naam"
+                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-slate-300 transition-all duration-300 text-sm"
+                  />
+                  <input
+                    type="email"
+                    placeholder="uw@email.nl"
+                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-slate-300 transition-all duration-300 text-sm"
+                  />
+                  <button className="w-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-200 text-slate-900 px-6 py-3 rounded-xl font-semibold hover:from-yellow-300 hover:to-yellow-100 transform hover:scale-105 transition-all duration-300 shadow-lg text-sm">
+                    Plan Bezichtiging
+                  </button>
+                </div>
+                <p className="text-slate-400 text-xs mt-3">
+                  We nemen binnen 24 uur contact met u op.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Newsletter Section - Only visible on mobile */}
+      <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 pt-2 pb-6 lg:hidden scroll-reveal-section">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 shadow-xl">
+            <h3 className="text-xl font-bold text-white mb-3">
+              Blijf op de hoogte!
+            </h3>
+            <p className="text-slate-200 mb-4 leading-relaxed">
+              Ontvang als eerste informatie over nieuwe projecten, beschikbare units en exclusieve aanbiedingen.
+            </p>
+            <div className="space-y-3">
               <input
                 type="email"
                 placeholder="je@email.nl"
-                className="flex-1 px-6 py-4 bg-white rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-slate-300 transition-all duration-300"
               />
-              <button className="bg-white text-gray-900 px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg">
+              <button className="w-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-200 text-slate-900 px-6 py-3 rounded-xl font-semibold hover:from-yellow-300 hover:to-yellow-100 transform hover:scale-105 transition-all duration-300 shadow-lg">
                 Inschrijven
               </button>
             </div>
-            <p className="text-blue-200 text-sm mt-4">
-              Geen spam, je kunt je altijd uitschrijven. Zie ons privacybeleid.
-            </p>
           </div>
         </div>
       </div>
@@ -1083,7 +1521,7 @@ export default function HomePage() {
                 </button>
                 <button
                   onClick={() => setShowMobileFilters(false)}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
                 >
                   Toepassen
                 </button>

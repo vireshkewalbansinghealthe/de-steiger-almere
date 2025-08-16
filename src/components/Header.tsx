@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Menu, X, Phone, Mail, Download, User, LogOut } from 'lucide-react';
+import { ChevronDown, Menu, X, Phone, Mail, Download, User, LogOut, ArrowLeft } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
 
@@ -21,15 +21,29 @@ export default function Header() {
   const supabase = createClient();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return; // Ensure this runs only on the client
+    
+    // Force scrolled state on reservation pages (no hero section)
+    const isReservationPage = pathname?.startsWith('/reserveren') || false;
+    
+    if (isReservationPage) {
+      setIsScrolled(true);
+      return; // Don't add scroll listener for reservation pages
+    }
+    
+    // Check initial scroll position for other pages
+    setIsScrolled(window.scrollY > 50);
+    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return; // Ensure this runs only on the client
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -86,12 +100,50 @@ export default function Header() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center group">
-              <div className={`text-3xl font-serif transition-colors duration-200 tracking-wide ${
-                isScrolled 
-                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-400 group-hover:from-yellow-700 group-hover:to-yellow-500' 
-                  : 'text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-200 group-hover:from-yellow-300 group-hover:to-yellow-100'
-              }`}>
-                De Steiger
+              <div className="flex items-center space-x-3">
+                {/* Logo Icon */}
+                <div className="relative">
+                  <div className={`w-10 h-10 rounded-lg transition-all duration-300 group-hover:scale-110 ${
+                    isScrolled 
+                      ? 'bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-lg' 
+                      : 'bg-gradient-to-br from-yellow-400 to-yellow-500 shadow-xl'
+                  }`}>
+                    <div className="absolute inset-0 rounded-lg overflow-hidden">
+                      {/* Buildings & Storage Icon */}
+                      <svg className="w-full h-full p-1.5 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                        {/* Building part */}
+                        <path d="M3 21h8V9l-4-3-4 3v12zm2-8h2v2H5v-2zm0 4h2v2H5v-2zm4-4h2v2H9v-2z"/>
+                        {/* Storage boxes part */}
+                        <rect x="13" y="4" width="3.5" height="3" rx="0.3"/>
+                        <rect x="17" y="4" width="3.5" height="3" rx="0.3"/>
+                        <rect x="13" y="8" width="3.5" height="3" rx="0.3"/>
+                        <rect x="17" y="8" width="3.5" height="3" rx="0.3"/>
+                        <rect x="13" y="12" width="7.5" height="4" rx="0.3"/>
+                        <rect x="13" y="17" width="7.5" height="3" rx="0.3"/>
+                      </svg>
+                    </div>
+                    {/* Subtle highlight */}
+                    <div className="absolute top-1 left-1 w-3 h-3 bg-white/30 rounded-full blur-sm"></div>
+                  </div>
+                </div>
+                
+                {/* Logo Text */}
+                <div className="flex flex-col">
+                  <div className={`text-2xl font-bold transition-colors duration-200 tracking-tight leading-none ${
+                    isScrolled 
+                      ? 'text-transparent bg-clip-text bg-gradient-to-r from-slate-800 via-slate-700 to-slate-900 group-hover:from-slate-900 group-hover:to-slate-700' 
+                      : 'text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-50 to-white group-hover:from-yellow-100 group-hover:to-white'
+                  }`}>
+                    De Steiger
+                  </div>
+                  <div className={`text-xs font-medium tracking-wide uppercase transition-colors duration-200 ${
+                    isScrolled 
+                      ? 'text-yellow-600 group-hover:text-yellow-700' 
+                      : 'text-yellow-300 group-hover:text-yellow-200'
+                  }`}>
+                    Bedrijfsunits & opslagboxen
+                  </div>
+                </div>
               </div>
             </Link>
           </div>
@@ -120,19 +172,6 @@ export default function Header() {
               }`}
             >
               Opslagboxen
-            </Link>
-
-            {/* Downloads */}
-            <Link
-              href="/downloads"
-              className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
-                  : 'text-white hover:text-slate-300 hover:bg-white/10'
-              }`}
-            >
-              <Download className="h-4 w-4 mr-1" />
-              Downloads
             </Link>
 
             {/* Informatie Dropdown */}
@@ -188,19 +227,30 @@ export default function Header() {
               Over De Steiger
             </Link>
 
+            {/* Downloads */}
+            <Link
+              href="/downloads"
+              className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
+                  : 'text-white hover:text-slate-300 hover:bg-white/10'
+              }`}
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Downloads
+            </Link>
+
             {/* Contact Link */}
-            <div className="ml-4">
-              <Link
-                href="/contact"
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
-                  isScrolled 
-                    ? 'text-gray-700 hover:text-slate-800' 
-                    : 'text-white hover:text-slate-300'
-                }`}
-              >
-                Contact
-              </Link>
-            </div>
+            <Link
+              href="/contact"
+              className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
+                  : 'text-white hover:text-slate-300 hover:bg-white/10'
+              }`}
+            >
+              Contact
+            </Link>
 
             {/* User Menu */}
             <div className="ml-6 relative">
@@ -242,11 +292,7 @@ export default function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isScrolled 
-                      ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-500' 
-                      : 'bg-white/20 text-white hover:bg-white/30'
-                  }`}
+                  className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 hover:from-yellow-300 hover:to-yellow-400 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <User className="h-4 w-4 mr-2" />
                   Inloggen
@@ -255,8 +301,37 @@ export default function Header() {
             </div>
           </nav>
 
-          {/* Mobile menu button */}
-          <div className="lg:hidden">
+          {/* Mobile Navigation Buttons */}
+          <div className="lg:hidden flex items-center gap-2">
+            {/* Back to Overview Button - Show on detail pages */}
+            {pathname && (pathname.includes('/bedrijfsunit/') || pathname.includes('/opslagbox/')) && (
+              <Link
+                href={pathname.includes('/bedrijfsunit/') ? '/bedrijfsunits' : '/opslagboxen'}
+                className={`p-3 rounded-lg transition-all duration-200 ${
+                  isScrolled 
+                    ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
+                    : 'text-white hover:text-slate-300 hover:bg-white/10'
+                }`}
+                title="Terug naar overzicht"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </Link>
+            )}
+            
+            {/* Profile/Login Button */}
+            <Link
+              href={user ? "/profiel" : "/login"}
+              className={`p-3 rounded-lg transition-all duration-200 ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
+                  : 'text-white hover:text-slate-300 hover:bg-white/10'
+              }`}
+              title={user ? "Mijn Profiel" : "Inloggen"}
+            >
+              <User className="h-6 w-6" />
+            </Link>
+            
+            {/* Mobile Menu Button */}
             <button
               onClick={toggleMenu}
               className={`p-3 rounded-lg transition-all duration-200 ${
@@ -270,163 +345,192 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Modern Mobile Slide Menu */}
-        <div className={`lg:hidden fixed inset-0 z-50 transition-all duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        {/* Mobile Navigation Sidebar */}
+        <div className={`lg:hidden fixed inset-0 z-50 transition-opacity duration-300 ${
+          isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}>
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className={`absolute inset-0 bg-black transition-opacity duration-300 ${
+              isMenuOpen ? 'opacity-50' : 'opacity-0'
+            }`}
             onClick={() => setIsMenuOpen(false)}
           />
           
-          {/* Slide Panel */}
-          <div className={`fixed top-0 right-0 h-full w-[320px] bg-white shadow-2xl transform transition-transform duration-300 ease-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-            <div className="flex flex-col h-full">
-              {/* Header */}
-              <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">De Steiger</h2>
-                  <p className="text-sm text-gray-500">Almere</p>
+          {/* Sidebar */}
+          <div className={`absolute right-0 top-0 h-full w-80 max-w-sm bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${
+            isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}>
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 21h8V9l-4-3-4 3v12zm2-8h2v2H5v-2zm0 4h2v2H5v-2zm4-4h2v2H9v-2z"/>
+                    <rect x="13" y="4" width="3.5" height="3" rx="0.3"/>
+                    <rect x="17" y="4" width="3.5" height="3" rx="0.3"/>
+                    <rect x="13" y="8" width="3.5" height="3" rx="0.3"/>
+                    <rect x="17" y="8" width="3.5" height="3" rx="0.3"/>
+                    <rect x="13" y="12" width="7.5" height="4" rx="0.3"/>
+                    <rect x="13" y="17" width="7.5" height="3" rx="0.3"/>
+                  </svg>
                 </div>
-                <button
-                  onClick={() => setIsMenuOpen(false)}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <X className="h-5 w-5 text-gray-600" />
-                </button>
+                <div>
+                  <div className="text-lg font-bold text-slate-800">De Steiger</div>
+                  <div className="text-xs text-yellow-600 uppercase tracking-wide">Menu</div>
+                </div>
               </div>
-              
-              {/* Navigation */}
-              <div className="flex-1 overflow-y-auto py-4">
-                <nav className="px-4 space-y-1">
-              {/* Mobile Bedrijfsunits */}
-              <Link
-                href="/bedrijfsunits"
-                className="block text-gray-700 hover:text-slate-800 hover:bg-slate-50 px-4 py-3 text-base font-medium rounded-lg transition-all duration-200"
+              <button
                 onClick={() => setIsMenuOpen(false)}
+                className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors duration-200"
               >
-                Bedrijfsunits
-              </Link>
+                <X className="h-6 w-6" />
+              </button>
+            </div>
 
-              {/* Mobile Opslagboxen */}
-              <Link
-                href="/opslagboxen"
-                className="block text-gray-700 hover:text-slate-800 hover:bg-slate-50 px-4 py-3 text-base font-medium rounded-lg transition-all duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Opslagboxen
-              </Link>
+            {/* Sidebar Content */}
+            <div className="flex flex-col h-full overflow-y-auto">
+              <div className="px-6 py-6 space-y-1">
+                {/* Main Navigation */}
+                <div className="space-y-1">
+                  <Link
+                    href="/bedrijfsunits"
+                    className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 opacity-60"></div>
+                    Bedrijfsunits
+                  </Link>
 
-              {/* Mobile Downloads */}
-              <Link
-                href="/downloads"
-                className="flex items-center text-gray-700 hover:text-slate-800 hover:bg-slate-50 px-4 py-3 text-base font-medium rounded-lg transition-all duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Downloads
-              </Link>
+                  <Link
+                    href="/opslagboxen"
+                    className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 opacity-60"></div>
+                    Opslagboxen
+                  </Link>
 
-              {/* Mobile Informatie */}
-              <div>
-                <button
-                  className="w-full flex justify-between items-center text-left text-gray-700 hover:text-slate-800 hover:bg-slate-50 px-4 py-3 text-base font-medium rounded-lg transition-all duration-200"
-                  onClick={() => setIsInfoOpen(!isInfoOpen)}
+                  <Link
+                    href="/downloads"
+                    className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Download className="h-5 w-5 mr-3 text-yellow-500" />
+                    Downloads
+                  </Link>
+                </div>
+
+                {/* Informatie Section */}
+                <div className="pt-4">
+                  <button
+                    className="w-full flex justify-between items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200"
+                    onClick={() => setIsInfoOpen(!isInfoOpen)}
+                  >
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 opacity-60"></div>
+                      Informatie
+                    </div>
+                    <ChevronDown className={`h-4 w-4 transform transition-transform duration-300 ${
+                      isInfoOpen ? 'rotate-180' : ''
+                    }`} />
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-300 ${
+                    isInfoOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                  }`}>
+                    <div className="pl-6 pt-2 space-y-1">
+                      <Link
+                        href="/beleggers"
+                        className="flex items-center px-4 py-2 text-sm text-gray-600 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsInfoOpen(false);
+                        }}
+                      >
+                        <span className="mr-3 text-base">💰</span>
+                        Voor Beleggers
+                      </Link>
+                      <Link
+                        href="/ondernemers"
+                        className="flex items-center px-4 py-2 text-sm text-gray-600 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsInfoOpen(false);
+                        }}
+                      >
+                        <span className="mr-3 text-base">🏢</span>
+                        Voor Ondernemers
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  href="/over-unity"
+                  className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                  onClick={() => setIsMenuOpen(false)}
                 >
-                  Informatie
-                  <ChevronDown className={`h-4 w-4 transform transition-transform duration-200 ${
-                    isInfoOpen ? 'rotate-180' : ''
-                  }`} />
-                </button>
-                {isInfoOpen && (
-                  <div className="mt-2 pl-4 space-y-1">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 opacity-60"></div>
+                  Over De Steiger
+                </Link>
+              </div>
+
+              {/* User Section */}
+              <div className="mt-auto border-t border-gray-200">
+                {user ? (
+                  <div className="px-6 py-6 space-y-3">
+                    <div className="px-4 py-3 bg-slate-50 rounded-lg">
+                      <p className="text-sm font-medium text-gray-900">
+                        {profile?.first_name} {profile?.last_name}
+                      </p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
                     <Link
-                      href="/beleggers"
-                      className="flex items-center text-gray-600 hover:text-slate-800 hover:bg-slate-50 px-4 py-2 text-sm rounded-lg transition-colors duration-150"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        setIsInfoOpen(false);
-                      }}
+                      href="/profiel"
+                      className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                      onClick={() => setIsMenuOpen(false)}
                     >
-                      <span className="mr-2">💰</span>
-                      Voor Beleggers
+                      <User className="h-5 w-5 mr-3 text-yellow-500" />
+                      Mijn Profiel
                     </Link>
-                    <Link
-                      href="/ondernemers"
-                      className="flex items-center text-gray-600 hover:text-slate-800 hover:bg-slate-50 px-4 py-2 text-sm rounded-lg transition-colors duration-150"
+                    <button
                       onClick={() => {
+                        handleLogout();
                         setIsMenuOpen(false);
-                        setIsInfoOpen(false);
                       }}
+                      className="flex items-center w-full text-left px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
                     >
-                      <span className="mr-2">🏢</span>
-                      Voor Ondernemers
+                      <LogOut className="h-5 w-5 mr-3 text-yellow-500" />
+                      Uitloggen
+                    </button>
+                  </div>
+                ) : (
+                  <div className="px-6 py-6">
+                    <Link
+                      href="/login"
+                      className="flex items-center justify-center w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:from-yellow-300 hover:to-yellow-400 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <User className="h-5 w-5 mr-2" />
+                      Inloggen
                     </Link>
                   </div>
                 )}
-              </div>
 
-              <Link
-                href="/over-unity"
-                className="block text-gray-700 hover:text-slate-800 hover:bg-slate-50 px-4 py-3 text-base font-medium rounded-lg transition-all duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Over De Steiger
-              </Link>
-
-              {/* Mobile User Menu */}
-              {user ? (
-                <div className="pt-4 border-t border-gray-200 mt-4 space-y-2">
-                  <div className="px-4 py-2">
-                    <p className="text-sm font-medium text-gray-900">
-                      {profile?.first_name} {profile?.last_name}
-                    </p>
-                    <p className="text-sm text-gray-500">{user.email}</p>
-                  </div>
+                {/* Contact CTA */}
+                <div className="px-6 pb-6">
                   <Link
-                    href="/profiel"
-                    className="flex items-center text-gray-700 hover:text-slate-800 hover:bg-slate-50 px-4 py-3 text-base font-medium rounded-lg transition-all duration-200"
+                    href="/contact"
+                    className="block w-full bg-slate-800 text-white text-center px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-all duration-200 transform hover:scale-105 shadow-lg"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <User className="h-4 w-4 mr-2" />
-                    Mijn Profiel
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="flex items-center w-full text-left text-gray-700 hover:text-slate-800 hover:bg-slate-50 px-4 py-3 text-base font-medium rounded-lg transition-all duration-200"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Uitloggen
-                  </button>
-                </div>
-              ) : (
-                <div className="pt-4 border-t border-gray-200 mt-4">
-                  <Link
-                    href="/login"
-                    className="flex items-center justify-center w-full bg-yellow-400 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-yellow-500 transition-colors duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Inloggen
+                    Contact
                   </Link>
                 </div>
-              )}
-
-              {/* Mobile CTA */}
-              <div className={user ? "mt-4" : "pt-4 border-t border-gray-200 mt-4"}>
-                <Link
-                  href="/contact"
-                  className="block w-full bg-slate-800 text-white text-center px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Contact
-                </Link>
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </header>
   );

@@ -4,6 +4,23 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
+import { 
+  Search, 
+  Filter, 
+  Download, 
+  Eye, 
+  CheckCircle,
+  Clock,
+  XCircle,
+  Calendar,
+  Euro,
+  User,
+  Building,
+  Package,
+  Mail,
+  Phone,
+  MapPin
+} from 'lucide-react'
 
 interface Reservation {
   id: string
@@ -27,14 +44,20 @@ interface Reservation {
 
 export default function ReserveringenPage() {
   const [reservations, setReservations] = useState<Reservation[]>([])
+  const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [searchTerm, setSearchTerm] = useState('')
   const supabase = createClient()
 
   useEffect(() => {
     fetchReservations()
   }, [])
+
+  useEffect(() => {
+    filterReservations()
+  }, [reservations, searchTerm, statusFilter])
 
   const fetchReservations = async () => {
     try {
@@ -59,6 +82,26 @@ export default function ReserveringenPage() {
     }
   }
 
+  const filterReservations = () => {
+    let filtered = reservations
+
+    if (searchTerm) {
+      filtered = filtered.filter(reservation =>
+        reservation.customer_first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reservation.customer_last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reservation.customer_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (reservation.properties?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (reservation.properties?.unit_number || '').toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(reservation => reservation.status === statusFilter)
+    }
+
+    setFilteredReservations(filtered)
+  }
+
   const updateReservationStatus = async (id: string, status: string) => {
     try {
       const { error } = await supabase
@@ -76,9 +119,33 @@ export default function ReserveringenPage() {
     }
   }
 
-  const filteredReservations = reservations.filter(res => 
-    statusFilter === 'all' || res.status === statusFilter
-  )
+  const exportReservations = () => {
+    // Create CSV content
+    const headers = ['Datum', 'Naam', 'Email', 'Telefoon', 'Unit', 'Bedrag', 'Status']
+    const csvContent = [
+      headers.join(','),
+      ...filteredReservations.map(res => [
+        format(new Date(res.created_at), 'dd-MM-yyyy HH:mm'),
+        `"${res.customer_first_name} ${res.customer_last_name}"`,
+        res.customer_email,
+        res.customer_phone || '',
+        `"${res.properties?.name || ''} - ${res.properties?.unit_number || ''}"`,
+        res.total_property_price,
+        res.status
+      ].join(','))
+    ].join('\n')
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `reserveringen_${format(new Date(), 'dd-MM-yyyy')}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   const getStatusBadge = (status: string) => {
     const styles = {
@@ -110,29 +177,104 @@ export default function ReserveringenPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Reserveringen</h1>
-        <p className="text-gray-600">Beheer alle reserveringen voor bedrijfsunits en opslagboxen</p>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Reserveringen</h1>
+          <p className="text-gray-600">Beheer alle reserveringen voor bedrijfsunits en opslagboxen</p>
+        </div>
+        <div className="mt-4 sm:mt-0">
+          <button
+            onClick={exportReservations}
+            className="inline-flex items-center px-4 py-2 bg-yellow-500 text-white font-medium rounded-lg hover:bg-yellow-600 transition-colors"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Exporteren
+          </button>
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-4 items-center">
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700">Status:</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-lg border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
-          >
-            <option value="all">Alle statussen</option>
-            <option value="pending">In behandeling</option>
-            <option value="confirmed">Bevestigd</option>
-            <option value="cancelled">Geannuleerd</option>
-          </select>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center">
+            <Calendar className="h-8 w-8 text-blue-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Totaal</p>
+              <p className="text-2xl font-bold text-gray-900">{reservations.length}</p>
+            </div>
+          </div>
         </div>
         
-        <div className="ml-auto text-sm text-gray-500">
-          {filteredReservations.length} van {reservations.length} reserveringen
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center">
+            <CheckCircle className="h-8 w-8 text-green-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Bevestigd</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {reservations.filter(r => r.status === 'confirmed').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center">
+            <Clock className="h-8 w-8 text-yellow-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">In behandeling</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {reservations.filter(r => r.status === 'pending').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center">
+            <Euro className="h-8 w-8 text-purple-500" />
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Omzet</p>
+              <p className="text-2xl font-bold text-gray-900">
+                €{reservations.reduce((sum, r) => sum + r.reservation_fee_amount, 0).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="text"
+                placeholder="Zoek op naam, email, project of unit..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+            >
+              <option value="all">Alle statussen</option>
+              <option value="pending">In behandeling</option>
+              <option value="confirmed">Bevestigd</option>
+              <option value="cancelled">Geannuleerd</option>
+            </select>
+            
+            <div className="text-sm text-gray-500">
+              {filteredReservations.length} van {reservations.length}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -166,16 +308,38 @@ export default function ReserveringenPage() {
               {filteredReservations.map((reservation) => (
                 <tr key={reservation.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{reservation.customer_first_name} {reservation.customer_last_name}</div>
-                      <div className="text-sm text-gray-500">{reservation.customer_email}</div>
-                      <div className="text-sm text-gray-500">{reservation.customer_phone || 'Geen telefoon'}</div>
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-bold text-white">
+                          {reservation.customer_first_name.charAt(0)}
+                        </span>
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">{reservation.customer_first_name} {reservation.customer_last_name}</div>
+                        <div className="text-sm text-gray-500 flex items-center">
+                          <Mail className="h-3 w-3 mr-1" />
+                          {reservation.customer_email}
+                        </div>
+                        {reservation.customer_phone && (
+                          <div className="text-sm text-gray-500 flex items-center">
+                            <Phone className="h-3 w-3 mr-1" />
+                            {reservation.customer_phone}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{reservation.properties?.name || 'Onbekend'}</div>
-                      <div className="text-sm text-gray-500">Unit {reservation.properties?.unit_number || 'N/A'}</div>
+                    <div className="flex items-center">
+                      {reservation.properties?.type === 'opslagbox' ? (
+                        <Package className="h-5 w-5 text-green-500 mr-2" />
+                      ) : (
+                        <Building className="h-5 w-5 text-blue-500 mr-2" />
+                      )}
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{reservation.properties?.name || 'Onbekend'}</div>
+                        <div className="text-sm text-gray-500">Unit {reservation.properties?.unit_number || 'N/A'}</div>
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -190,29 +354,35 @@ export default function ReserveringenPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(reservation.status)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <button
-                      onClick={() => setSelectedReservation(reservation)}
-                      className="text-yellow-600 hover:text-yellow-900 transition-colors"
-                    >
-                      Details
-                    </button>
-                    {reservation.status === 'pending' && (
-                      <>
-                        <button
-                          onClick={() => updateReservationStatus(reservation.id, 'confirmed')}
-                          className="text-green-600 hover:text-green-900 transition-colors"
-                        >
-                          Bevestigen
-                        </button>
-                        <button
-                          onClick={() => updateReservationStatus(reservation.id, 'cancelled')}
-                          className="text-red-600 hover:text-red-900 transition-colors"
-                        >
-                          Annuleren
-                        </button>
-                      </>
-                    )}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setSelectedReservation(reservation)}
+                        className="text-yellow-600 hover:text-yellow-900 p-1 rounded-full hover:bg-yellow-50"
+                        title="Bekijken"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      
+                      {reservation.status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => updateReservationStatus(reservation.id, 'confirmed')}
+                            className="text-green-600 hover:text-green-900 p-1 rounded-full hover:bg-green-50"
+                            title="Bevestigen"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => updateReservationStatus(reservation.id, 'cancelled')}
+                            className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50"
+                            title="Annuleren"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

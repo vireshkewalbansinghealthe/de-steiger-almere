@@ -184,7 +184,11 @@ export default function OpslagboxDetailPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {unitDetails.map((unit) => (
-                <tr key={unit.unitNumber} className="hover:bg-gray-50">
+                <tr 
+                  key={unit.unitNumber} 
+                  onClick={() => setSelectedUnit(unit.unitNumber)}
+                  className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     Box {unit.unitNumber}
                   </td>
@@ -207,12 +211,9 @@ export default function OpslagboxDetailPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => setSelectedUnit(unit.unitNumber)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Details
-                    </button>
+                    <span className="text-slate-600">
+                      Klik voor details
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -226,90 +227,85 @@ export default function OpslagboxDetailPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="relative h-screen overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${project.images[0]})`
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
+      <div className="relative">
+        {/* Background extends behind header */}
+        <div className="absolute inset-0 -top-16 md:top-0 h-[calc(100vh+4rem)] md:h-screen">
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${project.images[0]})`
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
+        </div>
         
-        <div className="relative z-10 h-full flex items-center">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              {/* Left Column - Project Info */}
-              <div>
-                <Link 
-                  href="/opslagboxen"
-                  className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Terug naar overzicht
-                </Link>
-                
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                  {project.name}
-                </h1>
-                
-                <div className="flex items-center text-white/90 mb-8">
-                  <MapPin className="h-5 w-5 mr-2" />
-                  <span className="text-lg">{project.details?.location}</span>
+        {/* Content positioned below header */}
+        <div className="relative z-10 h-[calc(100vh-4rem)] md:h-screen flex items-center justify-center pt-16 md:pt-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center">
+            <div className="max-w-4xl mx-auto">
+
+              
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+                {project.name}
+              </h1>
+              
+              <p className="text-base sm:text-lg md:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-2">
+                {project.description}
+              </p>
+              
+              {/* Statistics Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 max-w-4xl mx-auto">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-6 text-center">
+                  <div className="text-white/80 text-xs md:text-sm mb-2">Totaal</div>
+                  <div className="text-xl md:text-3xl font-bold text-white">{project.garageBoxes}</div>
+                  <div className="text-white/60 text-xs mt-1">Opslagboxen</div>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-6 mb-8">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-                    <div className="text-white/80 text-sm mb-2">Totaal Opslagboxen</div>
-                    <div className="text-3xl font-bold text-white">{project.garageBoxes}</div>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-                    <div className="text-white/80 text-sm mb-2">Vanaf</div>
-                    <div className="text-2xl font-bold text-white">{project.startPrice?.split(' ')[0] || 'Op aanvraag'}</div>
-                  </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-6 text-center">
+                  <div className="text-white/80 text-xs md:text-sm mb-2">Vanaf</div>
+                  <div className="text-xl md:text-3xl font-bold text-white">{project.startPrice?.split(' ')[0] || 'Op aanvraag'}</div>
+                  <div className="text-white/60 text-xs mt-1">v.o.n. ex. BTW</div>
                 </div>
-                
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={() => scrollToSection('opslagboxen')}
-                    className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-slate-50 transition-colors duration-200"
-                  >
-                    Bekijk Beschikbaarheid
-                  </button>
-                  <button
-                    onClick={() => scrollToSection('contact')}
-                    className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
-                  >
-                    Neem Contact Op
-                  </button>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-6 text-center">
+                  <div className="text-white/80 text-xs md:text-sm mb-2">Locaties</div>
+                  <div className="text-xl md:text-3xl font-bold text-white">1</div>
+                  <div className="text-white/60 text-xs mt-1">Beschikbaar</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-6 text-center">
+                  <div className="text-white/80 text-xs md:text-sm mb-2">Status</div>
+                  <div className="text-xl md:text-3xl font-bold text-white">✓</div>
+                  <div className="text-white/60 text-xs mt-1">Beschikbaar</div>
                 </div>
               </div>
               
-              {/* Right Column - Key Stats */}
-              <div className="space-y-6">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-                  <h3 className="text-xl font-semibold text-white mb-4">Opslagbox Specificaties</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-white/80">Hoogte:</span>
-                      <span className="text-white font-semibold">{project.details?.specifications?.ceiling}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/80">Vloer:</span>
-                      <span className="text-white font-semibold">{project.details?.specifications?.floors}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/80">Toegang:</span>
-                      <span className="text-white font-semibold">{project.details?.specifications?.access}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/80">Beveiliging:</span>
-                      <span className="text-white font-semibold">{project.details?.specifications?.security}</span>
-                    </div>
-                  </div>
-                </div>
+              {/* Action Buttons - Hidden on Mobile */}
+              <div className="hidden md:flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => scrollToSection('opslagboxen')}
+                  className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-slate-50 transition-colors duration-200"
+                >
+                  Bekijk Beschikbaarheid
+                </button>
+                <Link
+                  href={`/reserveren/${project.slug}`}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-slate-900 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 inline-flex items-center"
+                >
+                  <Calendar className="h-5 w-5 mr-2" />
+                  Reserveer Nu
+                </Link>
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Scroll Indicator - Desktop Only */}
+        <div className="hidden md:block absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <button 
+            onClick={() => scrollToSection('opslagboxen')}
+            className="flex flex-col items-center text-white/70 hover:text-white transition-colors duration-300"
+          >
+            <ArrowRight className="h-6 w-6 mb-2 rotate-90" />
+            <span className="text-sm">Scroll Down</span>
+          </button>
         </div>
       </div>
 
@@ -595,24 +591,26 @@ export default function OpslagboxDetailPage() {
 
       {/* Unit Details Modal */}
       {selectedUnit && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto animate-zoom-in">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">
-                  Opslagbox {selectedUnit} - {project.name}
-                </h3>
-                <button
-                  onClick={() => {
-                    setSelectedUnit(null);
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-0 sm:p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-none sm:rounded-lg max-w-6xl w-full h-full sm:h-auto max-h-full sm:max-h-[90vh] flex flex-col animate-zoom-in overflow-hidden">
+            {/* Fixed Header with Close Button */}
+            <div className="flex-shrink-0 flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-white">
+              <h3 className="text-lg sm:text-2xl font-bold text-gray-900">
+                Opslagbox {selectedUnit} - {project.name}
+              </h3>
+              <button
+                onClick={() => {
+                  setSelectedUnit(null);
                     setModalTab('overview'); // Reset tab when closing
                   }}
                   className="text-gray-400 hover:text-gray-600 text-2xl"
                 >
                   ×
                 </button>
-              </div>
-
+            </div>
+            
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               {/* Tabs */}
               <div className="border-b border-gray-200 mb-6">
                 <nav className="flex space-x-8">
@@ -739,15 +737,12 @@ export default function OpslagboxDetailPage() {
                           <div className="pt-4 border-t border-gray-200">
                             {details.status === 'beschikbaar' ? (
                               <div className="space-y-3">
-                                <button
-                                  onClick={() => {
-                                    // TODO: Implement reservation flow
-                                    alert('Reserveringsflow komt binnenkort beschikbaar!');
-                                  }}
-                                  className="w-full bg-green-600 text-white px-6 py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors text-lg"
+                                <Link
+                                  href={`/reserveren/${project.slug}?unit=${selectedUnit}`}
+                                  className="block w-full bg-green-600 text-white px-6 py-4 rounded-lg font-semibold hover:bg-green-700 transition-colors text-lg text-center"
                                 >
                                   Reserveer Nu - €1,500
-                                </button>
+                                </Link>
                                 <button
                                   onClick={() => setModalTab('contact')}
                                   className="w-full bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors"
@@ -974,6 +969,25 @@ export default function OpslagboxDetailPage() {
                   </div>
                 );
               })()}
+            </div>
+            
+            {/* Fixed Footer with Action Buttons */}
+            <div className="flex-shrink-0 border-t border-gray-200 bg-white p-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <Link
+                  href={`/reserveren/${project.slug}?unit=${selectedUnit}`}
+                  className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold text-center hover:bg-green-700 transition-colors duration-200 inline-flex items-center justify-center"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Reserveer Opslagbox
+                </Link>
+                <button
+                  onClick={() => setModalTab('contact')}
+                  className="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Meer informatie
+                </button>
+              </div>
             </div>
           </div>
         </div>

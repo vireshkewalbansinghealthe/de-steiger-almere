@@ -45,19 +45,28 @@ const getBedrijfsunitImages = (typeIndex: number) => {
 
 // Images specifically for opslagboxen (Image3,6,7,22-29 + opslagbox images)
 const opslagboxImages = [
-  '/images/opslagbox1.png',
-  '/images/opslagbox2.png',
-  '/images/Image3.png',   // Added back for opslagboxen
-  '/images/Image6.png',   // Added back for opslagboxen  
-  '/images/Image7.png',   // Added back for opslagboxen
-  '/images/Image22.png',
-  '/images/Image23.png',
-  '/images/Image24.png',
-  '/images/Image25.png',
-  '/images/Image26.png',
-  '/images/Image27.png',
-  '/images/Image28.png',
-  '/images/Image29.png'
+  '/images/up/opslagbox3.png',
+  '/images/up/opslagbox4.png',
+  '/images/up/Image1.png',
+  '/images/up/Image2.png',
+  '/images/up/Image4.png',
+  '/images/up/Image5.png',
+  '/images/up/Image8.png',
+  '/images/up/Image9.png',
+  '/images/up/Image10.png',
+  '/images/up/Image11.png',
+  '/images/up/Image12.png',
+  '/images/up/Image13.png',
+  '/images/up/Image14.png',
+  '/images/up/Image15.png',
+  '/images/up/Image16.png',
+  '/images/up/Image17.png',
+  '/images/up/Image18.png',
+  '/images/up/Image19.png',
+  '/images/up/Image20.png',
+  '/images/up/Image21.png',
+  '/images/up/beide1.png',
+  '/images/up/beide2.png'
 ];
 
 // Function to distribute opslagbox images across 16 types - GIVE EACH TYPE 6+ IMAGES!

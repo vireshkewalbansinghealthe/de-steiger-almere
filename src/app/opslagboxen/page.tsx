@@ -250,53 +250,57 @@ export default function OpslagboxenPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="relative h-screen overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center transform scale-105"
-          style={{
-            backgroundImage: 'url(/images/Image23.png)'
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
+      <div className="relative">
+        {/* Background extends behind header */}
+        <div className="absolute inset-0 -top-16 md:top-0 h-[calc(100vh+4rem)] md:h-screen">
+          <div 
+            className="absolute inset-0 bg-cover bg-center transform scale-105"
+            style={{
+              backgroundImage: 'url(/images/Image23.png)'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
+        </div>
         
-        <div className="relative z-10 h-full flex items-center justify-center">
+        {/* Content positioned below header */}
+        <div className="relative z-10 h-[calc(100vh-4rem)] md:h-screen flex items-center justify-center pt-16 md:pt-0">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
               Opslagboxen
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-2">
               2 types, {totalBoxes} opslagboxen — De Steiger 74/77, Almere.
             </p>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8 md:mb-12">
               <div className="text-center">
-                <div className="bg-white/20 rounded-lg p-4 mb-2">
-                  <Archive className="h-8 w-8 mx-auto text-white" />
+                <div className="bg-white/20 rounded-lg p-3 sm:p-4 mb-2">
+                  <Archive className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-white" />
                 </div>
-                <div className="text-white/80">Beschikbare Boxes</div>
-                <div className="text-2xl font-bold text-white">{totalBoxes}+</div>
+                <div className="text-white/80 text-xs sm:text-base">Beschikbare Boxes</div>
+                <div className="text-lg sm:text-2xl font-bold text-white">{totalBoxes}+</div>
               </div>
               <div className="text-center">
-                <div className="bg-white/20 rounded-lg p-4 mb-2">
-                  <MapPin className="h-8 w-8 mx-auto text-white" />
+                <div className="bg-white/20 rounded-lg p-3 sm:p-4 mb-2">
+                  <MapPin className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-white" />
                 </div>
-                <div className="text-white/80">Locaties</div>
-                <div className="text-2xl font-bold text-white">1</div>
+                <div className="text-white/80 text-xs sm:text-base">Locaties</div>
+                <div className="text-lg sm:text-2xl font-bold text-white">1</div>
               </div>
               <div className="text-center">
-                <div className="bg-white/20 rounded-lg p-4 mb-2">
-                  <Shield className="h-8 w-8 mx-auto text-white" />
+                <div className="bg-white/20 rounded-lg p-3 sm:p-4 mb-2">
+                  <Shield className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-white" />
                 </div>
-                <div className="text-white/80">Beveiliging</div>
-                <div className="text-2xl font-bold text-white">24/7</div>
+                <div className="text-white/80 text-xs sm:text-base">Beveiliging</div>
+                <div className="text-lg sm:text-2xl font-bold text-white">24/7</div>
               </div>
               <div className="text-center">
-                <div className="bg-white/20 rounded-lg p-4 mb-2">
-                  <Car className="h-8 w-8 mx-auto text-white" />
+                <div className="bg-white/20 rounded-lg p-3 sm:p-4 mb-2">
+                  <Car className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-white" />
                 </div>
-                <div className="text-white/80 text-sm">Vanaf</div>
-                <div className="text-xl font-bold text-white">€ 31,240</div>
+                <div className="text-white/80 text-xs sm:text-base">Vanaf</div>
+                <div className="text-base sm:text-xl font-bold text-white">€ 31,240</div>
                 <div className="text-white/60 text-xs mt-1">v.o.n. ex. BTW</div>
               </div>
             </div>
@@ -304,13 +308,15 @@ export default function OpslagboxenPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="#opslagboxen"
-                className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-slate-50 transition-colors duration-200"
+                className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold text-lg md:hover:bg-slate-50 transition-colors duration-200 touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 Bekijk Opslagboxen
               </a>
               <a
                 href="#voordelen"
-                className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
+                className="bg-white/20 md:hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 Waarom De Steiger?
               </a>
@@ -399,8 +405,8 @@ export default function OpslagboxenPage() {
 
           {/* Content Area with Sidebar */}
           <div className="flex gap-6">
-              {/* Filter Sidebar - Always visible */}
-              <div className="w-80 bg-white rounded-lg shadow-sm border p-6 space-y-6 shrink-0">
+              {/* Filter Sidebar - Hidden on mobile */}
+              <div className="hidden lg:block w-80 bg-white rounded-lg shadow-sm border p-6 space-y-6 shrink-0">
                 <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
 
                 {/* Status Filter */}
@@ -472,7 +478,7 @@ export default function OpslagboxenPage() {
                         step="1"
                         value={areaMin}
                         onChange={(e) => setAreaMin(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>14m²</span>
@@ -488,7 +494,7 @@ export default function OpslagboxenPage() {
                         step="1"
                         value={areaMax}
                         onChange={(e) => setAreaMax(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>14m²</span>
@@ -513,7 +519,7 @@ export default function OpslagboxenPage() {
                         step="5"
                         value={priceMin}
                         onChange={(e) => setPriceMin(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>€30k</span>
@@ -529,7 +535,7 @@ export default function OpslagboxenPage() {
                         step="5"
                         value={priceMax}
                         onChange={(e) => setPriceMax(parseInt(e.target.value))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>€30k</span>
@@ -594,7 +600,7 @@ export default function OpslagboxenPage() {
 
                 {/* Opslagboxen Grid/Table */}
                 {viewMode === 'grid' ? (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {filteredProjects.map((project) => (
                       <ProjectCard
                         key={project.id}

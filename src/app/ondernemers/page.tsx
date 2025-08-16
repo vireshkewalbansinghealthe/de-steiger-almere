@@ -8,9 +8,9 @@ export default function OndernemersPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const heroImages = [
-    '/images/Image6.png',
-    '/images/Image7.png',
-    '/images/Image8.png'
+    '/images/up/Image8.png',
+    '/images/up/Image9.png',
+    '/images/up/Image10.png'
   ];
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function OndernemersPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="relative h-screen overflow-hidden">
+      <div className="relative h-screen overflow-hidden pt-16 md:pt-0">
         {heroImages.map((image, index) => (
           <div
             key={index}
@@ -42,12 +42,13 @@ export default function OndernemersPage() {
         ))}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
         
-        <div className="relative z-10 h-full flex items-center">
+        <div className="relative z-10 h-full flex items-center justify-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="text-center">
+              {/* Breadcrumb - Hidden on Mobile */}
               <Link 
                 href="/"
-                className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors"
+                className="hidden md:inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Terug naar home
@@ -61,22 +62,24 @@ export default function OndernemersPage() {
                 Vind de perfecte bedrijfsruimte voor uw onderneming in het hart van Almere
               </p>
               
-              <div className="grid md:grid-cols-3 gap-8 mt-12 max-w-4xl mx-auto">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center">
-                  <div className="text-3xl font-bold text-yellow-400 mb-2">79</div>
-                  <div className="text-white/80">Bedrijfsunits</div>
+              {/* Statistics Grid - Mobile Friendly */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 mt-8 sm:mt-12 max-w-4xl mx-auto">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">79</div>
+                  <div className="text-white/80 text-sm sm:text-base">Bedrijfsunits</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center">
-                  <div className="text-3xl font-bold text-yellow-400 mb-2">247</div>
-                  <div className="text-white/80">Opslagboxen</div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">247</div>
+                  <div className="text-white/80 text-sm sm:text-base">Opslagboxen</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center">
-                  <div className="text-3xl font-bold text-yellow-400 mb-2">15 min</div>
-                  <div className="text-white/80">Van Amsterdam</div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">15 min</div>
+                  <div className="text-white/80 text-sm sm:text-base">Van Amsterdam</div>
                 </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
+              {/* Action Buttons - Hidden on Mobile */}
+              <div className="hidden md:flex flex-col sm:flex-row gap-4 justify-center mt-10">
                 <a
                   href="#ruimtes"
                   className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-slate-50 transition-colors duration-200"
@@ -125,7 +128,7 @@ export default function OndernemersPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div>
               <img 
-                src="/images/Image1.png" 
+                src="/images/up/Image1.png" 
                 alt="Bedrijfsunits voor ondernemers" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -197,7 +200,7 @@ export default function OndernemersPage() {
             </div>
             <div className="order-1 lg:order-2">
               <img 
-                src="/images/Image23.png" 
+                src="/images/up/opslagbox3.png" 
                 alt="Opslagboxen voor ondernemers" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -221,7 +224,7 @@ export default function OndernemersPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="relative">
               <img 
-                src="/images/Image4.png" 
+                src="/images/up/Image4.png" 
                 alt="Strategische locatie Almere" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -276,7 +279,7 @@ export default function OndernemersPage() {
             </div>
             <div className="order-1 lg:order-2 relative">
               <img 
-                src="/images/Image5.png" 
+                src="/images/up/Image5.png" 
                 alt="Moderne faciliteiten" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -289,7 +292,7 @@ export default function OndernemersPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
               <img 
-                src="/images/Image3.png" 
+                src="/images/up/Image2.png" 
                 alt="Flexibele bedrijfsruimtes" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />

@@ -280,14 +280,24 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
             </div>
           )}
 
-          {/* Newsletter Signup */}
+          {/* Reservation CTA */}
           <div className="bg-slate-50 p-6 rounded-lg">
             <h3 className="text-xl font-bold mb-4 text-center">
               Interesse in {project.name}?
             </h3>
             <p className="text-center text-gray-600 mb-6">
-              Schrijf je in voor de nieuwsbrief en blijf als eerste op de hoogte van ontwikkelingen!
+              Start je reservering nu of schrijf je in voor updates!
             </p>
+            
+            {/* Reservation Button */}
+            <div className="text-center mb-4">
+              <a
+                href={`/reserveren/${project.slug}`}
+                className="inline-flex items-center justify-center px-8 py-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors text-lg"
+              >
+                Reserveer Nu
+              </a>
+            </div>
 
             {isSubmitted ? (
               <div className="text-center">

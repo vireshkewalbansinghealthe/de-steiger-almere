@@ -78,7 +78,7 @@ export default function AdminLoginPage() {
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('/images/Image1.png')`
+            backgroundImage: `url('/images/up/Image1.png')`
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/50 to-slate-900/70" />

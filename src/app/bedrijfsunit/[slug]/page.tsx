@@ -115,7 +115,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
     }
 
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 max-w-6xl mx-auto">
+      <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2 sm:gap-3 max-w-6xl mx-auto">
         {unitDetails.map((unit) => {
           const isAvailable = unit.status === 'beschikbaar';
           const isReserved = unit.status === 'gereserveerd';
@@ -124,7 +124,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             <div
               key={unit.unitNumber}
               onClick={() => setSelectedUnit(unit.unitNumber)}
-              className={`h-24 rounded-lg border-2 flex flex-col items-center justify-center text-sm font-semibold cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-md ${
+              className={`h-16 sm:h-20 md:h-24 rounded border-2 flex flex-col items-center justify-center text-xs sm:text-sm font-semibold cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-md ${
                 isAvailable 
                   ? 'bg-green-100 border-green-400 text-green-800 hover:bg-green-200' 
                   : isReserved
@@ -132,15 +132,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   : 'bg-red-100 border-red-400 text-red-800 hover:bg-red-200'
               }`}
             >
-              <div className="font-bold">Unit {unit.unitNumber}</div>
-              <div className="text-xs mt-1">
-                {isAvailable ? 'Vrij' : isReserved ? 'Gereserveerd' : 'Verkocht'}
+              <div className="font-bold text-xs sm:text-sm">{unit.unitNumber}</div>
+              <div className="text-[10px] sm:text-xs mt-0.5 sm:mt-1 leading-tight">
+                {isAvailable ? 'Vrij' : isReserved ? 'Res.' : 'Verkocht'}
               </div>
-              {isAvailable && (
-                <div className="text-xs font-semibold mt-1 text-green-700">
-                  {unit.price}
-                </div>
-              )}
             </div>
           );
         })}
@@ -171,7 +166,11 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
           </thead>
           <tbody>
             {unitDetails.map((unit, index) => (
-              <tr key={unit.unitNumber} className={`border-b border-gray-100 hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+              <tr 
+                key={unit.unitNumber} 
+                onClick={() => setSelectedUnit(unit.unitNumber)}
+                className={`border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-slate-50`}
+              >
                 <td className="py-3 px-4 font-medium text-gray-900">#{unit.unitNumber}</td>
                 <td className="py-3 px-4 text-gray-700">{unit.netArea}m²</td>
                 <td className="py-3 px-4 text-gray-700">{unit.grossArea}m²</td>
@@ -195,12 +194,9 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   </span>
                 </td>
                 <td className="py-3 px-4">
-                  <button
-                    onClick={() => setSelectedUnit(unit.unitNumber)}
-                    className="text-slate-800 hover:text-slate-600 font-medium text-sm"
-                  >
-                    Details
-                  </button>
+                  <span className="text-slate-600 font-medium text-sm">
+                    Klik voor details
+                  </span>
                 </td>
               </tr>
             ))}
@@ -240,73 +236,40 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Full-Screen Hero Section */}
-      <div className="relative h-screen overflow-hidden">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center transform scale-105"
-          style={{
-            backgroundImage: project.images && project.images.length > 0 
-              ? `url(${project.images[0]})` 
-              : 'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&h=1080&fit=crop&auto=format)'
-          }}
-        />
+      {/* Hero Section */}
+      <div className="relative">
+        {/* Background extends behind header */}
+        <div className="absolute inset-0 -top-16 md:top-0 h-[calc(100vh+4rem)] md:h-screen">
+          <div 
+            className="absolute inset-0 bg-cover bg-center transform scale-105"
+            style={{
+              backgroundImage: project.images && project.images.length > 0 
+                ? `url(${project.images[0]})` 
+                : 'url(https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&h=1080&fit=crop&auto=format)'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
+        </div>
         
-        {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
-        <div className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-to-tr from-black/70 via-black/30 to-transparent" />
-        
-        {/* Hero Content */}
-        <div className="relative z-10 h-full flex items-end justify-start">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
-            {/* Breadcrumb */}
-            <div className="mb-8">
-              <Link 
-                href="/" 
-                className="inline-flex items-center text-white/80 hover:text-white font-medium transition-colors duration-200"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Terug naar overzicht
-              </Link>
-            </div>
+        {/* Content positioned below header */}
+        <div className="relative z-10 h-[calc(100vh-4rem)] md:h-screen flex items-center justify-center pt-16 md:pt-0">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+
 
             <div className="max-w-4xl">
-              <div className="mb-6">
-                <span className="inline-block bg-white/20 text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
-                  {project.status}
-                </span>
-                {project.percentageSold && (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-white/80">Verkochte units</span>
-                      <span className="font-semibold text-white">{project.percentageSold}%</span>
-                    </div>
-                    <div className="w-full bg-white/20 rounded-full h-2">
-                      <div 
-                        className="h-2 bg-white rounded-full transition-all duration-300" 
-                        style={{ width: `${project.percentageSold}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-              </div>
+
               
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
                 {project.name}
               </h1>
               
-              <div className="flex items-center text-xl mb-8 text-white">
-                <MapPin className="h-6 w-6 mr-3" />
-                <span>{project.location}</span>
-              </div>
-              
-              <p className="text-xl md:text-2xl text-white/90 mb-12 leading-relaxed max-w-3xl">
+              <p className="text-base sm:text-lg md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-12 leading-relaxed max-w-3xl px-2">
                 {project.description}
               </p>
               
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
                 <div className="text-center">
                   <div className="bg-white/20 rounded-lg p-4 mb-2">
                     <Home className="h-8 w-8 mx-auto text-white" />
@@ -337,8 +300,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 </div>
               </div>
               
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
+
+              
+              {/* Desktop Action Buttons */}
+              <div className="hidden md:flex flex-col sm:flex-row gap-4">
                 <button 
                   onClick={() => scrollToSection('plattegrond')}
                   className="bg-white/20 hover:bg-white/30 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200"
@@ -363,19 +328,37 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 >
                   Voor beleggers
                 </button>
+                <Link
+                  href={`/reserveren/${project.slug}`}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-slate-900 px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-flex items-center"
+                >
+                  <Calendar className="h-5 w-5 mr-2" />
+                  Reserveer Nu
+                </Link>
+              </div>
+              
+              {/* Mobile CTA Buttons */}
+              <div className="md:hidden flex flex-col gap-3">
                 <button 
-                  onClick={() => scrollToSection('inschrijven')}
+                  onClick={() => scrollToSection('plattegrond')}
                   className="bg-white text-slate-800 px-6 py-3 rounded-lg font-semibold hover:bg-slate-50 transition-colors duration-200"
                 >
-                  Inschrijven
+                  Bekijk Units
                 </button>
+                <Link
+                  href={`/reserveren/${project.slug}`}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-slate-900 px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-flex items-center justify-center"
+                >
+                  <Calendar className="h-5 w-5 mr-2" />
+                  Reserveer Nu
+                </Link>
               </div>
             </div>
           </div>
         </div>
         
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        {/* Scroll Indicator - Desktop Only */}
+        <div className="hidden md:block absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
           <button 
             onClick={() => scrollToSection('plattegrond')}
             className="flex flex-col items-center text-white/70 hover:text-white transition-colors duration-300"
@@ -400,64 +383,37 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             </p>
           </div>
 
-          <div className="bg-gray-50 rounded-2xl p-8">
-            {/* View Controls and Filters */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
-              {/* View Toggle */}
-              <div className="flex items-center gap-4">
-                <div className="flex bg-white rounded-lg p-1 shadow-sm">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === 'grid'
-                        ? 'bg-slate-800 text-white'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <Grid className="h-4 w-4 mr-2" />
-                    Grid
-                  </button>
-                  <button
-                    onClick={() => setViewMode('table')}
-                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === 'table'
-                        ? 'bg-slate-800 text-white'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <List className="h-4 w-4 mr-2" />
-                    Tabel
-                  </button>
-                </div>
-
-                {/* Status Legend */}
-                <div className="flex gap-4">
-                  <div className="flex items-center">
-                    <div className="w-4 h-3 bg-green-100 border-2 border-green-400 rounded mr-2"></div>
-                    <span className="text-xs text-gray-600">Vrij</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-3 bg-yellow-100 border-2 border-yellow-400 rounded mr-2"></div>
-                    <span className="text-xs text-gray-600">Gereserveerd</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-3 bg-red-100 border-2 border-red-400 rounded mr-2"></div>
-                    <span className="text-xs text-gray-600">Verkocht</span>
-                  </div>
-                </div>
+          <div className="bg-gray-50 rounded-2xl p-4 sm:p-8">
+            {/* View Controls - Mobile Optimized */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+              <div className="flex bg-white rounded-lg p-1 shadow-sm">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`flex items-center px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                    viewMode === 'grid'
+                      ? 'bg-slate-800 text-white'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <Grid className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Grid
+                </button>
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`flex items-center px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                    viewMode === 'table'
+                      ? 'bg-slate-800 text-white'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <List className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Tabel
+                </button>
               </div>
-
-              <Link
-                href="#inschrijven"
-                className="inline-flex items-center bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200"
-              >
-                <Home className="h-5 w-5 mr-2" />
-                Reserveer nu
-              </Link>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-4 mb-8 p-4 bg-white rounded-lg shadow-sm">
+            {/* Filters - Mobile Optimized */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 p-3 sm:p-4 bg-white rounded-lg shadow-sm">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-700">Filters:</span>
@@ -504,14 +460,45 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
               </div>
             </div>
             
-            <div className="text-center mb-6">
-              <p className="text-gray-600">
-                {viewMode === 'grid' ? 'Klik op een unit voor meer details' : 'Klik op "Details" voor meer informatie'}
-              </p>
+            {/* Grid/Table and Reserve Button Side by Side */}
+            <div className="flex flex-col lg:flex-row gap-6 mb-6">
+              {/* Grid/Table View */}
+              <div className="flex-1">
+                <div className="text-center mb-4">
+                  <p className="text-sm text-gray-600">
+                    {viewMode === 'grid' ? 'Klik op een unit voor meer details' : 'Klik op "Details" voor meer informatie'}
+                  </p>
+                </div>
+                {viewMode === 'grid' ? renderGridView() : renderTableView()}
+              </div>
+              
+              {/* Reserve Button - Same Height Container */}
+              <div className="lg:w-48 flex lg:flex-col justify-center items-center lg:items-stretch">
+                <Link
+                  href={`/reserveren/${project.slug}`}
+                  className="inline-flex items-center justify-center bg-slate-800 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200 w-full lg:h-32 text-sm sm:text-base"
+                >
+                  <Home className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  Reserveer nu
+                </Link>
+              </div>
             </div>
-            
-            {/* Render Grid or Table View */}
-            {viewMode === 'grid' ? renderGridView() : renderTableView()}
+
+            {/* Legend Below */}
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 py-4 bg-white rounded-lg shadow-sm">
+              <div className="flex items-center">
+                <div className="w-3 h-3 sm:w-4 sm:h-3 bg-green-100 border-2 border-green-400 rounded mr-2"></div>
+                <span className="text-xs sm:text-sm text-gray-600">Beschikbaar</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 sm:w-4 sm:h-3 bg-yellow-100 border-2 border-yellow-400 rounded mr-2"></div>
+                <span className="text-xs sm:text-sm text-gray-600">Gereserveerd</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 sm:w-4 sm:h-3 bg-red-100 border-2 border-red-400 rounded mr-2"></div>
+                <span className="text-xs sm:text-sm text-gray-600">Verkocht</span>
+              </div>
+            </div>
           </div>
 
           {project.details?.specifications && (
@@ -558,7 +545,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       </section>
 
       {/* Location Section */}
-      <section id="locatie" className="py-20 bg-gray-50">
+      <section id="locatie" className="hidden md:block py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -637,7 +624,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       </section>
 
       {/* Specifications Section */}
-      <section id="specificaties" className="py-20 bg-white">
+      <section id="specificaties" className="hidden md:block py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -698,7 +685,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
       {/* Investor Section */}
       {project.details?.investorInfo && (
-        <section id="beleggers" className="py-20 bg-slate-800 text-white">
+        <section id="beleggers" className="hidden md:block py-20 bg-slate-800 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -868,16 +855,23 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
       {/* Unit Details Modal */}
       {selectedUnit && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-xl max-w-5xl w-full p-4 relative animate-zoom-in">
-            <button
-              onClick={() => setSelectedUnit(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-0 sm:p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-none sm:rounded-xl max-w-5xl w-full h-full sm:h-auto max-h-full sm:max-h-[90vh] flex flex-col relative animate-zoom-in overflow-hidden">
+            {/* Fixed Header with Close Button */}
+            <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+              <h3 className="text-lg font-semibold text-gray-900">Unit {selectedUnit} Details</h3>
+              <button
+                onClick={() => setSelectedUnit(null)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4">
             
             {(() => {
               const unitDetails = getUnitDetails(selectedUnit);
@@ -1085,41 +1079,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                           </div>
                         </div>
                         
-                        {/* Action Buttons */}
-                        {unitDetails.status === 'beschikbaar' ? (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                setSelectedUnit(null);
-                                scrollToSection('inschrijven');
-                              }}
-                              className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg font-semibold text-sm hover:bg-green-700 transition-colors duration-200"
-                            >
-                              Reserveer Nu - €1,500
-                            </button>
-                            <button
-                              onClick={() => setModalTab('contact')}
-                              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 text-sm"
-                            >
-                              Meer informatie
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => setModalTab('contact')}
-                              className="flex-1 bg-slate-800 text-white py-2 px-4 rounded-lg font-semibold text-sm hover:bg-slate-900 transition-colors duration-200"
-                            >
-                              Meer informatie
-                            </button>
-                            <button
-                              onClick={() => setSelectedUnit(null)}
-                              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 text-sm"
-                            >
-                              Sluiten
-                            </button>
-                          </div>
-                        )}
+
                       </div>
                     </div>
                   )}
@@ -1263,6 +1223,48 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 </>
               );
             })()}
+            </div>
+            
+            {/* Fixed Footer with Action Buttons */}
+            <div className="flex-shrink-0 border-t border-gray-200 bg-white p-4">
+              {(() => {
+                const unitDetails = getUnitDetails(selectedUnit);
+                if (!unitDetails) return null;
+                
+                return unitDetails.status === 'beschikbaar' ? (
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <Link
+                      href={`/reserveren/${project.slug}?unit=${selectedUnit}`}
+                      className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold text-center hover:bg-green-700 transition-colors duration-200 inline-flex items-center justify-center"
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Reserveer Nu - €1,500
+                    </Link>
+                    <button
+                      onClick={() => setModalTab('contact')}
+                      className="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      Meer informatie
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button
+                      onClick={() => setModalTab('contact')}
+                      className="flex-1 bg-slate-800 text-white py-3 px-4 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200"
+                    >
+                      Meer informatie
+                    </button>
+                    <button
+                      onClick={() => setSelectedUnit(null)}
+                      className="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      Sluiten
+                    </button>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         </div>
       )}
