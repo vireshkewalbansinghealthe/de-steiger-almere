@@ -281,7 +281,7 @@ export const projects: Project[] = [
     description: 'Bedrijfsunit Type 4 van 325.8m² netto op De Steiger 74/77 in Almere. Combinatie van industrie- en kantoorfunctie.',
     units: 1,
     startPrice: '€ 713,200 v.o.n. ex. BTW',
-    features: ['325.8m² netto', '356.59999999999997m² bruto', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
+    features: ['325.8m² netto', '356.6m² bruto', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(3),
     slug: 'bedrijfsunit-type-4',
     details: {
@@ -290,7 +290,7 @@ export const projects: Project[] = [
         { 
           unitNumber: 12, 
           netArea: 325.8, 
-          grossArea: 356.59999999999997, 
+          grossArea: 356.6, 
           price: '€ 713,200', 
           status: 'beschikbaar',
           industrieNetto: 140.6,

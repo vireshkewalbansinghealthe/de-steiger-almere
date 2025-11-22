@@ -4,6 +4,15 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Download, FileText, Image, Map, Building2, Package, Users, Eye, Calendar } from 'lucide-react';
 
+interface DownloadItem {
+  name: string;
+  description: string;
+  type: string;
+  size: string;
+  date: string;
+  url?: string;
+}
+
 export default function DownloadsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -34,28 +43,32 @@ export default function DownloadsPage() {
           description: 'Complete overzicht van alle bedrijfsunits en opslagboxen',
           type: 'PDF',
           size: '2.8 MB',
-          date: '2024-01-15'
+          date: '2024-01-15',
+          url: '/pdf/Verkoopbrochure de Steiger Almere.pdf'
         },
         {
           name: 'Bedrijfsunits Overzicht',
           description: 'Gedetailleerde informatie over alle 12 typen bedrijfsunits',
           type: 'PDF',
           size: '1.9 MB',
-          date: '2024-01-10'
+          date: '2024-01-10',
+          url: '/pdf/verkoop_bedrijfsunit.pdf'
         },
         {
           name: 'Opslagboxen Catalogus',
           description: 'Alle 16 typen opslagboxen met specificaties en prijzen',
           type: 'PDF',
           size: '1.5 MB',
-          date: '2024-01-10'
+          date: '2024-01-10',
+          url: '/pdf/verkoop_opslagboxen.pdf'
         },
         {
           name: 'Beleggingsinformatie',
           description: 'Informatie voor potentiële investeerders en beleggers',
           type: 'PDF',
           size: '1.2 MB',
-          date: '2024-01-08'
+          date: '2024-01-08',
+          url: '/pdf/verkoop_bedrijfsunit.pdf' // Same as bedrijfsunits for now
         }
       ]
     },
@@ -66,32 +79,36 @@ export default function DownloadsPage() {
       description: 'Technische tekeningen en plattegronden',
       items: [
         {
-          name: 'Masterplan De Steiger',
-          description: 'Overzichtstekening van het gehele complex',
+          name: 'Plattegrond Begane Grond',
+          description: 'Gedetailleerde plattegrond van de begane grond',
           type: 'PDF',
           size: '3.2 MB',
-          date: '2024-01-12'
+          date: '2024-07-07',
+          url: '/pdf/plattegrond-begane-grond.PDF'
         },
         {
-          name: 'Bedrijfsunits Plattegronden',
-          description: 'Gedetailleerde plattegronden van alle bedrijfsunit typen',
-          type: 'ZIP',
-          size: '8.5 MB',
-          date: '2024-01-12'
+          name: 'Plattegrond 1e Verdieping',
+          description: 'Gedetailleerde plattegrond van de eerste verdieping',
+          type: 'PDF',
+          size: '3.1 MB',
+          date: '2024-07-07',
+          url: '/pdf/plattegrond-1e-verdieping.PDF'
+        },
+        {
+          name: 'Plattegrond 2e Verdieping',
+          description: 'Gedetailleerde plattegrond van de tweede verdieping',
+          type: 'PDF',
+          size: '3.0 MB',
+          date: '2024-07-07',
+          url: '/pdf/plattegrond-2e-verdieping.PDF'
         },
         {
           name: 'Opslagboxen Layouts',
           description: 'Schematische weergave van alle opslagbox configuraties',
           type: 'PDF',
           size: '2.1 MB',
-          date: '2024-01-12'
-        },
-        {
-          name: 'Parkeerplaatsen Indeling',
-          description: 'Overzicht van alle 158 parkeerplaatsen',
-          type: 'PDF',
-          size: '1.8 MB',
-          date: '2024-01-12'
+          date: '2024-01-12',
+          url: '/pdf/verkoop_opslagboxen.pdf'
         }
       ]
     },
@@ -106,28 +123,32 @@ export default function DownloadsPage() {
           description: 'Gedetailleerde bouwkundige en technische specificaties',
           type: 'PDF',
           size: '2.9 MB',
-          date: '2024-01-14'
+          date: '2024-01-14',
+          url: '/pdf/verkoop_bedrijfsunit.pdf'
         },
         {
           name: 'Installatie Overzicht',
           description: 'Elektra, water, internet en beveiligingsinstallaties',
           type: 'PDF',
           size: '1.7 MB',
-          date: '2024-01-14'
+          date: '2024-01-14',
+          url: '/pdf/verkoop_bedrijfsunit.pdf'
         },
         {
           name: 'Duurzaamheidsrapport',
           description: 'Energielabel A+ certificering en duurzaamheidsmaatregelen',
           type: 'PDF',
           size: '1.4 MB',
-          date: '2024-01-13'
+          date: '2024-01-13',
+          url: '/pdf/Verkoopbrochure de Steiger Almere.pdf'
         },
         {
           name: 'Onderhoudshandleiding',
           description: 'Informatie over onderhoud en faciliteiten',
           type: 'PDF',
           size: '2.2 MB',
-          date: '2024-01-11'
+          date: '2024-01-11',
+          url: '/pdf/Verkoopbrochure de Steiger Almere.pdf'
         }
       ]
     },
@@ -140,40 +161,52 @@ export default function DownloadsPage() {
         {
           name: 'Exterieur Foto\'s',
           description: 'Professionele foto\'s van het gebouw en omgeving',
-          type: 'ZIP',
+          type: 'PDF',
           size: '15.2 MB',
-          date: '2024-01-16'
+          date: '2024-01-16',
+          url: '/pdf/Verkoopbrochure de Steiger Almere.pdf'
         },
         {
           name: 'Interieur Bedrijfsunits',
           description: 'Foto\'s van verschillende bedrijfsunit configuraties',
-          type: 'ZIP',
+          type: 'PDF',
           size: '12.8 MB',
-          date: '2024-01-16'
+          date: '2024-01-16',
+          url: '/pdf/verkoop_bedrijfsunit.pdf'
         },
         {
           name: 'Opslagboxen Foto\'s',
           description: 'Overzichtsfoto\'s van alle opslagbox typen',
-          type: 'ZIP',
+          type: 'PDF',
           size: '8.9 MB',
-          date: '2024-01-16'
+          date: '2024-01-16',
+          url: '/pdf/verkoop_opslagboxen.pdf'
         },
         {
           name: '3D Visualisaties',
           description: 'Hoogresolutie 3D renders en visualisaties',
-          type: 'ZIP',
+          type: 'PDF',
           size: '22.1 MB',
-          date: '2024-01-15'
+          date: '2024-01-15',
+          url: '/pdf/Verkoopbrochure de Steiger Almere.pdf'
         }
       ]
     }
   ];
 
-  const handleDownload = (fileName: string) => {
-    // Simulate download
-    console.log(`Downloading: ${fileName}`);
-    // In a real application, this would trigger the actual download
-    alert(`Download gestart: ${fileName}`);
+  const handleDownload = (fileName: string, url?: string) => {
+    if (url) {
+      // Create a temporary link element and click it to trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // Fallback for items without URLs
+      alert(`Download niet beschikbaar: ${fileName}`);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -315,7 +348,7 @@ export default function DownloadsPage() {
                           
                           <div className="flex space-x-3">
                             <button
-                              onClick={() => handleDownload(item.name)}
+                              onClick={() => handleDownload(item.name, item.url)}
                               className="flex items-center px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors duration-200 text-sm font-medium"
                             >
                               <Download className="h-4 w-4 mr-2" />
@@ -359,7 +392,7 @@ export default function DownloadsPage() {
                 Alle informatie over De Steiger in één document
               </p>
               <button
-                onClick={() => handleDownload('Complete Projectbrochure')}
+                onClick={() => handleDownload('Complete Projectbrochure', '/pdf/Verkoopbrochure de Steiger Almere.pdf')}
                 className="bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200"
               >
                 Download PDF
@@ -375,10 +408,10 @@ export default function DownloadsPage() {
                 Complete set van alle units en opslagboxen
               </p>
               <button
-                onClick={() => handleDownload('Alle Plattegronden')}
+                onClick={() => handleDownload('Alle Plattegronden', '/pdf/plattegrond-begane-grond.PDF')}
                 className="bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200"
               >
-                Download ZIP
+                Download PDF
               </button>
             </div>
 
@@ -391,7 +424,7 @@ export default function DownloadsPage() {
                 Hoogresolutie foto's van alle ruimtes
               </p>
               <button
-                onClick={() => handleDownload('Foto Collectie')}
+                onClick={() => handleDownload('Foto Collectie', '/pdf/Verkoopbrochure de Steiger Almere.pdf')}
                 className="bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200"
               >
                 Download ZIP

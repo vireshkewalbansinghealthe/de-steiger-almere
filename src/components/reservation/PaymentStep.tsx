@@ -288,17 +288,45 @@ export default function PaymentStep(props: PaymentStepProps) {
         console.log('Payment intent response status:', response.status);
 
         if (response.ok) {
-          const data = await response.json();
-          console.log('Payment intent data:', data);
-          if (data.client_secret) {
-            setClientSecret(data.client_secret);
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            console.log('Payment intent data:', data);
+            if (data.client_secret) {
+              setClientSecret(data.client_secret);
+            } else {
+              throw new Error('No client secret received');
+            }
           } else {
-            throw new Error('No client secret received');
+            const text = await response.text();
+            console.error('Expected JSON but got:', text.substring(0, 200));
+            throw new Error('Server returned invalid response format');
           }
         } else {
-          const errorData = await response.json();
-          console.error('Payment intent error:', errorData);
-          throw new Error(errorData.error || `HTTP ${response.status}`);
+          const contentType = response.headers.get('content-type');
+          let errorMessage = 'Failed to create payment intent';
+          
+          try {
+            if (contentType && contentType.includes('application/json')) {
+              const errorData = await response.json();
+              console.error('Payment intent error:', errorData);
+              errorMessage = errorData.error || errorMessage;
+            } else {
+              const text = await response.text();
+              console.error('Non-JSON error response:', text.substring(0, 200));
+              // Check if it's an HTML error page
+              if (text.includes('<!DOCTYPE') || text.includes('<html>')) {
+                errorMessage = 'Server configuration error - please check environment variables in Coolify';
+              } else {
+                errorMessage = text.substring(0, 200); // First 200 chars of error
+              }
+            }
+          } catch (parseError) {
+            console.error('Error parsing error response:', parseError);
+            errorMessage = `Server error (HTTP ${response.status}) - unable to parse response`;
+          }
+          
+          throw new Error(errorMessage);
         }
       } catch (error) {
         console.error('Error creating payment intent:', error);

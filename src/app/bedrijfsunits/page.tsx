@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Building2, ArrowRight, MapPin, Zap, Shield, Calendar, Grid, List, Share2, Copy, Facebook, Twitter, Link as LinkIcon, Users, Phone, Mail, Search } from 'lucide-react';
+import { Building2, ArrowRight, MapPin, Zap, Shield, Calendar, Grid, List, Share2, Copy, Facebook, Twitter, Link as LinkIcon, Users, Phone, Mail, Search, ShoppingCart } from 'lucide-react';
 import { projects } from '../../data/projects';
 import ProjectCard from '../../components/ProjectCard';
+import EnhancedReservationModal from '../../components/EnhancedReservationModal';
 
 export default function BedrijfsunitsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
@@ -20,6 +21,22 @@ export default function BedrijfsunitsPage() {
   const [areaMax, setAreaMax] = useState(400);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Contact form state
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    interest: 'Kopen voor eigen gebruik',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitMessage, setSubmitMessage] = useState('');
+  
+  // Enhanced reservation modal state
+  const [showEnhancedReservation, setShowEnhancedReservation] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState<any>(null);
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
 
   const heroImages = [
     '/images/up/Image1.png',
@@ -168,6 +185,55 @@ export default function BedrijfsunitsPage() {
     
     if (shareLink) {
       window.open(shareLink, '_blank', 'width=600,height=400');
+    }
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const response = await fetch('/api/contact-form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          formType: 'bedrijfsunits'
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setSubmitMessage(result.message);
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          interest: 'Kopen voor eigen gebruik',
+          message: ''
+        });
+      } else {
+        setSubmitStatus('error');
+        setSubmitMessage(result.error || 'Er is een fout opgetreden');
+      }
+    } catch (error) {
+      setSubmitStatus('error');
+      setSubmitMessage('Er is een fout opgetreden bij het verzenden van uw bericht');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -559,10 +625,36 @@ export default function BedrijfsunitsPage() {
                 {viewMode === 'grid' ? (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredProjects.map((project) => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                      />
+                      <div key={project.id} className="relative">
+                        <ProjectCard
+                          project={project}
+                        />
+                        {/* Enhanced Reservation Buttons */}
+                        <div className="mt-4 space-y-2">
+                          <button
+                            onClick={() => {
+                              setSelectedUnit(project);
+                              setMultiSelectMode(false);
+                              setShowEnhancedReservation(true);
+                            }}
+                            className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-slate-900 font-semibold px-4 py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center"
+                          >
+                            <Building2 className="h-4 w-4 mr-2" />
+                            Reserveer Deze Unit
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedUnit(null);
+                              setMultiSelectMode(true);
+                              setShowEnhancedReservation(true);
+                            }}
+                            className="w-full bg-gradient-to-r from-slate-700 to-slate-800 text-white font-medium px-4 py-2 rounded-lg hover:from-slate-800 hover:to-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center text-sm"
+                          >
+                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            Groepsreservering Starten
+                          </button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -700,13 +792,30 @@ export default function BedrijfsunitsPage() {
 
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h3 className="text-xl font-bold text-gray-900 mb-6">Vraag informatie aan</h3>
-              <form className="space-y-4">
+              
+              {/* Success/Error Messages */}
+              {submitStatus === 'success' && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-800 text-sm">{submitMessage}</p>
+                </div>
+              )}
+              
+              {submitStatus === 'error' && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-sm">{submitMessage}</p>
+                </div>
+              )}
+              
+              <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Naam *
                   </label>
                   <input
                     type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleFormChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                     placeholder="Je volledige naam"
@@ -718,6 +827,9 @@ export default function BedrijfsunitsPage() {
                   </label>
                   <input
                     type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleFormChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                     placeholder="je@email.nl"
@@ -727,7 +839,12 @@ export default function BedrijfsunitsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Interesse in
                   </label>
-                  <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500">
+                  <select 
+                    name="interest"
+                    value={formData.interest}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                  >
                     <option>Kopen voor eigen gebruik</option>
                     <option>Investeren</option>
                     <option>Algemene informatie</option>
@@ -738,6 +855,9 @@ export default function BedrijfsunitsPage() {
                     Bericht
                   </label>
                   <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleFormChange}
                     rows={4}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                     placeholder="Vertel ons meer over je interesse..."
@@ -746,9 +866,17 @@ export default function BedrijfsunitsPage() {
                 
                 <button
                   type="submit"
-                  className="w-full bg-slate-800 text-white py-4 px-8 rounded-lg font-semibold text-lg hover:bg-slate-900 transition-colors duration-200"
+                  disabled={isSubmitting}
+                  className="w-full bg-slate-800 text-white py-4 px-8 rounded-lg font-semibold text-lg hover:bg-slate-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  Verstuur aanvraag
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Verzenden...
+                    </>
+                  ) : (
+                    'Verstuur aanvraag'
+                  )}
                 </button>
               </form>
             </div>
@@ -850,6 +978,18 @@ export default function BedrijfsunitsPage() {
           </div>
         </div>
       )}
+
+      {/* Enhanced Reservation Modal */}
+      <EnhancedReservationModal
+        isOpen={showEnhancedReservation}
+        onClose={() => {
+          setShowEnhancedReservation(false);
+          setSelectedUnit(null);
+          setMultiSelectMode(false);
+        }}
+        initialUnit={selectedUnit}
+        multiSelect={multiSelectMode}
+      />
 
       <style jsx>{`
         .slider-thumb::-webkit-slider-thumb {

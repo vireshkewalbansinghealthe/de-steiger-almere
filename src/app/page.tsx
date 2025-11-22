@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { projects } from '../data/projects';
 import ProjectCard from '../components/ProjectCard';
 import ProjectModal from '../components/ProjectModal';
+import VideoModal from '../components/VideoModal';
+import YouTubeBackground from '../components/YouTubeBackground';
 import { Project } from '../types';
 import { Filter, Search, ArrowDown, Play, Grid, List, Share2, Link as LinkIcon, Copy, Facebook, Twitter, X } from 'lucide-react';
 
@@ -18,9 +20,9 @@ export default function HomePage() {
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location'>('name');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const [priceMin, setPriceMin] = useState(200);
   const [priceMax, setPriceMax] = useState(900);
@@ -28,12 +30,12 @@ export default function HomePage() {
   const [areaMax, setAreaMax] = useState(400);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Countdown timer for November 1, 2025
+  // Countdown timer for December 15, 2025
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [scrollY, setScrollY] = useState(0);
   
   useEffect(() => {
-    const targetDate = new Date('2025-11-01T00:00:00').getTime();
+    const targetDate = new Date('2025-12-15T00:00:00').getTime();
     
     const timer = setInterval(() => {
       const now = new Date().getTime();
@@ -161,18 +163,14 @@ export default function HomePage() {
   const businessUnitTypesCount = 12;
   const storageBoxTypesCount = 16;
 
+  // YouTube video ID for background
+  const backgroundVideoId = 'kahhgYdyvuU';
+
+  // Keep fallback images for loading state
   const heroImages = [
     '/images/up/Image1.png',
     '/images/up/Image2.png'
   ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
-    }, 6000);
-
-    return () => clearInterval(interval);
-  }, [heroImages.length]);
 
   // Parse URL parameters on mount to restore shared state
   useEffect(() => {
@@ -611,17 +609,17 @@ export default function HomePage() {
           }
         }
         
-        .ken-burns {
-          animation: kenBurns 8s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
-        }
-        
-        @keyframes kenBurns {
-          0% {
-            transform: scale(1) translateX(0) translateY(0);
-          }
-          100% {
-            transform: scale(1.1) translateX(-20px) translateY(-10px);
-          }
+        /* YouTube Video Background Styles */
+        .video-background {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          min-width: 100%;
+          min-height: 100%;
+          width: auto;
+          height: auto;
+          transform: translate(-50%, -50%) scale(1.1);
+          z-index: 0;
         }
         
         /* Enhanced Hover Effects with Rubber Band */
@@ -691,43 +689,29 @@ export default function HomePage() {
       `}</style>
       {/* Full-Screen Hero Section */}
       <div className="relative h-screen overflow-hidden">
-        {/* Background Images with Ken Burns Effect and Parallax */}
-        {heroImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-2000 ${
-              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center transform scale-110 ken-burns parallax-slow"
-              style={{
-                backgroundImage: `url(${image})`,
-                transform: `scale(1.1) translateY(${scrollY * 0.5}px)`,
-                animationDuration: '8s',
-                animationIterationCount: 'infinite',
-                animationDirection: index % 2 === 0 ? 'normal' : 'reverse'
-              }}
-            />
-          </div>
-        ))}
+        {/* YouTube Video Background */}
+        <YouTubeBackground 
+          videoId={backgroundVideoId}
+          scrollY={scrollY}
+          className="z-0"
+        />
         
-        {/* Gradient Overlays with Parallax */}
+        {/* Enhanced Gradient Overlays for Video Background */}
         <div 
-          className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80 parallax-slow" 
+          className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70 parallax-slow z-10" 
           style={{ transform: `translateY(${scrollY * 0.3}px)` }}
         />
         <div 
-          className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent parallax-slow"
+          className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/30 parallax-slow z-10"
           style={{ transform: `translateY(${scrollY * 0.2}px)` }}
         />
         <div 
-          className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-to-tr from-black/70 via-black/30 to-transparent parallax-slow"
+          className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-to-tr from-black/60 via-black/20 to-transparent parallax-slow z-10"
           style={{ transform: `translateY(${scrollY * 0.1}px)` }}
         />
         
         {/* Mobile-Optimized Hero Content */}
-        <div className="relative z-10 h-full flex items-center sm:items-end justify-start">
+        <div className="relative z-20 h-full flex items-center sm:items-end justify-start">
           <div className="max-w-4xl px-4 sm:px-8 lg:px-16 pb-4 sm:pb-16 text-left ml-0 w-full mt-16 sm:mt-0">
             <div className="animate-fade-in-up">
               {/* Mobile-Optimized Main Headline */}
@@ -757,7 +741,9 @@ export default function HomePage() {
                   </span>
                 </button>
                 
-                <button className="group bg-transparent border-2 border-white text-white px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg md:hover:bg-white md:hover:text-slate-800 w-full sm:w-auto touch-manipulation"
+                <button 
+                  onClick={() => setShowVideoModal(true)}
+                  className="group bg-transparent border-2 border-white text-white px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg md:hover:bg-white md:hover:text-slate-800 w-full sm:w-auto touch-manipulation"
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   <span className="flex items-center justify-center">
@@ -772,13 +758,13 @@ export default function HomePage() {
         
         {/* Countdown Timer - Bottom Right (Rechtonder) with Parallax */}
         <div 
-          className="absolute bottom-20 right-12 z-20 animate-fade-in delay-500 hidden lg:block parallax-slow"
+          className="absolute bottom-20 right-12 z-30 animate-fade-in delay-500 hidden lg:block parallax-slow"
           style={{ transform: `translateY(${scrollY * -0.15}px)` }}
         >
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-yellow-400/30 shadow-2xl min-w-[450px] rubber-band-hover hover:shadow-3xl transition-all duration-700 ease-out">
             <div className="text-center mb-6">
               <div className="text-white font-bold text-xl mb-2">Eerste Fase Verkoop</div>
-              <div className="text-yellow-400 font-semibold text-base">1 November 2025</div>
+              <div className="text-yellow-400 font-semibold text-base">15 December 2025</div>
             </div>
             
             {/* Timer Display - Bigger with Smooth Animations */}
@@ -811,7 +797,7 @@ export default function HomePage() {
         
         {/* Scroll Indicator with Enhanced Animation */}
         <div 
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce parallax-slow"
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce parallax-slow z-20"
           style={{ 
             transform: `translateX(-50%) translateY(${scrollY * -0.1}px)`,
             opacity: Math.max(0, 1 - scrollY * 0.002)
@@ -1530,6 +1516,14 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        videoId="4XQuGTofO3M"
+        title="De Steiger - Bedrijfsunits & Opslagboxen"
+      />
 
     </>
   );

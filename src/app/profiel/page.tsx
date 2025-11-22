@@ -31,6 +31,10 @@ interface Reservation {
     type: string
     unit_number: string
     images: any
+    location?: string
+    gross_area?: number
+    net_area?: number
+    sale_price?: number
   }
 }
 
@@ -78,23 +82,31 @@ export default function ProfilePage() {
           company_name: profileData.company_name || ''
         })
 
-        // Get user reservations
+        // Get user reservations with property details
         const { data: reservationsData, error: reservationsError } = await supabase
           .from('reservations')
           .select(`
             *,
-            properties (
+            properties!inner (
               name,
               type,
               unit_number,
-              images
+              images,
+              location,
+              gross_area,
+              net_area,
+              sale_price
             )
           `)
           .eq('customer_id', user.id)
           .order('created_at', { ascending: false })
 
-        if (reservationsError) throw reservationsError
-        setReservations(reservationsData || [])
+        if (reservationsError) {
+          console.error('Error fetching reservations:', reservationsError)
+        } else {
+          console.log('Fetched reservations:', reservationsData)
+          setReservations(reservationsData || [])
+        }
 
       } catch (error) {
         console.error('Error fetching profile:', error)
@@ -143,10 +155,10 @@ export default function ProfilePage() {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      confirmed: 'bg-green-100 text-green-800 border-green-200',
-      cancelled: 'bg-red-100 text-red-800 border-red-200',
-      completed: 'bg-blue-100 text-blue-800 border-blue-200'
+      pending: 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-md',
+      confirmed: 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md',
+      cancelled: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md',
+      completed: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
     }
     
     const labels = {
@@ -157,7 +169,7 @@ export default function ProfilePage() {
     }
 
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status as keyof typeof styles]}`}>
+      <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold ${styles[status as keyof typeof styles]}`}>
         {labels[status as keyof typeof labels]}
       </span>
     )
@@ -193,15 +205,27 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-xl font-semibold text-gray-900">Mijn Profiel</h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 py-16 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent"></div>
+        <div className="absolute inset-0 bg-[url('/images/up/Image1.png')] bg-cover bg-center opacity-10"></div>
+        
+        {/* Content */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                Welkom terug, {profile.first_name || 'Gebruiker'}
+              </h1>
+              <p className="text-slate-300 text-lg">
+                Beheer uw profiel en bekijk uw reserveringen
+              </p>
+            </div>
             <button
               onClick={handleLogout}
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-xl font-medium hover:bg-white/20 transition-all duration-300"
             >
               Uitloggen
             </button>
@@ -213,15 +237,15 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Information */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 px-6 py-8">
-                <div className="flex items-center justify-center w-20 h-20 mx-auto bg-white rounded-full mb-4">
-                  <User className="h-10 w-10 text-gray-600" />
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+              <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-6 py-8">
+                <div className="flex items-center justify-center w-20 h-20 mx-auto bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full mb-4 shadow-lg">
+                  <User className="h-10 w-10 text-slate-900" />
                 </div>
                 <h2 className="text-xl font-bold text-center text-white">
                   {profile.first_name} {profile.last_name}
                 </h2>
-                <p className="text-center text-yellow-100 mt-1">{profile.email}</p>
+                <p className="text-center text-slate-300 mt-1">{profile.email}</p>
               </div>
 
               <div className="p-6">
@@ -281,14 +305,14 @@ export default function ProfilePage() {
                             value={editForm.first_name}
                             onChange={(e) => setEditForm(prev => ({ ...prev, first_name: e.target.value }))}
                             placeholder="Voornaam"
-                            className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300"
                           />
                           <input
                             type="text"
                             value={editForm.last_name}
                             onChange={(e) => setEditForm(prev => ({ ...prev, last_name: e.target.value }))}
                             placeholder="Achternaam"
-                            className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300"
                           />
                         </div>
                       ) : (
@@ -309,7 +333,7 @@ export default function ProfilePage() {
                           value={editForm.phone}
                           onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
                           placeholder="Telefoonnummer"
-                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300"
                         />
                       ) : (
                         <p className="font-medium">{profile.phone || 'Niet opgegeven'}</p>
@@ -327,7 +351,7 @@ export default function ProfilePage() {
                           value={editForm.company_name}
                           onChange={(e) => setEditForm(prev => ({ ...prev, company_name: e.target.value }))}
                           placeholder="Bedrijfsnaam"
-                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300"
                         />
                       ) : (
                         <p className="font-medium">{profile.company_name || 'Niet opgegeven'}</p>
@@ -351,22 +375,26 @@ export default function ProfilePage() {
 
           {/* Reservations */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-lg">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Mijn Reserveringen</h3>
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100">
+              <div className="px-6 py-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                  <FileText className="h-6 w-6 text-yellow-500 mr-3" />
+                  Mijn Reserveringen
+                </h3>
+                <p className="text-gray-600 mt-1">Overzicht van al uw gemaakte reserveringen</p>
               </div>
 
               <div className="p-6">
                 {reservations.length > 0 ? (
                   <div className="space-y-6">
                     {reservations.map((reservation) => (
-                      <div key={reservation.id} className="border border-gray-200 rounded-lg p-6">
+                      <div key={reservation.id} className="border border-gray-200 rounded-xl p-6 bg-gradient-to-r from-gray-50 to-white hover:shadow-lg transition-all duration-300">
                         <div className="flex items-start justify-between mb-4">
                           <div>
-                            <h4 className="text-lg font-semibold text-gray-900">
+                            <h4 className="text-xl font-bold text-gray-900">
                               {reservation.properties.name}
                             </h4>
-                            <p className="text-gray-600">Unit {reservation.properties.unit_number}</p>
+                            <p className="text-gray-600 font-medium">Unit {reservation.properties.unit_number}</p>
                             <p className="text-sm text-gray-500">
                               Reservering #{reservation.reservation_number}
                             </p>
@@ -395,19 +423,19 @@ export default function ProfilePage() {
                           <span className="text-sm text-gray-500">
                             Type: {reservation.properties.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox'}
                           </span>
-                          <div className="flex space-x-2">
+                          <div className="flex space-x-3">
                             <button
                               onClick={() => router.push(`/reservering/${reservation.id}`)}
-                              className="px-3 py-1 text-sm bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors"
+                              className="px-4 py-2 text-sm bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-lg hover:from-slate-900 hover:to-slate-800 transition-all duration-300 font-medium shadow-md"
                             >
-                              Details
+                              Details bekijken
                             </button>
                             {reservation.status === 'pending' && (
                               <button
                                 onClick={() => router.push(`/betaling/${reservation.id}`)}
-                                className="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors"
+                                className="px-4 py-2 text-sm bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-600 transition-all duration-300 font-medium shadow-md"
                               >
-                                Betalen
+                                Nu betalen
                               </button>
                             )}
                           </div>
@@ -416,13 +444,17 @@ export default function ProfilePage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12">
-                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h4 className="text-lg font-medium text-gray-900 mb-2">Geen reserveringen</h4>
-                    <p className="text-gray-500 mb-6">U heeft nog geen reserveringen geplaatst.</p>
+                  <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-white rounded-xl">
+                    <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <FileText className="h-10 w-10 text-slate-900" />
+                    </div>
+                    <h4 className="text-2xl font-bold text-gray-900 mb-3">Geen reserveringen</h4>
+                    <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
+                      U heeft nog geen reserveringen geplaatst. Ontdek onze beschikbare bedrijfsunits en opslagboxen.
+                    </p>
                     <button
                       onClick={() => router.push('/')}
-                      className="px-6 py-2 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition-colors"
+                      className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-slate-900 font-bold rounded-xl hover:from-yellow-500 hover:to-yellow-400 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     >
                       Bekijk Beschikbare Units
                     </button>

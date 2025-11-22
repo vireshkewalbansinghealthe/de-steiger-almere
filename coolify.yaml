@@ -1,0 +1,55 @@
+# Coolify deployment configuration for Unity Units
+# This file configures the deployment settings for Coolify
+
+version: '3.8'
+
+services:
+  unity-units:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Application Settings
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - HOSTNAME=0.0.0.0
+      
+      # Supabase Configuration
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_ACCESS_TOKEN=${SUPABASE_ACCESS_TOKEN}
+      
+      # Stripe Configuration
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      
+      # Application URLs
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount public directory for static assets
+      - ./public:/app/public:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Coolify labels for automatic configuration
+labels:
+  - "coolify.managed=true"
+  - "coolify.name=unity-units"
+  - "coolify.type=application"
+  - "traefik.enable=true"
+  - "traefik.http.routers.unity-units.rule=Host(`your-domain.com`)"
+  - "traefik.http.routers.unity-units.tls=true"
+  - "traefik.http.routers.unity-units.tls.certresolver=letsencrypt"
+  - "traefik.http.services.unity-units.loadbalancer.server.port=3000"
+
+
