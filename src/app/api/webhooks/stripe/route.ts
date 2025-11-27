@@ -9,7 +9,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = serviceRoleKey && serviceRoleKey.length > 50 ? serviceRoleKey : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 /**
  * POST /api/webhooks/stripe
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Use service role key to bypass RLS
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
     switch (event.type) {

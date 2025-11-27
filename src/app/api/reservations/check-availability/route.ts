@@ -19,10 +19,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Use service role key to bypass RLS for checking locks
+    // Use service role key if available, otherwise use anon key
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      serviceRoleKey && serviceRoleKey.length > 50 ? serviceRoleKey : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
     // Step 1: Clean up expired locks first

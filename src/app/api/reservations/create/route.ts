@@ -91,16 +91,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 2: Clean up expired locks first
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-    
-    await supabaseAdmin
-      .from('payment_locks')
-      .delete()
-      .lt('expires_at', new Date().toISOString());
+    // Step 2: Clean up expired locks first (optional - requires service role key)
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (serviceRoleKey && serviceRoleKey.length > 50) {
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey
+      );
+      
+      await supabaseAdmin
+        .from('payment_locks')
+        .delete()
+        .lt('expires_at', new Date().toISOString());
+    } else {
+      // Try cleanup with user's client (may be limited by RLS)
+      await supabase
+        .from('payment_locks')
+        .delete()
+        .lt('expires_at', new Date().toISOString());
+    }
 
     // Check for existing payment locks (not expired) from OTHER users
     // We allow the SAME user to proceed (they already have the lock)
