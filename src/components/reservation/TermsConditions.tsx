@@ -69,27 +69,27 @@ export default function TermsConditions({ reservationData, updateData, onNext, o
   // Contract content is now handled by ContractView component
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
             Reserveringsovereenkomst
           </h2>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600 px-2">
             Lees en onderteken de reserveringsovereenkomst om door te gaan
           </p>
         </div>
 
         {/* Contract Preview */}
-        <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <FileText className="h-5 w-5 mr-2 text-yellow-500" />
-              Reserveringsovereenkomst {propertyData?.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox'}
+        <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center">
+              <FileText className="h-5 w-5 mr-2 text-yellow-500 flex-shrink-0" />
+              <span className="truncate">Reserveringsovereenkomst {propertyData?.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox'}</span>
             </h3>
             <button
               onClick={() => setShowContractModal(true)}
-              className="inline-flex items-center text-yellow-600 hover:text-yellow-700 font-medium text-sm"
+              className="inline-flex items-center justify-center text-yellow-600 hover:text-yellow-700 font-medium text-sm bg-yellow-50 px-3 py-2 rounded-lg sm:bg-transparent sm:px-0 sm:py-0"
             >
               <Scroll className="h-4 w-4 mr-1" />
               Volledig lezen
@@ -109,20 +109,20 @@ export default function TermsConditions({ reservationData, updateData, onNext, o
         </div>
 
         {/* Contract Acceptance */}
-        <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6 mb-8">
+        <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="flex items-start space-x-3">
             <button
               onClick={() => setTermsAccepted(!termsAccepted)}
-              className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center mt-0.5 transition-colors ${
+              className={`flex-shrink-0 w-6 h-6 sm:w-5 sm:h-5 rounded border-2 flex items-center justify-center mt-0.5 transition-colors ${
                 termsAccepted 
                   ? 'bg-yellow-500 border-yellow-500 text-white' 
                   : 'border-gray-300 hover:border-gray-400'
               }`}
             >
-              {termsAccepted && <Check className="h-3 w-3" />}
+              {termsAccepted && <Check className="h-4 w-4 sm:h-3 sm:w-3" />}
             </button>
-            <div className="flex-1">
-              <label className="text-sm text-gray-700 cursor-pointer">
+            <div className="flex-1 min-w-0">
+              <label className="text-sm text-gray-700 cursor-pointer leading-relaxed">
                 Ik ga akkoord met de{' '}
                 <button
                   onClick={() => setShowContractModal(true)}
@@ -133,8 +133,8 @@ export default function TermsConditions({ reservationData, updateData, onNext, o
                 {' '}van De Steiger B.V. en bevestig dat ik deze volledig heb gelezen en begrepen.
               </label>
               {!hasReadContract && (
-                <p className="text-xs text-amber-600 mt-1">
-                  U moet eerst het volledige contract lezen voordat u kunt doorgaan.
+                <p className="text-xs text-amber-600 mt-2">
+                  ⚠️ U moet eerst het volledige contract lezen voordat u kunt doorgaan.
                 </p>
               )}
             </div>
@@ -142,32 +142,38 @@ export default function TermsConditions({ reservationData, updateData, onNext, o
         </div>
 
         {/* Digital Signature */}
-        <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-4">
             Digitale handtekening
           </h3>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-xs sm:text-sm text-gray-600 mb-4">
             Plaats uw handtekening hieronder om de overeenkomst te bevestigen.
           </p>
           
-          <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-4">
-            <SignatureCanvas
-              ref={sigCanvas}
-              canvasProps={{
-                width: 500,
-                height: 200,
-                className: 'signature-canvas w-full h-48 border rounded'
-              }}
-              onEnd={saveSignature}
-            />
+          <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-2 sm:p-4">
+            <div className="w-full" style={{ maxWidth: '100%', overflow: 'hidden' }}>
+              <SignatureCanvas
+                ref={sigCanvas}
+                canvasProps={{
+                  className: 'signature-canvas w-full border rounded touch-none',
+                  style: { 
+                    width: '100%', 
+                    height: '150px',
+                    maxWidth: '100%',
+                    touchAction: 'none'
+                  }
+                }}
+                onEnd={saveSignature}
+              />
+            </div>
             
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-sm text-gray-500">
-                Teken hierboven met uw muis of vinger
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-3 sm:mt-4">
+              <span className="text-xs sm:text-sm text-gray-500">
+                👆 Teken met uw vinger of muis
               </span>
               <button
                 onClick={clearSignature}
-                className="inline-flex items-center text-gray-600 hover:text-gray-800 text-sm font-medium"
+                className="inline-flex items-center text-gray-600 hover:text-gray-800 text-sm font-medium bg-gray-100 px-3 py-1.5 rounded-lg"
               >
                 <X className="h-4 w-4 mr-1" />
                 Wissen
@@ -177,10 +183,10 @@ export default function TermsConditions({ reservationData, updateData, onNext, o
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between">
+        <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 sm:gap-4">
           <button
             onClick={onPrev}
-            className="inline-flex items-center text-gray-600 hover:text-gray-800 font-medium px-6 py-3 transition-colors"
+            className="inline-flex items-center justify-center text-gray-600 hover:text-gray-800 font-medium px-4 sm:px-6 py-3 transition-colors border border-gray-200 rounded-lg sm:border-0"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
             Vorige stap
@@ -189,9 +195,10 @@ export default function TermsConditions({ reservationData, updateData, onNext, o
           <button
             onClick={handleNext}
             disabled={!isValid}
-            className="inline-flex items-center bg-gradient-to-r from-yellow-500 to-yellow-600 text-slate-900 font-semibold px-8 py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center bg-gradient-to-r from-yellow-500 to-yellow-600 text-slate-900 font-semibold px-6 sm:px-8 py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
           >
-            Doorgaan naar betaling
+            <span className="sm:hidden">Naar betaling</span>
+            <span className="hidden sm:inline">Doorgaan naar betaling</span>
             <ArrowRight className="ml-2 h-5 w-5" />
           </button>
         </div>

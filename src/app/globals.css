@@ -193,4 +193,25 @@
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+/* Prevent horizontal scroll on body */
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Mobile-friendly signature canvas */
+.signature-canvas {
+  width: 100% !important;
+  max-width: 100%;
+  touch-action: none;
+}
+
+/* Responsive container */
+@media (max-width: 640px) {
+  .signature-canvas {
+    height: 150px !important;
+  }
 }

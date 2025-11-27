@@ -47,21 +47,21 @@ export default function CustomerInfo({ reservationData, updateData, onNext, onPr
                   formData.phone && formData.address && formData.city && formData.postalCode;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
             Uw contactgegevens
           </h2>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600 px-2">
             Vul uw gegevens in voor de reservering
           </p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Personal Information */}
-          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center">
               <User className="h-5 w-5 mr-2 text-yellow-500" />
               Persoonlijke gegevens
             </h3>
@@ -153,8 +153,8 @@ export default function CustomerInfo({ reservationData, updateData, onNext, onPr
           </div>
 
           {/* Address Information */}
-          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center">
               <Home className="h-5 w-5 mr-2 text-yellow-500" />
               Adresgegevens
             </h3>
@@ -225,26 +225,26 @@ export default function CustomerInfo({ reservationData, updateData, onNext, onPr
           </div>
 
           {/* Additional Requests */}
-          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
               Aanvullende wensen (optioneel)
             </h3>
             <textarea
               name="additionalRequests"
               value={formData.additionalRequests}
               onChange={handleChange}
-              rows={4}
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-colors"
-              placeholder="Heeft u specifieke wensen of vragen over de unit? Laat het ons weten..."
+              rows={3}
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-colors text-sm sm:text-base"
+              placeholder="Heeft u specifieke wensen of vragen over de unit?"
             />
           </div>
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-8">
+        <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 sm:gap-4 mt-6 sm:mt-8">
           <button
             onClick={onPrev}
-            className="inline-flex items-center text-gray-600 hover:text-gray-800 font-medium px-6 py-3 transition-colors"
+            className="inline-flex items-center justify-center text-gray-600 hover:text-gray-800 font-medium px-4 sm:px-6 py-3 transition-colors border border-gray-200 rounded-lg sm:border-0"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
             Vorige stap
@@ -253,7 +253,7 @@ export default function CustomerInfo({ reservationData, updateData, onNext, onPr
           <button
             onClick={handleNext}
             disabled={!isValid}
-            className="inline-flex items-center bg-gradient-to-r from-yellow-500 to-yellow-600 text-slate-900 font-semibold px-8 py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center bg-gradient-to-r from-yellow-500 to-yellow-600 text-slate-900 font-semibold px-6 sm:px-8 py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
           >
             Volgende stap
             <ArrowRight className="ml-2 h-5 w-5" />

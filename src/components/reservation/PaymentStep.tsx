@@ -113,32 +113,32 @@ function PaymentForm({ project, reservationData, updateData, onPrev, clientSecre
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
             Veilige betaling
           </h2>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600 px-2">
             Voltooi uw reservering met een veilige betaling
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Order Summary */}
-          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 order-2 lg:order-1">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
               Overzicht reservering
             </h3>
             
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex justify-between items-start">
-                <div>
-                  <div className="font-medium text-gray-900">{reservationDetails.property_name || project.name}</div>
-                  <div className="text-sm text-gray-600">Unit {reservationData.unitNumber || reservationDetails.unit_number}</div>
-                  <div className="text-sm text-gray-600">{project.location}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-gray-900 text-sm sm:text-base truncate">{reservationDetails.property_name || project.name}</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Unit {reservationData.unitNumber || reservationDetails.unit_number}</div>
+                  <div className="text-xs sm:text-sm text-gray-600">{project.location}</div>
                   <div className="text-xs text-gray-500 mt-2">
-                    Reservering: {reservationDetails.reservation_number}
+                    Reservering: <span className="font-mono">{reservationDetails.reservation_number}</span>
                   </div>
                 </div>
               </div>
@@ -146,32 +146,32 @@ function PaymentForm({ project, reservationData, updateData, onPrev, clientSecre
               <hr className="border-gray-200" />
               
               <div className="space-y-2">
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm sm:text-base">
                   <span className="text-gray-600">Reserveringskosten</span>
                   <span className="font-medium">€{(reservationDetails.reservation_fee_amount / 100).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-lg font-bold">
+                <div className="flex justify-between text-base sm:text-lg font-bold">
                   <span>Totaal</span>
-                  <span>€{(reservationDetails.reservation_fee_amount / 100).toFixed(2)}</span>
+                  <span className="text-green-600">€{(reservationDetails.reservation_fee_amount / 100).toFixed(2)}</span>
                 </div>
               </div>
 
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-50 rounded-lg">
                 <div className="flex items-start">
-                  <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
-                  <div className="text-sm text-blue-800">
+                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 mt-0.5 mr-2 sm:mr-3 flex-shrink-0" />
+                  <div className="text-xs sm:text-sm text-blue-800">
                     <div className="font-medium mb-1">Reserveringskosten</div>
-                    <div>Dit is een eenmalige betaling voor het reserveren van uw {project.slug.includes('opslagbox') ? 'opslagbox' : 'bedrijfsunit'}. De volledige koopprijs (€{reservationDetails.total_property_price?.toLocaleString('nl-NL')}) wordt later afgehandeld.</div>
+                    <div className="leading-relaxed">Dit is een eenmalige betaling voor het reserveren. De koopprijs (€{reservationDetails.total_property_price?.toLocaleString('nl-NL')}) wordt later afgehandeld.</div>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
+              <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-yellow-50 rounded-lg">
                 <div className="flex items-start">
-                  <Clock className="h-5 w-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" />
-                  <div className="text-sm text-yellow-800">
-                    <div className="font-medium mb-1">Betaal binnen 15 minuten</div>
-                    <div>Uw reservering vervalt automatisch als de betaling niet binnen 15 minuten is voltooid.</div>
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 mt-0.5 mr-2 sm:mr-3 flex-shrink-0" />
+                  <div className="text-xs sm:text-sm text-yellow-800">
+                    <div className="font-medium mb-1">⏱️ Betaal binnen 15 minuten</div>
+                    <div className="leading-relaxed">Uw reservering vervalt automatisch als de betaling niet op tijd is voltooid.</div>
                   </div>
                 </div>
               </div>
@@ -179,27 +179,27 @@ function PaymentForm({ project, reservationData, updateData, onPrev, clientSecre
           </div>
 
           {/* Payment Form */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Lock className="h-5 w-5 mr-2 text-green-600" />
+          <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 order-1 lg:order-2">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center">
+              <Lock className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-green-600" />
               Betalingsgegevens
             </h3>
 
             {paymentError && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
                 <div className="flex items-start">
-                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
-                  <p className="text-red-800 text-sm">{paymentError}</p>
+                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 mt-0.5 mr-2 sm:mr-3 flex-shrink-0" />
+                  <p className="text-red-800 text-xs sm:text-sm">{paymentError}</p>
                 </div>
               </div>
             )}
 
-            <form onSubmit={handlePayment} className="space-y-6">
+            <form onSubmit={handlePayment} className="space-y-4 sm:space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Betaalmethode
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                  Kies betaalmethode
                 </label>
-                <div className="border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-yellow-500 focus-within:border-yellow-500">
+                <div className="border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-yellow-500 focus-within:border-yellow-500 overflow-hidden">
                   <PaymentElement
                     options={{
                       layout: 'accordion',
@@ -209,27 +209,27 @@ function PaymentForm({ project, reservationData, updateData, onPrev, clientSecre
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center text-sm text-gray-600">
-                  <Lock className="h-4 w-4 mr-2 text-green-600" />
-                  Uw betaling wordt veilig verwerkt door Stripe. Wij bewaren geen kaartgegevens.
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                  <Lock className="h-4 w-4 mr-2 text-green-600 flex-shrink-0" />
+                  <span>Veilig verwerkt door Stripe. Wij bewaren geen gegevens.</span>
                 </div>
               </div>
 
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center gap-3">
                 <button
                   type="button"
                   onClick={onPrev}
-                  className="inline-flex items-center text-gray-600 hover:text-gray-800 font-medium px-6 py-3 transition-colors"
+                  className="inline-flex items-center justify-center text-gray-600 hover:text-gray-800 font-medium px-4 sm:px-6 py-3 transition-colors border border-gray-200 rounded-lg sm:border-0"
                 >
                   <ArrowLeft className="mr-2 h-5 w-5" />
-                  Vorige stap
+                  Terug
                 </button>
 
                 <button
                   type="submit"
                   disabled={!stripe || isProcessing}
-                  className="inline-flex items-center bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold px-8 py-3 rounded-lg hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold px-6 sm:px-8 py-3 rounded-lg hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {isProcessing ? (
                     <>
