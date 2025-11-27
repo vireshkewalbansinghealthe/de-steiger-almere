@@ -24,17 +24,17 @@ export default function PaymentConfirmationPage() {
   // Poll for status update if payment is pending (webhook will update the status)
   useEffect(() => {
     if (reservation && reservation.payment_status !== 'completed') {
-      // Poll every 3 seconds to check if webhook has updated the status
+      // Poll every 5 seconds to check if webhook has updated the status (less frequent = less battery drain)
       const interval = setInterval(() => {
         console.log('🔄 Checking payment status...');
-        fetchReservation();
-      }, 3000);
+        fetchReservation(true); // Pass true to indicate this is polling (no loading state)
+      }, 5000);
 
-      // Stop polling after 30 seconds
+      // Stop polling after 60 seconds
       const timeout = setTimeout(() => {
         clearInterval(interval);
         console.log('⏰ Stopped polling for payment status');
-      }, 30000);
+      }, 60000);
 
       return () => {
         clearInterval(interval);
@@ -43,9 +43,12 @@ export default function PaymentConfirmationPage() {
     }
   }, [reservation?.id, reservation?.payment_status]);
 
-  const fetchReservation = async () => {
+  const fetchReservation = async (isPolling = false) => {
     try {
-      setLoading(true);
+      // Only show loading on initial load, not during polling
+      if (!isPolling) {
+        setLoading(true);
+      }
       
       // Check if user is logged in
       const { data: { session } } = await supabase.auth.getSession();
@@ -64,25 +67,38 @@ export default function PaymentConfirmationPage() {
 
       if (reservationError) {
         console.error('Error fetching reservation:', reservationError);
-        setError('Reservering niet gevonden');
-        setLoading(false);
+        if (!isPolling) {
+          setError('Reservering niet gevonden');
+          setLoading(false);
+        }
         return;
       }
 
       if (!reservationData) {
-        setError('Reservering niet gevonden');
-        setLoading(false);
+        if (!isPolling) {
+          setError('Reservering niet gevonden');
+          setLoading(false);
+        }
         return;
       }
 
-      console.log('Reservation data:', reservationData);
+      // Only log on initial load to avoid console spam
+      if (!isPolling) {
+        console.log('Reservation data:', reservationData);
+      }
+      
       setReservation(reservationData);
       setProperty(reservationData.properties);
-      setLoading(false);
+      
+      if (!isPolling) {
+        setLoading(false);
+      }
     } catch (error) {
       console.error('Error fetching reservation:', error);
-      setError('Er is een fout opgetreden bij het ophalen van de reservering');
-      setLoading(false);
+      if (!isPolling) {
+        setError('Er is een fout opgetreden bij het ophalen van de reservering');
+        setLoading(false);
+      }
     }
   };
 
