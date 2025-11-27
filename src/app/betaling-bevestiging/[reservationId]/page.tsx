@@ -20,42 +20,28 @@ export default function PaymentConfirmationPage() {
     fetchReservation();
   }, [reservationId]);
 
-  // Confirm payment and update status as fallback (for when webhooks don't work)
+  // Payment confirmation is handled by Stripe webhook
+  // Poll for status update if payment is pending (webhook will update the status)
   useEffect(() => {
-    const confirmPayment = async () => {
-      if (reservation && reservation.payment_status !== 'completed') {
-        try {
-          // Get the current session for auth token
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session?.access_token) {
-            console.error('No session available for payment confirmation');
-            return;
-          }
+    if (reservation && reservation.payment_status !== 'completed') {
+      // Poll every 3 seconds to check if webhook has updated the status
+      const interval = setInterval(() => {
+        console.log('🔄 Checking payment status...');
+        fetchReservation();
+      }, 3000);
 
-          // Call the confirm-payment API with auth token
-          const res = await fetch('/api/reservations/confirm-payment', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`
-            },
-            body: JSON.stringify({ reservation_id: reservationId }),
-          });
-          const data = await res.json();
-          if (data.success) {
-            console.log('✅ Payment confirmed on confirmation page:', data);
-            // Refresh the reservation data
-            fetchReservation();
-          } else {
-            console.error('Payment confirmation failed:', data);
-          }
-        } catch (err) {
-          console.error('Error confirming payment:', err);
-        }
-      }
-    };
-    confirmPayment();
-  }, [reservation?.id]);
+      // Stop polling after 30 seconds
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        console.log('⏰ Stopped polling for payment status');
+      }, 30000);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }
+  }, [reservation?.id, reservation?.payment_status]);
 
   const fetchReservation = async () => {
     try {
