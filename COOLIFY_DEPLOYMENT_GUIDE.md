@@ -144,3 +144,6 @@ If you're still having issues:
 4. Make sure Stripe is in test mode initially
 
 
+
+
+

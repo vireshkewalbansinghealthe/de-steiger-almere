@@ -5,7 +5,6 @@ import { projects } from '../data/projects';
 import ProjectCard from '../components/ProjectCard';
 import ProjectModal from '../components/ProjectModal';
 import VideoModal from '../components/VideoModal';
-import YouTubeBackground from '../components/YouTubeBackground';
 import { Project } from '../types';
 import { Filter, Search, ArrowDown, Play, Grid, List, Share2, Link as LinkIcon, Copy, Facebook, Twitter, X } from 'lucide-react';
 
@@ -163,14 +162,24 @@ export default function HomePage() {
   const businessUnitTypesCount = 12;
   const storageBoxTypesCount = 16;
 
-  // YouTube video ID for background
-  const backgroundVideoId = 'kahhgYdyvuU';
-
-  // Keep fallback images for loading state
+  // Hero background images
   const heroImages = [
     '/images/up/Image1.png',
-    '/images/up/Image2.png'
+    '/images/up/Image2.png',
+    '/images/up/beide1.png',
+    '/images/up/beide2.png'
   ];
+  
+  // Current hero image index for slideshow effect
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Auto-rotate hero images every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
 
   // Parse URL parameters on mount to restore shared state
   useEffect(() => {
@@ -689,14 +698,24 @@ export default function HomePage() {
       `}</style>
       {/* Full-Screen Hero Section */}
       <div className="relative h-screen overflow-hidden">
-        {/* YouTube Video Background */}
-        <YouTubeBackground 
-          videoId={backgroundVideoId}
-          scrollY={scrollY}
-          className="z-0"
-        />
+        {/* Static Image Background with Slideshow */}
+        <div className="absolute inset-0 z-0">
+          {heroImages.map((image, index) => (
+            <div
+              key={image}
+              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
+                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{
+                backgroundImage: `url(${image})`,
+                transform: `translateY(${scrollY * 0.5}px) scale(1.1)`,
+                willChange: 'transform'
+              }}
+            />
+          ))}
+        </div>
         
-        {/* Enhanced Gradient Overlays for Video Background */}
+        {/* Enhanced Gradient Overlays for Image Background */}
         <div 
           className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70 parallax-slow z-10" 
           style={{ transform: `translateY(${scrollY * 0.3}px)` }}
@@ -1521,7 +1540,7 @@ export default function HomePage() {
       <VideoModal
         isOpen={showVideoModal}
         onClose={() => setShowVideoModal(false)}
-        videoId="4XQuGTofO3M"
+        videoId="kahhgYdyvuU"
         title="De Steiger - Bedrijfsunits & Opslagboxen"
       />
 

@@ -1,92 +1,110 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Archive, CheckCircle, ArrowRight, MapPin, Shield, Home, Phone, Mail, Users, Car, Calendar, Lock, Zap, Grid, List, Share2, Copy, Facebook, Twitter, Link as LinkIcon, Search } from 'lucide-react';
-import { projects } from '../../data/projects';
-import ProjectCard from '../../components/ProjectCard';
+
+// Unit type from API
+interface Unit {
+  id: string;
+  name: string;
+  type: string;
+  unit_number: string;
+  type_number: number;
+  gross_area: number;
+  net_area: number;
+  sale_price: number;
+  status: 'available' | 'reserved' | 'sold';
+  images: string[];
+  location: string;
+  description: string;
+  parking_spaces: number;
+  slug: string;
+  units_count?: number;
+  unit_numbers?: string[];
+  available_units_in_type?: number;
+  reserved_units_in_type?: number;
+  sold_units_in_type?: number;
+}
 
 export default function OpslagboxenPage() {
+  const router = useRouter();
+  const [storageUnits, setStorageUnits] = useState<Unit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
-  const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location'>('name');
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<'type_number'>('type_number');
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [priceMin, setPriceMin] = useState(30);
   const [priceMax, setPriceMax] = useState(110);
   const [areaMin, setAreaMin] = useState(14);
   const [areaMax, setAreaMax] = useState(49);
-  const [searchTerm, setSearchTerm] = useState('');
 
-  // Filter projects to show only storage boxes/garages
-  const storageProjects = projects
-    .filter(project => (project.garageBoxes && project.garageBoxes > 0) || project.name.toLowerCase().includes('opslagbox'))
-    .filter(project => project.location === 'Almere');
+  // Fetch opslagboxen from API (grouped by type)
+  useEffect(() => {
+    const fetchUnits = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/units?type=opslagbox&status=&group_by_type=true');
+        if (!response.ok) {
+          throw new Error('Failed to fetch units');
+        }
+        const response_data = await response.json();
+        const units_array = response_data.units || [];
+        console.log('✅ Fetched', units_array.length, 'opslagbox types (grouped)');
+        setStorageUnits(units_array);
+        setError(null);
+      } catch (err: any) {
+        console.error('Error fetching units:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUnits();
+  }, []);
 
   const getFilteredAndSortedProjects = () => {
-    let filtered = storageProjects.filter(project => {
+    let filtered = storageUnits.filter(unit => {
       // Search filter
       const matchesSearch = searchTerm === '' || 
-        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchTerm.toLowerCase());
+        unit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        unit.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        unit.description.toLowerCase().includes(searchTerm.toLowerCase());
 
       // Status filter
       const matchesStatus = statusFilter === 'all' || 
-        (statusFilter === 'beschikbaar' && project.status === 'NU IN DE VERKOOP') ||
-        (statusFilter === 'gereserveerd' && project.status === 'NU IN DE VERKOOP') ||
-        (statusFilter === 'verkocht' && project.status === 'UITVERKOCHT');
+        (statusFilter === 'beschikbaar' && unit.status === 'available') ||
+        (statusFilter === 'gereserveerd' && unit.status === 'reserved') ||
+        (statusFilter === 'verkocht' && unit.status === 'sold');
 
-      // Type filter
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(project.name);
+      // Area range filter
+      const area = unit.gross_area || 0;
+      const matchesAreaRange = area >= areaMin && area <= areaMax;
 
-      // Area range filter - check if any unit in the project falls within the range
-      let matchesAreaRange = true;
-      if (project.details?.unitDetails && project.details.unitDetails.length > 0) {
-        matchesAreaRange = project.details.unitDetails.some(unit => {
-          const area = unit.grossArea || 0;
-          return area >= areaMin && area <= areaMax;
-        });
-      }
+      // Price range filter
+      const price = (unit.sale_price || 0) / 1000;
+      const matchesPriceRange = price >= priceMin && price <= priceMax;
 
-      // Price range filter - check if any unit in the project falls within the range
-      let matchesPriceRange = true;
-      if (project.details?.unitDetails && project.details.unitDetails.length > 0) {
-        matchesPriceRange = project.details.unitDetails.some(unit => {
-          const price = parseFloat(unit.price.replace(/[€,.\s]/g, '')) / 1000;
-          return price >= priceMin && price <= priceMax;
-        });
-      }
-
-      // Area filter - based on project units count
-      let matchesArea = true;
-      if (areaFilter !== 'all') {
-        const unitCount = project.garageBoxes || 0;
-        if (areaFilter === 'small') matchesArea = unitCount < 10;
-        else if (areaFilter === 'medium') matchesArea = unitCount >= 10 && unitCount <= 20;
-        else if (areaFilter === 'large') matchesArea = unitCount > 20;
-      }
-
-      return matchesSearch && matchesStatus && matchesType && matchesAreaRange && matchesPriceRange && matchesArea;
+      return matchesSearch && matchesStatus && matchesAreaRange && matchesPriceRange;
     });
 
-    // Sort projects
+    // Sort units
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'price':
-          const priceA = parseFloat(a.startPrice?.replace(/[€,.\s]/g, '') || '0');
-          const priceB = parseFloat(b.startPrice?.replace(/[€,.\s]/g, '') || '0');
-          return priceA - priceB;
-        case 'area':
-          return (b.garageBoxes || 0) - (a.garageBoxes || 0);
-        case 'location':
-          return a.location.localeCompare(b.location);
+        case 'type_number':
+          const typeA = a.type_number || 0;
+          const typeB = b.type_number || 0;
+          return typeA - typeB;
         default:
-          return 0;
+          const defaultTypeA = a.type_number || 0;
+          const defaultTypeB = b.type_number || 0;
+          return defaultTypeA - defaultTypeB;
       }
     });
 
@@ -94,17 +112,15 @@ export default function OpslagboxenPage() {
   };
 
   const filteredProjects = getFilteredAndSortedProjects();
-  const storageSizes = ['14m²', '15m²', '16m²', '18m²', '26m²', '33m²', '34m²', '46m²', '48m²', '49m²'];
 
-  const totalBoxes = storageProjects.reduce((total, project) => total + (project.garageBoxes || 0), 0);
-  const storageBoxTypesCount = 16;
+  const opslagboxTypesCount = storageUnits.length; // Number of TYPES
+  const totalUnitsAtLocation = storageUnits.reduce((sum, unit) => sum + (unit.units_count || 1), 0); // Total individual units
 
   const generateShareUrl = () => {
     const params = new URLSearchParams();
     if (searchTerm) params.set('search', searchTerm);
     if (statusFilter !== 'all') params.set('status', statusFilter);
-    if (sortBy !== 'name') params.set('sort', sortBy);
-    if (selectedTypes.length > 0) params.set('types', selectedTypes.join(','));
+    if (sortBy !== 'type_number') params.set('sort', sortBy);
     if (areaMin !== 14 || areaMax !== 49) params.set('area', `${areaMin}-${areaMax}`);
     if (priceMin !== 30 || priceMax !== 110) params.set('price', `${priceMin}-${priceMax}`);
     if (viewMode !== 'grid') params.set('view', viewMode);
@@ -159,6 +175,18 @@ export default function OpslagboxenPage() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    if (status === 'available') return 'bg-green-100 text-green-800';
+    if (status === 'reserved') return 'bg-red-100 text-red-800';
+    return 'bg-gray-100 text-gray-800';
+  };
+
+  const getStatusText = (status: string) => {
+    if (status === 'available') return 'Beschikbaar';
+    if (status === 'reserved') return 'Gereserveerd';
+    return 'Verkocht';
+  };
+
   const renderTableView = () => (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -178,66 +206,53 @@ export default function OpslagboxenPage() {
                 Grootte
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Vanaf Prijs
+                Prijs
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actie
-              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredProjects.map((project) => (
-              <tr key={project.id} className="hover:bg-gray-50">
+            {filteredProjects.map((unit) => (
+              <tr 
+                key={unit.id} 
+                className="hover:bg-gray-50 cursor-pointer" 
+                onClick={() => router.push(`/opslagbox/${unit.slug}`)}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <img
-                      src={project.images[0]}
-                      alt={project.name}
+                      src={unit.images[0] || '/images/placeholder.png'}
+                      alt={unit.name}
                       className="w-12 h-12 rounded-lg object-cover mr-4"
                     />
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        {project.name}
+                        {unit.name}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {project.description.substring(0, 50)}...
+                        {unit.units_count ? `${unit.units_count} units` : `Unit: ${unit.unit_number}`}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.location}
+                  {unit.location}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.garageBoxes}
+                  {unit.units_count || 1}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.features?.[0] || 'N/A'}
+                  {Math.round(unit.gross_area)}m² bruto / {Math.round(unit.net_area)}m² netto
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.startPrice || 'Op aanvraag'}
+                  € {unit.sale_price?.toLocaleString('nl-NL')} v.o.n.
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    project.status === 'NU IN DE VERKOOP' 
-                      ? 'bg-green-100 text-green-800' 
-                      : project.status === 'UITVERKOCHT'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {project.status}
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(unit.status)}`}>
+                    {getStatusText(unit.status)}
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <Link
-                    href={`/opslagbox/${project.slug}`}
-                    className="text-slate-600 hover:text-slate-900"
-                  >
-                    Details
-                  </Link>
                 </td>
               </tr>
             ))}
@@ -246,6 +261,33 @@ export default function OpslagboxenPage() {
       </div>
     </div>
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-slate-800 mx-auto mb-4"></div>
+          <p className="text-gray-600">Opslagboxen laden...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 text-xl mb-4">❌ Error: {error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-900"
+          >
+            Probeer opnieuw
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -270,7 +312,7 @@ export default function OpslagboxenPage() {
               Opslagboxen
             </h1>
             <p className="text-base sm:text-lg md:text-2xl text-white/90 mb-6 sm:mb-8 leading-relaxed max-w-3xl mx-auto px-2">
-              2 types, {totalBoxes} opslagboxen — De Steiger 74/77, Almere.
+              {opslagboxTypesCount} types, {totalUnitsAtLocation} opslagboxen — De Steiger 74/77, Almere.
             </p>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8 md:mb-12">
@@ -278,8 +320,8 @@ export default function OpslagboxenPage() {
                 <div className="bg-white/20 rounded-lg p-3 sm:p-4 mb-2">
                   <Archive className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-white" />
                 </div>
-                <div className="text-white/80 text-xs sm:text-base">Beschikbare Boxes</div>
-                <div className="text-lg sm:text-2xl font-bold text-white">{totalBoxes}+</div>
+                <div className="text-white/80 text-xs sm:text-base">Totaal Units</div>
+                <div className="text-lg sm:text-2xl font-bold text-white">{totalUnitsAtLocation}</div>
               </div>
               <div className="text-center">
                 <div className="bg-white/20 rounded-lg p-3 sm:p-4 mb-2">
@@ -300,7 +342,7 @@ export default function OpslagboxenPage() {
                   <Car className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-white" />
                 </div>
                 <div className="text-white/80 text-xs sm:text-base">Vanaf</div>
-                <div className="text-base sm:text-xl font-bold text-white">€ 31,240</div>
+                <div className="text-base sm:text-xl font-bold text-white">€ 31.240</div>
                 <div className="text-white/60 text-xs mt-1">v.o.n. ex. BTW</div>
               </div>
             </div>
@@ -386,7 +428,7 @@ export default function OpslagboxenPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Vind Jouw Perfecte Opslagbox</h2>
-            <p className="text-xl text-gray-600">{storageBoxTypesCount} types, {totalBoxes} opslagboxen — De Steiger 74/77, Almere</p>
+            <p className="text-xl text-gray-600">{opslagboxTypesCount} types, {totalUnitsAtLocation} opslagboxen — De Steiger 74/77, Almere</p>
           </div>
 
           {/* Enhanced Search */}
@@ -432,35 +474,8 @@ export default function OpslagboxenPage() {
                     onChange={(e) => setSortBy(e.target.value as any)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="name">Op naam</option>
-                    <option value="price">Op prijs (laag → hoog)</option>
-                    <option value="area">Op oppervlakte (groot → klein)</option>
-                    <option value="location">Op locatie</option>
+                    <option value="type_number">Op type nummer (Type 1 → 16)</option>
                   </select>
-                </div>
-
-                {/* Type Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Types</label>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {Array.from(new Set(storageProjects.map(p => p.name))).map(type => (
-                      <label key={type} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedTypes.includes(type)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedTypes([...selectedTypes, type]);
-                            } else {
-                              setSelectedTypes(selectedTypes.filter(t => t !== type));
-                            }
-                          }}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">{type}</span>
-                      </label>
-                    ))}
-                  </div>
                 </div>
 
                 {/* Area Range */}
@@ -550,12 +565,11 @@ export default function OpslagboxenPage() {
                   onClick={() => {
                     setSearchTerm('');
                     setStatusFilter('all');
-                    setSelectedTypes([]);
                     setAreaMin(14);
                     setAreaMax(49);
                     setPriceMin(30);
                     setPriceMax(110);
-                    setSortBy('name');
+                    setSortBy('type_number');
                   }}
                   className="w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50"
                 >
@@ -595,17 +609,49 @@ export default function OpslagboxenPage() {
                 </div>
 
                 <div className="mb-4 text-sm text-gray-600">
-                  {filteredProjects.length} van {storageProjects.length} opslagbox types gevonden
+                  {filteredProjects.length} van {storageUnits.length} opslagbox types gevonden
                 </div>
 
                 {/* Opslagboxen Grid/Table */}
                 {viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                    {filteredProjects.map((project) => (
-                      <ProjectCard
-                        key={project.id}
-                        project={project}
-                      />
+                    {filteredProjects.map((unit) => (
+                      <Link href={`/opslagbox/${unit.slug}`} key={unit.id}>
+                        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow cursor-pointer">
+                          <div className="relative">
+                            <img
+                              src={unit.images[0] || '/images/placeholder.png'}
+                              alt={unit.name}
+                              className="w-full h-64 object-cover"
+                            />
+                            <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(unit.status)}`}>
+                              {getStatusText(unit.status)}
+                            </span>
+                          </div>
+                          <div className="p-5">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">{unit.name}</h3>
+                            <p className="text-sm text-gray-600 mb-1">
+                              {unit.units_count ? `${unit.units_count} units beschikbaar` : `Unit: ${unit.unit_number}`}
+                            </p>
+                            <p className="text-sm text-gray-600 mb-3">{unit.location || 'Almere'}</p>
+
+                            <div className="space-y-2 mb-4">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Bruto oppervlakte:</span>
+                                <span className="font-semibold text-gray-900">{Math.round(unit.gross_area)}m²</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Netto oppervlakte:</span>
+                                <span className="font-semibold text-gray-900">{Math.round(unit.net_area)}m²</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Prijs:</span>
+                                <span className="font-bold text-slate-800">€ {unit.sale_price?.toLocaleString('nl-NL')}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (
@@ -692,191 +738,6 @@ export default function OpslagboxenPage() {
         </div>
       </section>
 
-      {/* Investment Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Investeren in Opslagboxen
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Stabiel rendement door constante vraag naar opslagruimte
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Waarom Opslagboxen een Slimme Investering Zijn</h3>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <CheckCircle className="h-5 w-5 mr-3 text-green-600 mt-1" />
-                  <div>
-                    <div className="font-medium text-gray-900">Groeiende Markt</div>
-                    <div className="text-gray-600">Steeds meer mensen hebben behoefte aan extra opslagruimte</div>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-5 w-5 mr-3 text-green-600 mt-1" />
-                  <div>
-                    <div className="font-medium text-gray-900">Stabiele Inkomsten</div>
-                    <div className="text-gray-600">Stabiele vraag en lage leegstand zorgen voor voorspelbare waardeontwikkeling</div>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-5 w-5 mr-3 text-green-600 mt-1" />
-                  <div>
-                    <div className="font-medium text-gray-900">Laag Onderhoud</div>
-                    <div className="text-gray-600">Minimaal onderhoud nodig, gebruikers zorgen zelf voor hun ruimte</div>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-5 w-5 mr-3 text-green-600 mt-1" />
-                  <div>
-                    <div className="font-medium text-gray-900">Inflatie Bestendig</div>
-                    <div className="text-gray-600">Waardeontwikkeling stijgt mee met inflatie en marktwaarde</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-slate-50 rounded-xl p-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Investering Overzicht</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Verwacht rendement:</span>
-                  <span className="font-semibold text-slate-800">7-9% per jaar</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Gemiddelde bezettingsgraad:</span>
-                  <span className="font-semibold text-slate-800">95%+</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Minimale investering:</span>
-                  <span className="font-semibold text-slate-800">€ 25.000</span>
-                </div>
-                <div className="flex justify-between border-t pt-4">
-                  <span className="text-gray-600">Beheer door De Steiger:</span>
-                  <span className="font-semibold text-green-600">Volledig inclusief</span>
-                </div>
-              </div>
-              
-              <button className="w-full mt-6 bg-slate-800 text-white py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200">
-                Investering informatie
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Interesse in Opslagboxen?
-            </h2>
-            <p className="text-xl text-gray-600">
-              Voor huren, kopen of investeren - wij helpen je graag verder
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Contact informatie</h3>
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <Phone className="h-5 w-5 mr-3 text-slate-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">Telefoon</div>
-                    <div className="text-gray-600">+31 (0)20 123 4567</div>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Mail className="h-5 w-5 mr-3 text-slate-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">E-mail</div>
-                    <div className="text-gray-600">opslagboxen@desteiger.nl</div>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="h-5 w-5 mr-3 text-slate-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">Bezichtiging</div>
-                    <div className="text-gray-600">7 dagen per week mogelijk</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-lg p-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Vraag informatie aan</h3>
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Naam *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    placeholder="Je volledige naam"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    E-mail *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    placeholder="je@email.nl"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Interesse in
-                  </label>
-                  <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500">
-                    <option>Kopen van opslagbox</option>
-                    <option>Investeren in opslagboxen</option>
-                    <option>Algemene informatie</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Gewenste grootte
-                  </label>
-                  <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500">
-                    <option>Klein (14-18m²)</option>
-                    <option>Middel (26-34m²)</option>
-                    <option>Groot (46-49m²)</option>
-                    <option>Weet ik nog niet</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bericht
-                  </label>
-                  <textarea
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    placeholder="Vertel ons meer over je behoefte..."
-                  />
-                </div>
-                
-                <button
-                  type="submit"
-                  className="w-full bg-slate-800 text-white py-4 px-8 rounded-lg font-semibold text-lg hover:bg-slate-900 transition-colors duration-200"
-                >
-                  Verstuur aanvraag
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Share Modal */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -949,25 +810,6 @@ export default function OpslagboxenPage() {
                 </button>
               </div>
             </div>
-
-            {/* Native Share API (if available) */}
-            {typeof navigator !== 'undefined' && navigator.share && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => {
-                    navigator.share({
-                      title: 'De Steiger - Opslagboxen',
-                      text: `Bekijk deze ${filteredProjects.length} opslagbox types op De Steiger in Almere`,
-                      url: shareUrl,
-                    });
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-                >
-                  <Share2 className="h-4 w-4" />
-                  Meer opties...
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}

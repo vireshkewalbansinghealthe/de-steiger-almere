@@ -357,16 +357,42 @@ export default function ContactPage() {
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="aspect-w-16 aspect-h-9">
-              <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">Interactieve kaart</p>
-                  <p className="text-gray-400 text-sm mt-2">
-                    De Steiger 74/77, 1234 AB Almere
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden relative">
+            <div className="w-full h-[500px]">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2427.8!2d5.2!3d52.37!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c616d2b00a9f87%3A0x1234567890abcdef!2sDe%20Steiger%2074%2C%201317%20AZ%20Almere!5e0!3m2!1snl!2snl!4v1234567890123!5m2!1snl!2snl"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="De Steiger 74/77, Almere - Google Maps"
+              />
+            </div>
+            
+            {/* Map Overlay with Address */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent p-6 pointer-events-none">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pointer-events-auto">
+                <div className="flex items-start">
+                  <MapPin className="h-6 w-6 text-yellow-400 mr-3 mt-1 flex-shrink-0" />
+                  <div className="text-white">
+                    <h3 className="text-lg font-bold mb-1">De Steiger</h3>
+                    <p className="text-sm text-white/90">
+                      De Steiger 74/77<br />
+                      1317 AZ Almere<br />
+                      Nederland
                   </p>
+                  </div>
                 </div>
+                <a
+                  href="https://www.google.com/maps/dir/?api=1&destination=De+Steiger+74+Almere"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-slate-900 px-6 py-3 rounded-lg font-semibold transition-colors shadow-lg whitespace-nowrap"
+                >
+                  Routebeschrijving
+                </a>
               </div>
             </div>
           </div>

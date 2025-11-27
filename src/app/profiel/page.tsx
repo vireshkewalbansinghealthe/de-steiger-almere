@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { User, Mail, Phone, Building, MapPin, Calendar, CreditCard, FileText, Edit, Save, X } from 'lucide-react'
+import { User, Mail, Phone, Building, MapPin, Calendar, CreditCard, FileText, Edit, Save, X, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
 
@@ -14,6 +14,10 @@ interface Profile {
   last_name: string | null
   phone: string | null
   company_name: string | null
+  address: string | null
+  city: string | null
+  postal_code: string | null
+  country: string | null
   role: string
   created_at: string
   updated_at: string
@@ -22,10 +26,11 @@ interface Profile {
 interface Reservation {
   id: string
   reservation_number: string
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  status: 'pending' | 'reservation_paid' | 'fully_paid' | 'transferred' | 'cancelled'
   reservation_fee_amount: number
   total_property_price: number
   created_at: string
+  reservation_expires_at?: string
   properties: {
     name: string
     type: string
@@ -49,7 +54,11 @@ export default function ProfilePage() {
     first_name: '',
     last_name: '',
     phone: '',
-    company_name: ''
+    company_name: '',
+    address: '',
+    city: '',
+    postal_code: '',
+    country: 'Nederland'
   })
 
   const supabase = createClient()
@@ -79,7 +88,11 @@ export default function ProfilePage() {
           first_name: profileData.first_name || '',
           last_name: profileData.last_name || '',
           phone: profileData.phone || '',
-          company_name: profileData.company_name || ''
+          company_name: profileData.company_name || '',
+          address: profileData.address || '',
+          city: profileData.city || '',
+          postal_code: profileData.postal_code || '',
+          country: profileData.country || 'Nederland'
         })
 
         // Get user reservations with property details
@@ -105,7 +118,7 @@ export default function ProfilePage() {
           console.error('Error fetching reservations:', reservationsError)
         } else {
           console.log('Fetched reservations:', reservationsData)
-          setReservations(reservationsData || [])
+        setReservations(reservationsData || [])
         }
 
       } catch (error) {
@@ -130,6 +143,10 @@ export default function ProfilePage() {
           last_name: editForm.last_name,
           phone: editForm.phone,
           company_name: editForm.company_name,
+          address: editForm.address,
+          city: editForm.city,
+          postal_code: editForm.postal_code,
+          country: editForm.country,
           updated_at: new Date().toISOString()
         })
         .eq('id', profile.id)
@@ -141,7 +158,11 @@ export default function ProfilePage() {
         first_name: editForm.first_name,
         last_name: editForm.last_name,
         phone: editForm.phone,
-        company_name: editForm.company_name
+        company_name: editForm.company_name,
+        address: editForm.address,
+        city: editForm.city,
+        postal_code: editForm.postal_code,
+        country: editForm.country
       } : null)
 
       setEditing(false)
@@ -156,16 +177,18 @@ export default function ProfilePage() {
   const getStatusBadge = (status: string) => {
     const styles = {
       pending: 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-md',
-      confirmed: 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md',
-      cancelled: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md',
-      completed: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+      reservation_paid: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md',
+      fully_paid: 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md',
+      transferred: 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md',
+      cancelled: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md'
     }
     
     const labels = {
       pending: 'In behandeling',
-      confirmed: 'Bevestigd',
-      cancelled: 'Geannuleerd',
-      completed: 'Voltooid'
+      reservation_paid: 'Reservering betaald',
+      fully_paid: 'Volledig betaald',
+      transferred: 'Overgedragen',
+      cancelled: 'Geannuleerd'
     }
 
     return (
@@ -173,6 +196,37 @@ export default function ProfilePage() {
         {labels[status as keyof typeof labels]}
       </span>
     )
+  }
+
+  const getExpiryBadge = (expiryDate?: string) => {
+    if (!expiryDate) return null;
+
+    const now = new Date();
+    const expiry = new Date(expiryDate);
+    const daysLeft = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysLeft < 0) {
+      return (
+        <div className="text-red-600 font-semibold flex items-center">
+          <Clock className="h-4 w-4 mr-1" />
+          Verlopen
+        </div>
+      );
+    } else if (daysLeft <= 7) {
+      return (
+        <div className="text-red-600 font-semibold flex items-center">
+          <Clock className="h-4 w-4 mr-1" />
+          Verloopt over {daysLeft} {daysLeft === 1 ? 'dag' : 'dagen'}
+        </div>
+      );
+    } else {
+      return (
+        <div className="text-gray-600 flex items-center">
+          <Clock className="h-4 w-4 mr-1" />
+          Geldig tot {format(expiry, 'dd MMM yyyy', { locale: nl })}
+        </div>
+      );
+    }
   }
 
   const handleLogout = async () => {
@@ -274,7 +328,11 @@ export default function ProfilePage() {
                             first_name: profile.first_name || '',
                             last_name: profile.last_name || '',
                             phone: profile.phone || '',
-                            company_name: profile.company_name || ''
+                            company_name: profile.company_name || '',
+                            address: profile.address || '',
+                            city: profile.city || '',
+                            postal_code: profile.postal_code || '',
+                            country: profile.country || 'Nederland'
                           })
                         }}
                         className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
@@ -359,6 +417,59 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
+                  <div className="flex items-start">
+                    <MapPin className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0 mt-1" />
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500">Adres</p>
+                      {editing ? (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editForm.address}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
+                            placeholder="Straat en huisnummer"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300"
+                          />
+                          <div className="flex space-x-2">
+                            <input
+                              type="text"
+                              value={editForm.postal_code}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, postal_code: e.target.value }))}
+                              placeholder="Postcode"
+                              className="w-1/3 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300"
+                            />
+                            <input
+                              type="text"
+                              value={editForm.city}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, city: e.target.value }))}
+                              placeholder="Plaats"
+                              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300"
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            value={editForm.country}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, country: e.target.value }))}
+                            placeholder="Land"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300"
+                          />
+                        </div>
+                      ) : (
+                        <div className="font-medium">
+                          {profile.address && profile.city ? (
+                            <>
+                              <p>{profile.address}</p>
+                              <p>{profile.postal_code} {profile.city}</p>
+                              <p>{profile.country}</p>
+                            </>
+                          ) : (
+                            <p>Niet opgegeven</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0" />
                     <div>
@@ -388,7 +499,19 @@ export default function ProfilePage() {
                 {reservations.length > 0 ? (
                   <div className="space-y-6">
                     {reservations.map((reservation) => (
-                      <div key={reservation.id} className="border border-gray-200 rounded-xl p-6 bg-gradient-to-r from-gray-50 to-white hover:shadow-lg transition-all duration-300">
+                      <div key={reservation.id} className="border border-gray-200 rounded-xl overflow-hidden bg-gradient-to-r from-gray-50 to-white hover:shadow-lg transition-all duration-300">
+                        {/* Unit Image */}
+                        {reservation.properties.images && reservation.properties.images.length > 0 && (
+                          <div className="h-48 bg-gray-200 overflow-hidden">
+                            <img 
+                              src={reservation.properties.images[0]} 
+                              alt={reservation.properties.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        
+                        <div className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div>
                             <h4 className="text-xl font-bold text-gray-900">
@@ -402,7 +525,7 @@ export default function ProfilePage() {
                           {getStatusBadge(reservation.status)}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                           <div>
                             <p className="text-sm text-gray-500">Reserveringsdatum</p>
                             <p className="font-medium">
@@ -415,7 +538,11 @@ export default function ProfilePage() {
                           </div>
                           <div>
                             <p className="text-sm text-gray-500">Reserveringskosten</p>
-                            <p className="font-medium text-yellow-600">€ {reservation.reservation_fee_amount.toLocaleString()}</p>
+                              <p className="font-medium text-yellow-600">€ {(reservation.reservation_fee_amount / 100).toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-500">Geldig tot</p>
+                              {getExpiryBadge(reservation.reservation_expires_at)}
                           </div>
                         </div>
 
@@ -430,14 +557,7 @@ export default function ProfilePage() {
                             >
                               Details bekijken
                             </button>
-                            {reservation.status === 'pending' && (
-                              <button
-                                onClick={() => router.push(`/betaling/${reservation.id}`)}
-                                className="px-4 py-2 text-sm bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-600 transition-all duration-300 font-medium shadow-md"
-                              >
-                                Nu betalen
-                              </button>
-                            )}
+                            </div>
                           </div>
                         </div>
                       </div>

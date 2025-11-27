@@ -2,16 +2,28 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Building2, ArrowRight, MapPin, Zap, Shield, Calendar, Grid, List, Share2, Copy, Facebook, Twitter, Link as LinkIcon, Users, Phone, Mail, Search, ShoppingCart } from 'lucide-react';
-import { projects } from '../../data/projects';
-import ProjectCard from '../../components/ProjectCard';
-import EnhancedReservationModal from '../../components/EnhancedReservationModal';
+import { Building2, ArrowRight, MapPin, Zap, Shield, Calendar, Grid, List, Share2, Copy, Facebook, Twitter, Link as LinkIcon, Users, Phone, Mail, Search, Loader2 } from 'lucide-react';
+
+interface Unit {
+  id: string;
+  name: string;
+  type: 'bedrijfsunit' | 'opslagbox';
+  unit_number: string;
+  gross_area: number;
+  net_area: number;
+  sale_price: number;
+  status: 'available' | 'reserved' | 'sold';
+  images: string[];
+  location: string;
+  description?: string;
+  features?: string[];
+}
 
 export default function BedrijfsunitsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location'>('name');
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location' | 'unit_number'>('unit_number');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
@@ -21,6 +33,11 @@ export default function BedrijfsunitsPage() {
   const [areaMax, setAreaMax] = useState(400);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Backend data state
+  const [businessUnits, setBusinessUnits] = useState<Unit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Contact form state
   const [formData, setFormData] = useState({
@@ -32,11 +49,6 @@ export default function BedrijfsunitsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [submitMessage, setSubmitMessage] = useState('');
-  
-  // Enhanced reservation modal state
-  const [showEnhancedReservation, setShowEnhancedReservation] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState<any>(null);
-  const [multiSelectMode, setMultiSelectMode] = useState(false);
 
   const heroImages = [
     '/images/up/Image1.png',
@@ -51,73 +63,97 @@ export default function BedrijfsunitsPage() {
     return () => clearInterval(interval);
   }, [heroImages.length]);
 
-  // Filter projects to show only business units (exclude garage boxes)
-  const businessUnits = projects.filter(project => project.units > 0 && project.location === 'Almere');
-  const businessUnitTypesCount = 12;
-  const totalUnitsAtLocation = 79;
+  // Fetch bedrijfsunits from backend (grouped by type)
+  useEffect(() => {
+    const fetchUnits = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch GROUPED by type - shows 1 card per type (12 types)
+        const response = await fetch('/api/units?type=bedrijfsunit&status=&group_by_type=true');
+        if (!response.ok) {
+          throw new Error('Failed to fetch units');
+        }
+        const response_data = await response.json();
+        const units_array = response_data.units || [];
+        console.log('✅ Fetched', units_array.length, 'bedrijfsunit TYPES');
+        setBusinessUnits(units_array);
+        setError(null);
+      } catch (err: any) {
+        console.error('Error fetching units:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUnits();
+  }, []);
+
+  const businessUnitTypesCount = businessUnits.length; // Number of TYPES
+  const totalUnitsAtLocation = businessUnits.reduce((sum, unit) => sum + (unit.units_count || 1), 0); // Total individual units
 
   const getFilteredAndSortedProjects = () => {
-    let filtered = businessUnits.filter(project => {
+    let filtered = businessUnits.filter(unit => {
       // Search filter
       const matchesSearch = searchTerm === '' || 
-        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchTerm.toLowerCase());
+        unit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        unit.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        unit.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        unit.unit_number.toLowerCase().includes(searchTerm.toLowerCase());
 
       // Status filter
       const matchesStatus = statusFilter === 'all' || 
-        (statusFilter === 'beschikbaar' && project.status === 'NU IN DE VERKOOP') ||
-        (statusFilter === 'gereserveerd' && project.status === 'NU IN DE VERKOOP') ||
-        (statusFilter === 'verkocht' && project.status === 'UITVERKOCHT');
+        (statusFilter === 'beschikbaar' && unit.status === 'available') ||
+        (statusFilter === 'gereserveerd' && unit.status === 'reserved') ||
+        (statusFilter === 'verkocht' && unit.status === 'sold');
 
       // Type filter
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(project.name);
+      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(unit.name);
 
-      // Area range filter - check if any unit in the project falls within the range
-      let matchesAreaRange = true;
-      if (project.details?.unitDetails && project.details.unitDetails.length > 0) {
-        matchesAreaRange = project.details.unitDetails.some(unit => {
-          const area = unit.netArea || unit.grossArea || 0;
-          return area >= areaMin && area <= areaMax;
-        });
-      }
+      // Area range filter
+      const area = unit.net_area || unit.gross_area || 0;
+      const matchesAreaRange = area >= areaMin && area <= areaMax;
 
-      // Price range filter - check if any unit in the project falls within the range
-      let matchesPriceRange = true;
-      if (project.details?.unitDetails && project.details.unitDetails.length > 0) {
-        matchesPriceRange = project.details.unitDetails.some(unit => {
-          const price = parseFloat(unit.price.replace(/[€,.\s]/g, '')) / 1000;
-          return price >= priceMin && price <= priceMax;
-        });
-      }
+      // Price range filter (convert price from euros to thousands)
+      const priceInThousands = parseFloat(unit.sale_price.toString()) / 1000;
+      const matchesPriceRange = priceInThousands >= priceMin && priceInThousands <= priceMax;
 
-      // Area filter - based on project units count
+      // Area filter - based on unit area
       let matchesArea = true;
       if (areaFilter !== 'all') {
-        const unitCount = project.units || 0;
-        if (areaFilter === 'small') matchesArea = unitCount < 5;
-        else if (areaFilter === 'medium') matchesArea = unitCount >= 5 && unitCount <= 10;
-        else if (areaFilter === 'large') matchesArea = unitCount > 10;
+        if (areaFilter === 'small') matchesArea = area < 150;
+        else if (areaFilter === 'medium') matchesArea = area >= 150 && area <= 250;
+        else if (areaFilter === 'large') matchesArea = area > 250;
       }
 
       return matchesSearch && matchesStatus && matchesType && matchesAreaRange && matchesPriceRange && matchesArea;
     });
 
-    // Sort projects
+    // Sort units
     filtered.sort((a, b) => {
       switch (sortBy) {
+        case 'unit_number':
+          // Sorteer numeriek op type_number (Type 1 → Type 12)
+          const typeA = a.type_number || 0;
+          const typeB = b.type_number || 0;
+          return typeA - typeB;
         case 'name':
           return a.name.localeCompare(b.name);
         case 'price':
-          const priceA = parseFloat(a.startPrice?.replace(/[€,.\s]/g, '') || '0');
-          const priceB = parseFloat(b.startPrice?.replace(/[€,.\s]/g, '') || '0');
+          const priceA = parseFloat(a.sale_price.toString());
+          const priceB = parseFloat(b.sale_price.toString());
           return priceA - priceB;
         case 'area':
-          return (b.units || 0) - (a.units || 0);
+          const areaA = a.net_area || a.gross_area || 0;
+          const areaB = b.net_area || b.gross_area || 0;
+          return areaA - areaB;
         case 'location':
-          return a.location.localeCompare(b.location);
+          return (a.location || '').localeCompare(b.location || '');
         default:
-          return 0;
+          // Fallback: sorteer op type_number
+          const defaultTypeA = a.type_number || 0;
+          const defaultTypeB = b.type_number || 0;
+          return defaultTypeA - defaultTypeB;
       }
     });
 
@@ -244,78 +280,67 @@ export default function BedrijfsunitsPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
+                Unit
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Locatie
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Units
+                Oppervlakte
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Parkeerplaatsen
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Vanaf Prijs
+                Prijs
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actie
-              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredProjects.map((project) => (
-              <tr key={project.id} className="hover:bg-gray-50">
+            {filteredProjects.map((unit) => (
+              <tr key={unit.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `/bedrijfsunit/bedrijfsunit-type-${unit.type_number}`}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <img
-                      src={project.images[0]}
-                      alt={project.name}
+                      src={unit.images?.[0] || '/images/placeholder.jpg'}
+                      alt={unit.name}
                       className="w-12 h-12 rounded-lg object-cover mr-4"
                     />
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        {project.name}
+                        {unit.name}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {project.description.substring(0, 50)}...
+                        {unit.units_count ? `${unit.units_count} units` : `Unit: ${unit.unit_number}`}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.location}
+                  {unit.location || 'Almere'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.units}
+                  {unit.net_area || unit.gross_area} m²
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.parkingSpaces || 'N/A'}
+                  2 parkeerplaatsen
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.startPrice || 'Op aanvraag'}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                  €{unit.sale_price.toLocaleString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    project.status === 'NU IN DE VERKOOP' 
+                    unit.status === 'available' 
                       ? 'bg-green-100 text-green-800' 
-                      : project.status === 'UITVERKOCHT'
+                      : unit.status === 'reserved'
                       ? 'bg-red-100 text-red-800'
                       : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {project.status}
+                    {unit.status === 'available' ? 'Beschikbaar' : unit.status === 'reserved' ? 'Gereserveerd' : 'Verkocht'}
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <Link
-                    href={`/bedrijfsunit/${project.slug}`}
-                    className="text-slate-600 hover:text-slate-900"
-                  >
-                    Details
-                  </Link>
                 </td>
               </tr>
             ))}
@@ -357,9 +382,9 @@ export default function BedrijfsunitsPage() {
                 <div className="bg-white/20 rounded-lg p-4 mb-2">
                   <Building2 className="h-8 w-8 mx-auto text-white" />
                 </div>
-                <div className="text-white/80">Beschikbare Units</div>
+                <div className="text-white/80">Totaal Units</div>
                 <div className="text-2xl font-bold text-white">
-                  {businessUnits.reduce((total, project) => total + project.units, 0)}+
+                  {totalUnitsAtLocation}
                 </div>
               </div>
               <div className="text-center">
@@ -455,6 +480,7 @@ export default function BedrijfsunitsPage() {
                     onChange={(e) => setSortBy(e.target.value as any)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
+                    <option value="unit_number">Op type nummer (Type 1 → 12)</option>
                     <option value="name">Op naam</option>
                     <option value="price">Op prijs (laag → hoog)</option>
                     <option value="area">Op oppervlakte (groot → klein)</option>
@@ -621,44 +647,82 @@ export default function BedrijfsunitsPage() {
                   {filteredProjects.length} van {businessUnits.length} bedrijfsunit types gevonden
           </div>
 
+                {/* Loading State */}
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <Loader2 className="h-8 w-8 animate-spin text-yellow-500" />
+                    <span className="ml-3 text-gray-600">Laden...</span>
+                  </div>
+                ) : error ? (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    <p className="font-semibold">Fout bij het laden van units</p>
+                    <p className="text-sm">{error}</p>
+                  </div>
+                ) : filteredProjects.length === 0 ? (
+                  <div className="text-center py-20 text-gray-500">
+                    <Building2 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-lg font-medium">Geen bedrijfsunits gevonden</p>
+                    <p className="text-sm">Probeer andere filters</p>
+                  </div>
+                ) : (
+                  <>
                 {/* Units Grid/Table */}
                 {viewMode === 'grid' ? (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredProjects.map((project) => (
-                      <div key={project.id} className="relative">
-                        <ProjectCard
-                          project={project}
-                        />
-                        {/* Enhanced Reservation Buttons */}
-                        <div className="mt-4 space-y-2">
-                          <button
-                            onClick={() => {
-                              setSelectedUnit(project);
-                              setMultiSelectMode(false);
-                              setShowEnhancedReservation(true);
-                            }}
-                            className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-slate-900 font-semibold px-4 py-3 rounded-lg hover:from-yellow-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center"
+                        {filteredProjects.map((unit) => (
+                          <div key={unit.id} className="relative">
+                            {/* Unit Card - Clickable Link to TYPE detail page */}
+                            <Link 
+                              href={`/bedrijfsunit/bedrijfsunit-type-${unit.type_number}`}
+                              className="block bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow cursor-pointer"
                           >
-                            <Building2 className="h-4 w-4 mr-2" />
-                            Reserveer Deze Unit
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedUnit(null);
-                              setMultiSelectMode(true);
-                              setShowEnhancedReservation(true);
-                            }}
-                            className="w-full bg-gradient-to-r from-slate-700 to-slate-800 text-white font-medium px-4 py-2 rounded-lg hover:from-slate-800 hover:to-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center text-sm"
-                          >
-                            <ShoppingCart className="h-4 w-4 mr-2" />
-                            Groepsreservering Starten
-                          </button>
+                              {/* Status Badge */}
+                              <div className="absolute top-4 right-4 z-10">
+                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                                  unit.status === 'available' 
+                                    ? 'bg-green-500 text-white' 
+                                    : unit.status === 'reserved' 
+                                    ? 'bg-red-500 text-white' 
+                                    : 'bg-gray-500 text-white'
+                                }`}>
+                                  {unit.status === 'available' ? 'Beschikbaar' : unit.status === 'reserved' ? 'Gereserveerd' : 'Verkocht'}
+                                </span>
                         </div>
+                              
+                              {/* Image */}
+                              <img 
+                                src={unit.images?.[0] || '/images/placeholder.jpg'} 
+                                alt={unit.name}
+                                className="w-full h-48 object-cover"
+                              />
+                              
+                              {/* Content */}
+                              <div className="p-5">
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{unit.name}</h3>
+                                <p className="text-sm text-gray-600 mb-1">
+                                  {unit.units_count ? `${unit.units_count} units beschikbaar` : `Unit: ${unit.unit_number}`}
+                                </p>
+                                <p className="text-sm text-gray-600 mb-3">{unit.location || 'Almere'}</p>
+                                
+                                <div className="flex justify-between items-center mb-4">
+                                  <div>
+                                    <p className="text-xs text-gray-500">Oppervlakte</p>
+                                    <p className="text-sm font-semibold">{unit.net_area || unit.gross_area} m²</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-500">Prijs</p>
+                                    <p className="text-lg font-bold text-yellow-600">€{unit.sale_price.toLocaleString()}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </Link>
                       </div>
                     ))}
                   </div>
                 ) : (
                   renderTableView()
+                    )}
+                  </>
                 )}
               </div>
           </div>
@@ -978,18 +1042,6 @@ export default function BedrijfsunitsPage() {
           </div>
         </div>
       )}
-
-      {/* Enhanced Reservation Modal */}
-      <EnhancedReservationModal
-        isOpen={showEnhancedReservation}
-        onClose={() => {
-          setShowEnhancedReservation(false);
-          setSelectedUnit(null);
-          setMultiSelectMode(false);
-        }}
-        initialUnit={selectedUnit}
-        multiSelect={multiSelectMode}
-      />
 
       <style jsx>{`
         .slider-thumb::-webkit-slider-thumb {

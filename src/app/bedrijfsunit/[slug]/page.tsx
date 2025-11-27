@@ -1,16 +1,31 @@
 'use client';
 
-import React, { useState, use } from 'react';
+import React, { useState, use, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Calendar, Car, Building2, CheckCircle, Home, ArrowRight, Shield, Zap, Users, Phone, Mail, Grid, List, Filter, ChevronLeft, ChevronRight, CreditCard, Download } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Car, Building2, CheckCircle, Home, ArrowRight, Shield, Zap, Users, Phone, Mail, Grid, List, Filter, ChevronLeft, ChevronRight, CreditCard, Download, Loader2, Lock, AlertCircle } from 'lucide-react';
 import ReservationModal from '../../../components/ReservationModal';
-import { projects } from '../../../data/projects';
+import { useViewingLock } from '../../../hooks/useViewingLock';
 
 interface ProjectDetailPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+interface Unit {
+  id: string;
+  name: string;
+  type: 'bedrijfsunit' | 'opslagbox';
+  unit_number: string;
+  gross_area: number;
+  net_area: number;
+  sale_price: number;
+  status: 'available' | 'reserved' | 'sold';
+  images: string[];
+  location: string;
+  description?: string;
+  features?: string[];
 }
 
 export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
@@ -22,7 +37,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
     message: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState<number | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
@@ -32,11 +47,138 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const [showImageGallery, setShowImageGallery] = useState(false);
   const [showReservationModal, setShowReservationModal] = useState(false);
 
-  const project = projects.find(p => p.slug === resolvedParams.slug);
+  // Backend data
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  
+  // Viewing lock for selected unit
+  const { isLocked, isOwner, message: lockMessage, isLoading: lockLoading, retry: retryLock } = useViewingLock({
+    propertyId: selectedPropertyId,
+    enabled: !!selectedPropertyId,
+  });
+  
+  console.log('🔄 Component render - units:', units.length, '| loading:', isLoading, '| error:', error);
 
-  if (!project) {
+  // Fetch units from backend based on slug (ALL units of a TYPE)
+  useEffect(() => {
+    const fetchUnits = async () => {
+      setIsLoading(true);
+      try {
+        // Extract type and type number from slug (bedrijfsunit-type-3 → bedrijfsunit, type_number=3)
+        const type = resolvedParams.slug.includes('bedrijfsunit') ? 'bedrijfsunit' : 'opslagbox';
+        const typeNumberMatch = resolvedParams.slug.match(/type-(\d+)/);
+        const typeNumber = typeNumberMatch ? typeNumberMatch[1] : null;
+        
+        console.log('🔍 Fetching units for type:', type, '| Type number:', typeNumber);
+        
+        if (!typeNumber) {
+          throw new Error('Invalid slug - missing type number');
+        }
+        
+        // Fetch ALL units of this TYPE (filter by type_number, not unit_number)
+        const response = await fetch(`/api/units?type=${type}&type_number=${typeNumber}&status=`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch units');
+        }
+        const response_data = await response.json();
+        console.log('✅ API Response:', response_data);
+        const units_array = response_data.units || [];
+        
+        console.log(`✅ Fetched ${units_array.length} units for ${type} Type ${typeNumber}`);
+        console.log('📦 First unit:', units_array[0]);
+        setUnits(units_array);
+        setError(null);
+      } catch (err: any) {
+        console.error('❌ Error fetching units:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUnits();
+  }, [resolvedParams.slug]);
+
+  // Create a "project" object from units for compatibility with existing UI
+  console.log('🏗️ Creating project from', units.length, 'units');
+  const project = units.length > 0 ? {
+    id: units[0].type,
+    name: units[0].type === 'bedrijfsunit' ? 'Bedrijfsunits' : 'Opslagboxen',
+    slug: resolvedParams.slug,
+    description: units[0].description || `Moderne ${units[0].type === 'bedrijfsunit' ? 'bedrijfsunits' : 'opslagboxen'} op toplocatie`,
+    location: units[0].location || 'Almere',
+    images: (units[0].images && units[0].images.length > 0) ? units[0].images : ['/images/placeholder.png'],
+    units: units.length,
+    status: 'NU IN DE VERKOOP',
+    startPrice: `€ ${Math.min(...units.map(u => u.sale_price)).toLocaleString('nl-NL')}`,
+    buildingStart: '2024',
+    details: {
+      unitDetails: units.map(unit => ({
+        unitNumber: parseInt(unit.unit_number) || 0,
+        netArea: unit.net_area || 0,
+        grossArea: unit.gross_area || 0,
+        price: `€ ${(unit.sale_price || 0).toLocaleString('nl-NL')}`,
+        status: unit.status === 'available' ? 'beschikbaar' : unit.status === 'reserved' ? 'gereserveerd' : 'verkocht',
+        industrieNetto: Math.floor((unit.net_area || 0) * 0.7),
+        industrieBruto: Math.floor((unit.gross_area || 0) * 0.7),
+        kantoorNetto: Math.floor((unit.net_area || 0) * 0.3),
+        kantoorBruto: Math.floor((unit.gross_area || 0) * 0.3),
+      })),
+      specifications: {
+        ceiling: '3.70 meter vrije hoogte',
+        floors: 'Monolitische afwerking',
+        internet: 'Glasvezel',
+        electricity: '3x25A aansluiting',
+      },
+      facilities: [
+        '2 parkeerplaatsen per unit',
+        '24/7 toegang',
+        'Zonnepanelen op dak',
+        'Elektrische laadpalen',
+      ],
+      location: 'De Steiger 74/77, Almere',
+      accessibility: 'Uitstekende bereikbaarheid via A6 en openbaar vervoer',
+      sustainability: 'Energielabel A+ met zonnepanelen en slimme systemen',
+      investorInfo: {
+        expectedReturn: '6.5% - 8.2%',
+        maintenanceRisk: 'Minimaal',
+        rentalPotential: 'Hoog',
+        whyInvest: [
+          'Groeiende vraag naar bedrijfsruimte',
+          'Professioneel beheer door De Steiger',
+          'Stabiel rendement',
+        ],
+      },
+    },
+  } : null;
+  
+  console.log('📊 Project object:', project ? 'Created ✅' : 'NULL ❌');
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-yellow-500" />
+      </div>
+    );
+  }
+
+  // Only show 404 if we're done loading and still have no project
+  if (!isLoading && (error || !project)) {
+    console.error('🚫 404 - Error:', error, '| Project:', project, '| Units:', units.length);
     notFound();
     return null;
+  }
+  
+  // If still loading, show the loader (this shouldn't happen as we have a check above, but just in case)
+  if (!project) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-yellow-500" />
+        <p className="ml-3">Laden...</p>
+      </div>
+    );
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -123,13 +265,20 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
           return (
             <div
               key={unit.unitNumber}
-              onClick={() => setSelectedUnit(unit.unitNumber)}
+              onClick={() => {
+                setSelectedUnit(unit.unitNumber.toString());
+                // Find the unit's property_id
+                const foundUnit = units.find(u => parseInt(u.unit_number) === unit.unitNumber);
+                if (foundUnit) {
+                  setSelectedPropertyId(foundUnit.id);
+                }
+              }}
               className={`h-16 sm:h-20 md:h-24 rounded border-2 flex flex-col items-center justify-center text-xs sm:text-sm font-semibold cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-md ${
                 isAvailable 
                   ? 'bg-green-100 border-green-400 text-green-800 hover:bg-green-200' 
                   : isReserved
-                  ? 'bg-yellow-100 border-yellow-400 text-yellow-800 hover:bg-yellow-200'
-                  : 'bg-red-100 border-red-400 text-red-800 hover:bg-red-200'
+                  ? 'bg-red-100 border-red-400 text-red-800 hover:bg-red-200'  
+                  : 'bg-gray-100 border-gray-400 text-gray-800 hover:bg-gray-200'
               }`}
             >
               <div className="font-bold text-xs sm:text-sm">{unit.unitNumber}</div>
@@ -168,7 +317,14 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             {unitDetails.map((unit, index) => (
               <tr 
                 key={unit.unitNumber} 
-                onClick={() => setSelectedUnit(unit.unitNumber)}
+                onClick={() => {
+                  setSelectedUnit(unit.unitNumber.toString());
+                  // Find the unit's property_id
+                  const foundUnit = units.find(u => parseInt(u.unit_number) === unit.unitNumber);
+                  if (foundUnit) {
+                    setSelectedPropertyId(foundUnit.id);
+                  }
+                }}
                 className={`border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-slate-50`}
               >
                 <td className="py-3 px-4 font-medium text-gray-900">#{unit.unitNumber}</td>
@@ -186,8 +342,8 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                     unit.status === 'beschikbaar' 
                       ? 'bg-green-100 text-green-800'
                       : unit.status === 'gereserveerd'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-gray-100 text-gray-800'
                   }`}>
                     {unit.status === 'beschikbaar' ? 'Vrij' : 
                      unit.status === 'gereserveerd' ? 'Gereserveerd' : 'Verkocht'}
@@ -206,9 +362,9 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
     );
   };
 
-  const getUnitDetails = (unitNumber: number) => {
+  const getUnitDetails = (unitNumber: string) => {
     // Find the real unit data from project details
-    const unitData = project.details?.unitDetails?.find(unit => unit.unitNumber === unitNumber);
+    const unitData = project.details?.unitDetails?.find(unit => unit.unitNumber.toString() === unitNumber);
     
     if (!unitData) {
       return null;
@@ -491,11 +647,11 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 <span className="text-xs sm:text-sm text-gray-600">Beschikbaar</span>
               </div>
               <div className="flex items-center">
-                <div className="w-3 h-3 sm:w-4 sm:h-3 bg-yellow-100 border-2 border-yellow-400 rounded mr-2"></div>
+                <div className="w-3 h-3 sm:w-4 sm:h-3 bg-red-100 border-2 border-red-400 rounded mr-2"></div>
                 <span className="text-xs sm:text-sm text-gray-600">Gereserveerd</span>
               </div>
               <div className="flex items-center">
-                <div className="w-3 h-3 sm:w-4 sm:h-3 bg-red-100 border-2 border-red-400 rounded mr-2"></div>
+                <div className="w-3 h-3 sm:w-4 sm:h-3 bg-gray-100 border-2 border-gray-400 rounded mr-2"></div>
                 <span className="text-xs sm:text-sm text-gray-600">Verkocht</span>
               </div>
             </div>
@@ -857,11 +1013,44 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       {selectedUnit && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-0 sm:p-4 z-50 animate-fade-in">
           <div className="bg-white rounded-none sm:rounded-xl max-w-5xl w-full h-full sm:h-auto max-h-full sm:max-h-[90vh] flex flex-col relative animate-zoom-in overflow-hidden">
+            {/* Lock Status Banner */}
+            {isLocked && !isOwner && lockMessage && (
+              <div className="bg-yellow-50 border-b border-yellow-200 p-4">
+                <div className="flex items-center">
+                  <Lock className="h-5 w-5 text-yellow-600 mr-3 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-yellow-800">{lockMessage}</p>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      U kunt deze unit niet reserveren totdat de andere klant de pagina verlaat.
+                    </p>
+                  </div>
+                  <button
+                    onClick={retryLock}
+                    disabled={lockLoading}
+                    className="ml-4 px-3 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700 disabled:opacity-50"
+                  >
+                    {lockLoading ? 'Bezig...' : 'Probeer opnieuw'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Fixed Header with Close Button */}
             <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center">
               <h3 className="text-lg font-semibold text-gray-900">Unit {selectedUnit} Details</h3>
+                {isOwner && (
+                  <span className="ml-3 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <Lock className="h-3 w-3 mr-1" />
+                    Vergrendeld voor u
+                  </span>
+                )}
+              </div>
               <button
-                onClick={() => setSelectedUnit(null)}
+                onClick={() => {
+                  setSelectedUnit(null);
+                  setSelectedPropertyId(null);
+                }}
                 className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -992,8 +1181,8 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                               unitDetails.status === 'beschikbaar' 
                                 ? 'bg-green-100 text-green-800'
                                 : unitDetails.status === 'gereserveerd'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-gray-100 text-gray-800'
                             }`}>
                               {unitDetails.status === 'beschikbaar' ? 'Vrij' : 
                                unitDetails.status === 'gereserveerd' ? 'Gereserveerd' : 'Verkocht'}
@@ -1208,6 +1397,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                               <button 
                                 onClick={() => {
                                   setSelectedUnit(null);
+                                  setSelectedPropertyId(null);
                                   scrollToSection('inschrijven');
                                 }}
                                 className="w-full mt-6 bg-slate-800 text-white py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200"
@@ -1233,6 +1423,15 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 
                 return unitDetails.status === 'beschikbaar' ? (
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    {isLocked && !isOwner ? (
+                      <button
+                        disabled
+                        className="flex-1 bg-gray-400 text-white py-3 px-4 rounded-lg font-semibold text-center inline-flex items-center justify-center cursor-not-allowed"
+                      >
+                        <Lock className="h-4 w-4 mr-2" />
+                        Unit wordt bekeken
+                      </button>
+                    ) : (
                     <Link
                       href={`/reserveren/${project.slug}?unit=${selectedUnit}`}
                       className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold text-center hover:bg-green-700 transition-colors duration-200 inline-flex items-center justify-center"
@@ -1240,6 +1439,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                       <Calendar className="h-4 w-4 mr-2" />
                       Reserveer Nu - €1,500
                     </Link>
+                    )}
                     <button
                       onClick={() => setModalTab('contact')}
                       className="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
@@ -1256,7 +1456,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                       Meer informatie
                     </button>
                     <button
-                      onClick={() => setSelectedUnit(null)}
+                      onClick={() => {
+                        setSelectedUnit(null);
+                        setSelectedPropertyId(null);
+                      }}
                       className="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
                     >
                       Sluiten

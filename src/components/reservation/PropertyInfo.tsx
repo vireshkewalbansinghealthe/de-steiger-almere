@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowRight, MapPin, Building2, Home, Users } from 'lucide-react';
 
 interface PropertyInfoProps {
@@ -12,6 +12,14 @@ interface PropertyInfoProps {
 
 export default function PropertyInfo({ project, reservationData, updateData, onNext }: PropertyInfoProps) {
   const [selectedUnit, setSelectedUnit] = useState<number | null>(reservationData.unitNumber);
+
+  // Update selected unit when reservationData.unitNumber changes (from URL parameter)
+  useEffect(() => {
+    if (reservationData.unitNumber && reservationData.unitNumber !== selectedUnit) {
+      setSelectedUnit(reservationData.unitNumber);
+      console.log('✅ Pre-selected unit from URL:', reservationData.unitNumber);
+    }
+  }, [reservationData.unitNumber]);
 
   const handleNext = () => {
     updateData({

@@ -1,0 +1,48 @@
+[
+  {
+    "id": "reservation-1764092234527",
+    "reservation_number": "RES-1764092234526-FMMQW",
+    "status": "confirmed",
+    "payment_status": "completed",
+    "created_at": "2025-11-25T17:37:14.526Z",
+    "updated_at": "2025-11-25T17:37:14.526Z",
+    "paid_at": "2025-11-25T17:37:14.526Z",
+    "customer_id": "demo-user-viresh-flexyapp",
+    "customer_first_name": "Viresh",
+    "customer_last_name": "Kewal Bansing",
+    "customer_email": "viresh@flexyapp.com",
+    "customer_phone": "+31 6 12345678",
+    "customer_company": "Flexy App B.V.",
+    "customer_address": "Teststraat 123",
+    "customer_city": "Amsterdam",
+    "customer_postal_code": "1012 AB",
+    "customer_country": "Nederland",
+    "property_id": "bedrijfsunit-type-1-unit-01",
+    "property_details": {
+      "name": "Bedrijfsunit Type 1",
+      "unit_number": "BU-001",
+      "type": "bedrijfsunit",
+      "status": "reserved",
+      "gross_area": 153.4,
+      "net_area": 134.7,
+      "location": "De Steiger 74/77, Almere",
+      "features": [
+        "134.7m² netto",
+        "153.4m² bruto",
+        "Industrie + Kantoor",
+        "2 parkeerplaatsen",
+        "Energielabel A+"
+      ]
+    },
+    "reservation_fee_amount": 1500,
+    "total_property_price": 322140,
+    "total_including_btw": 389789,
+    "notes": "Demo reservation created via MCP script for viresh@flexyapp.com",
+    "intended_use": "Business operations and office space",
+    "financing_confirmed": false,
+    "reservation_expires_at": "2025-12-23T17:37:14.527Z",
+    "contract_signed": false,
+    "contract_generated_at": null,
+    "docusign_envelope_id": null
+  }
+]

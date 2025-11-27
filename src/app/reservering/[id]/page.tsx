@@ -29,7 +29,7 @@ import { nl } from 'date-fns/locale';
 interface ReservationDetails {
   id: string;
   reservation_number: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  status: 'pending' | 'reservation_paid' | 'fully_paid' | 'transferred' | 'cancelled';
   customer_first_name: string;
   customer_last_name: string;
   customer_email: string;
@@ -44,6 +44,7 @@ interface ReservationDetails {
   payment_status: string;
   stripe_payment_intent_id: string | null;
   paid_at: string | null;
+  contract_signed_at: string | null;
   notes: string | null;
   intended_use: string | null;
   reservation_expires_at: string;
@@ -150,41 +151,33 @@ export default function ReservationDetailsPage() {
         id: 2,
         name: 'Reservering Betaald',
         description: 'Reserveringskosten betaald',
-        completed: reservation.payment_status === 'completed',
+        completed: reservation.status === 'reservation_paid' || reservation.status === 'fully_paid' || reservation.status === 'transferred',
         completedDate: reservation.paid_at,
         icon: CreditCard
       },
       {
         id: 3,
         name: 'Contract Getekend',
-        description: 'Koopcontract ondertekend',
-        completed: false, // TODO: Add contract status to database
-        completedDate: null,
+        description: 'Koopcontract ondertekend met handtekening',
+        completed: reservation.status === 'reservation_paid' || reservation.status === 'fully_paid' || reservation.status === 'transferred',
+        completedDate: reservation.contract_signed_at || reservation.paid_at, // Use contract signed date or payment date as fallback
         icon: FileText
       },
       {
         id: 4,
-        name: 'Notaris Akkoord',
-        description: 'Notaris heeft getekend',
-        completed: false, // TODO: Add notary status to database
+        name: 'Volledig Betaald',
+        description: 'Volledige koopsom betaald (wordt ingesteld door admin)',
+        completed: reservation.status === 'fully_paid' || reservation.status === 'transferred',
         completedDate: null,
-        icon: User
+        icon: Euro
       },
       {
         id: 5,
-        name: 'Financiering Rond',
-        description: 'Financiering goedgekeurd',
-        completed: reservation.status === 'completed',
+        name: 'Overgedragen',
+        description: 'Unit is officieel overgedragen (wordt ingesteld door admin)',
+        completed: reservation.status === 'transferred',
         completedDate: null,
         icon: Building2
-      },
-      {
-        id: 6,
-        name: 'Volledig Betaald',
-        description: 'Volledige koopsom betaald',
-        completed: reservation.status === 'completed',
-        completedDate: null,
-        icon: Euro
       }
     ];
 
@@ -248,37 +241,41 @@ export default function ReservationDetailsPage() {
     }
   }, [params.id, router, supabase]);
 
-  const getStatusBadge = (status: string, paymentStatus: string) => {
-    let styles = '';
-    let label = '';
-    let icon = null;
-
-    if (status === 'confirmed' && paymentStatus === 'completed') {
-      styles = 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md';
-      label = 'Bevestigd & Betaald';
-      icon = <CheckCircle className="h-4 w-4" />;
-    } else if (status === 'confirmed' && paymentStatus === 'pending') {
-      styles = 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-md';
-      label = 'Bevestigd - Betaling Openstaand';
-      icon = <Clock className="h-4 w-4" />;
-    } else if (status === 'pending') {
-      styles = 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md';
-      label = 'In Behandeling';
-      icon = <Clock className="h-4 w-4" />;
-    } else if (status === 'cancelled') {
-      styles = 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md';
-      label = 'Geannuleerd';
-      icon = <AlertCircle className="h-4 w-4" />;
-    } else {
-      styles = 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md';
-      label = 'Voltooid';
-      icon = <CheckCircle className="h-4 w-4" />;
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      pending: {
+        styles: 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-md',
+        label: 'In behandeling',
+        icon: <Clock className="h-4 w-4" />
+      },
+      reservation_paid: {
+        styles: 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md',
+        label: 'Reservering betaald',
+        icon: <CheckCircle className="h-4 w-4" />
+      },
+      fully_paid: {
+        styles: 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md',
+        label: 'Volledig betaald',
+        icon: <CheckCircle className="h-4 w-4" />
+      },
+      transferred: {
+        styles: 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md',
+        label: 'Overgedragen',
+        icon: <CheckCircle className="h-4 w-4" />
+      },
+      cancelled: {
+        styles: 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md',
+        label: 'Geannuleerd',
+        icon: <AlertCircle className="h-4 w-4" />
     }
+    };
+
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
 
     return (
-      <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold ${styles}`}>
-        {icon}
-        <span className="ml-2">{label}</span>
+      <span className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold ${config.styles}`}>
+        {config.icon}
+        <span className="ml-2">{config.label}</span>
       </span>
     );
   };
@@ -336,14 +333,16 @@ export default function ReservationDetailsPage() {
               <ArrowLeft className="h-5 w-5 mr-2" />
               Terug naar Profiel
             </button>
-            {getStatusBadge(reservation.status, reservation.payment_status)}
           </div>
           
           <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <h1 className="text-3xl md:text-4xl font-bold text-white">
                 {reservation.properties.name}
               </h1>
+                {getStatusBadge(reservation.status)}
+              </div>
               <p className="text-slate-300 text-lg mb-2">
                 Unit {reservation.properties.unit_number} • Reservering #{reservation.reservation_number}
               </p>
@@ -352,7 +351,7 @@ export default function ReservationDetailsPage() {
                 Gereserveerd op {format(new Date(reservation.created_at), 'dd MMMM yyyy', { locale: nl })}
               </p>
             </div>
-            <div className="text-right">
+            <div className="text-right ml-6">
               <p className="text-slate-300 text-sm">Totale waarde</p>
               <p className="text-3xl font-bold text-white">
                 €{reservation.total_property_price.toLocaleString()}
@@ -499,14 +498,6 @@ export default function ReservationDetailsPage() {
                         <span className="font-semibold">{reservation.reservation_number}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Status:</span>
-                        <span className="font-semibold capitalize">{reservation.status}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Betalingsstatus:</span>
-                        <span className="font-semibold capitalize">{reservation.payment_status}</span>
-                      </div>
-                      <div className="flex justify-between">
                         <span className="text-gray-600">Vervaldatum:</span>
                         <span className="font-semibold">
                           {format(new Date(reservation.reservation_expires_at), 'dd MMM yyyy', { locale: nl })}
@@ -514,7 +505,7 @@ export default function ReservationDetailsPage() {
                       </div>
                       <div className="flex justify-between text-lg font-bold pt-2 border-t border-yellow-200">
                         <span>Reserveringskosten:</span>
-                        <span className="text-yellow-600">€{reservation.reservation_fee_amount.toLocaleString()}</span>
+                        <span className="text-yellow-600">€{(reservation.reservation_fee_amount / 100).toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -627,7 +618,7 @@ export default function ReservationDetailsPage() {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Reserveringskosten:</span>
                         <span className="font-semibold text-yellow-600">
-                          €{reservation.reservation_fee_amount.toLocaleString()}
+                          €{(reservation.reservation_fee_amount / 100).toFixed(2)}
                         </span>
                       </div>
                       <div className="pt-4 border-t border-blue-200">
@@ -705,19 +696,19 @@ export default function ReservationDetailsPage() {
                     <div className="space-y-4">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Adres:</span>
-                        <span className="font-semibold">{reservation.customer_address}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Stad:</span>
-                        <span className="font-semibold">{reservation.customer_city}</span>
+                        <span className="font-semibold text-right">{reservation.customer_address || 'Niet opgegeven'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Postcode:</span>
-                        <span className="font-semibold">{reservation.customer_postal_code}</span>
+                        <span className="font-semibold text-right">{reservation.customer_postal_code || 'Niet opgegeven'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Stad:</span>
+                        <span className="font-semibold text-right">{reservation.customer_city || 'Niet opgegeven'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Land:</span>
-                        <span className="font-semibold">{reservation.customer_country}</span>
+                        <span className="font-semibold text-right">{reservation.customer_country || 'Nederland'}</span>
                       </div>
                     </div>
                   </div>
@@ -766,7 +757,7 @@ export default function ReservationDetailsPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Reserveringskosten:</span>
-                        <span className="font-semibold">€{reservation.reservation_fee_amount.toLocaleString()}</span>
+                        <span className="font-semibold">€{(reservation.reservation_fee_amount / 100).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Totale objectwaarde:</span>

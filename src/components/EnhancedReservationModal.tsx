@@ -989,35 +989,113 @@ function DigitalContractStep({ reservationData, updateData, onNext, onPrev }: an
     }
   };
 
+  const currentDate = new Date().toLocaleDateString('nl-NL');
+  const totalPrice = reservationData.selectedUnits.reduce((total, unit) => {
+    const priceStr = unit.price.replace(/[€.,\s]/g, '');
+    return total + parseInt(priceStr);
+  }, 0);
+  
   const contractPreview = `
-KOOPOVEREENKOMST DE STEIGER
+═══════════════════════════════════════════════════════════
+                    KOOPOVEREENKOMST
+                   DE STEIGER B.V.
+═══════════════════════════════════════════════════════════
 
-Verkoper: De Steiger B.V.
-Koper: ${reservationData.customerInfo.firstName} ${reservationData.customerInfo.lastName}
+CONTRACTPARTIJEN:
 
-ARTIKEL 1 - OBJECT
-Hierbij wordt verkocht:
-${reservationData.selectedUnits.map(unit => 
-  `- ${unit.name} Unit ${unit.unitNumber} (${unit.area}m²) - ${unit.price}`
-).join('\n')}
+VERKOPER:
+De Steiger B.V.
+De Steiger 74/77
+1234 AB Almere  
+KvK: 12345678
+BTW: NL123456789B01
 
-ARTIKEL 2 - KOOPPRIJS
-Totale koopprijs: €${reservationData.selectedUnits.reduce((total, unit) => {
-  const priceStr = unit.price.replace(/[€.,\s]/g, '');
-  return total + parseInt(priceStr);
-}, 0).toLocaleString('nl-NL')}
+KOPER:
+Naam: ${reservationData.customerInfo.firstName} ${reservationData.customerInfo.lastName}
+${reservationData.customerInfo.company ? `Bedrijf: ${reservationData.customerInfo.company}` : 'Particuliere aankoop'}
+Adres: ${reservationData.customerInfo.address}
+       ${reservationData.customerInfo.postalCode} ${reservationData.customerInfo.city}
+       ${reservationData.customerInfo.country}
 
-ARTIKEL 3 - BETALING
-- Reserveringskosten: €${(reservationData.selectedUnits.length * 1500).toLocaleString('nl-NL')} (binnen 24 uur)
-- Resterende bedrag: Binnen 3 maanden via notaris
+E-mail: ${reservationData.customerInfo.email}
+Telefoon: ${reservationData.customerInfo.phone}
+${reservationData.customerInfo.passportNumber ? `ID-nummer: ${reservationData.customerInfo.passportNumber}` : ''}
 
-ARTIKEL 4 - LEVERING
-Levering vindt plaats na volledige betaling en notariële overdracht.
+═══════════════════════════════════════════════════════════
 
-ARTIKEL 5 - GARANTIES
-De verkoper staat in voor de overeengekomen kwaliteit en specificaties.
+ARTIKEL 1 - VERKOCHTE OBJECTEN
 
-Door ondertekening gaat u akkoord met alle voorwaarden.
+Hierbij wordt verkocht op De Steiger 74/77, Almere:
+
+${reservationData.selectedUnits.map(unit => `
+• ${unit.name} - Unit ${unit.unitNumber}
+  Type: ${unit.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox'}
+  Oppervlakte: ${unit.area}m²
+  Koopprijs: ${unit.price}
+  Kenmerken: ${unit.features.join(', ')}
+`).join('')}
+
+ARTIKEL 2 - FINANCIËLE BEPALINGEN
+
+Totale koopprijs: € ${totalPrice.toLocaleString('nl-NL')} (exclusief BTW)
+BTW (21%): € ${Math.round(totalPrice * 0.21).toLocaleString('nl-NL')}
+TOTAAL INCLUSIEF BTW: € ${Math.round(totalPrice * 1.21).toLocaleString('nl-NL')}
+
+ARTIKEL 3 - BETALINGSREGELING
+
+1. Reserveringssom: € ${(reservationData.selectedUnits.length * 1500).toLocaleString('nl-NL')}
+   (Te betalen binnen 24 uur na ondertekening)
+
+2. Restbedrag: € ${(Math.round(totalPrice * 1.21) - (reservationData.selectedUnits.length * 1500)).toLocaleString('nl-NL')}
+   (Te betalen binnen 3 maanden na reservering)
+
+3. Bij niet tijdige betaling vervalt de reservering automatisch
+
+ARTIKEL 4 - BEOOGD GEBRUIK
+
+Gebruik conform bestemming: ${reservationData.customerInfo.intendedUse || 'Bedrijfsmatige activiteiten/opslag'}
+
+Bijzondere wensen koper:
+${reservationData.customerInfo.additionalRequests || 'Geen bijzondere wensen opgegeven'}
+
+ARTIKEL 5 - LEVERING & OVERDRACHT
+
+• Oplevering: Na volledige betaling en notariële overdracht
+• Staat: Nieuwbouw conform specificaties
+• Energielabel: A+
+• Parkeerplaatsen: 2 stuks per bedrijfsunit inbegrepen
+
+ARTIKEL 6 - GARANTIES & AANSPRAKELIJKHEID
+
+• Garantie conform BRL 9100 standaard
+• 10 jaar garantie op constructie
+• 2 jaar garantie op afwerking
+• Conformiteit met bouwvergunning
+
+ARTIKEL 7 - JURIDISCHE BEPALINGEN
+
+• Nederlands recht is van toepassing
+• Rechtbank Amsterdam is bevoegd
+• Eigendomsvoorbehoud tot volledige betaling
+• Contract geldt onder ontbindende voorwaarde van financiering
+
+═══════════════════════════════════════════════════════════
+
+ONDERTEKENING
+
+Door ondertekening verklaren partijen akkoord te gaan met alle bovenstaande voorwaarden.
+
+Datum: ${currentDate}
+Plaats: Almere
+
+KOPER:                              VERKOPER:
+${reservationData.customerInfo.firstName} ${reservationData.customerInfo.lastName}                    De Steiger B.V.
+
+_________________________          _________________________
+Handtekening                        Handtekening
+
+
+Dit contract wordt digitaal ondertekend via DocuSign.
   `;
 
   return (
@@ -1085,24 +1163,51 @@ Door ondertekening gaat u akkoord met alle voorwaarden.
       ) : (
         <div className="space-y-6">
           {/* Contract Preview */}
-          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-semibold text-gray-900">
-                Uw Koopcontract
-              </h4>
+          <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6 border border-slate-200">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <div className="bg-blue-100 rounded-full p-2 mr-3">
+                  <FileText className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-gray-900">
+                    Uw Koopcontract
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Lees het contract zorgvuldig door voordat u ondertekent
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => setShowContractModal(true)}
-                className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200"
               >
                 Volledig bekijken
               </button>
             </div>
             
-            <div className="bg-white rounded-lg p-4 max-h-32 overflow-hidden relative">
-              <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                {contractPreview.substring(0, 300)}...
+            <div className="bg-white rounded-xl p-6 max-h-96 overflow-y-auto border border-gray-200 shadow-sm">
+              <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-line font-mono">
+                {contractPreview}
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
+            
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-yellow-800">
+                    Let op: Contract controleren
+                  </p>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    Controleer alle gegevens zorgvuldig. Na ondertekening is dit contract juridisch bindend.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1214,9 +1319,11 @@ Door ondertekening gaat u akkoord met alle voorwaarden.
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-line leading-relaxed">
-                {contractPreview}
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <div className="prose prose-sm max-w-none text-gray-800 whitespace-pre-line leading-relaxed font-mono text-sm">
+                  {contractPreview}
+                </div>
               </div>
             </div>
             

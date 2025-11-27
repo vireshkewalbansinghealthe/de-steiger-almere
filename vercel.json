@@ -1,0 +1,14 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/process-reservations",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-locks",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
+
+

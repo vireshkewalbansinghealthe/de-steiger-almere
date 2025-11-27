@@ -5,6 +5,7 @@ import { ArrowLeft, CreditCard, Lock, Check, AlertCircle, XCircle, Clock } from 
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -15,7 +16,7 @@ interface PaymentStepProps {
   onPrev: () => void;
 }
 
-function PaymentForm({ project, reservationData, updateData, onPrev }: PaymentStepProps) {
+function PaymentForm({ project, reservationData, updateData, onPrev, clientSecret, reservationDetails }: PaymentStepProps & { clientSecret: string, reservationDetails: any }) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -23,15 +24,6 @@ function PaymentForm({ project, reservationData, updateData, onPrev }: PaymentSt
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const selectedUnit = project.details?.unitDetails?.find(
-    (unit: any) => unit.unitNumber === reservationData.unitNumber
-  );
-
-  // Calculate reservation fee pricing
-  const isOpslagbox = project.slug.includes('opslagbox');
-  const reservationFee = isOpslagbox ? 50 : 250; // €50 for opslagbox, €250 for bedrijfsunit
-  const btw = Math.round(reservationFee * 0.21);
-  const totalPrice = reservationFee + btw;
 
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +38,7 @@ function PaymentForm({ project, reservationData, updateData, onPrev }: PaymentSt
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/betaling-bevestiging/success`,
+        return_url: `${window.location.origin}/betaling-bevestiging/${reservationDetails.id}`,
         payment_method_data: {
           billing_details: {
             name: `${reservationData.customerInfo?.firstName || ''} ${reservationData.customerInfo?.lastName || ''}`,
@@ -70,33 +62,34 @@ function PaymentForm({ project, reservationData, updateData, onPrev }: PaymentSt
     } else if (paymentIntent.status === 'succeeded') {
       setPaymentSuccess(true);
       
-      // Save reservation
-      await saveReservation(paymentIntent.id);
+      // Confirm payment and update reservation status
+      // This is a fallback for when Stripe webhooks don't work (e.g., local development)
+      try {
+        const confirmResponse = await fetch('/api/reservations/confirm-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            reservation_id: reservationDetails.id,
+            payment_intent_id: paymentIntent.id
+          }),
+        });
+        
+        const confirmData = await confirmResponse.json();
+        
+        if (confirmData.success) {
+          console.log('✅ Payment confirmed successfully:', confirmData);
+        } else {
+          console.warn('⚠️ Payment confirmation returned:', confirmData);
+        }
+      } catch (confirmError) {
+        console.error('Error confirming payment:', confirmError);
+        // Don't block the flow - the webhook might still handle it
+      }
       
       // Redirect to success page
       setTimeout(() => {
-        router.push(`/betaling-bevestiging/${paymentIntent.id}`);
+        router.push(`/betaling-bevestiging/${reservationDetails.id}`);
       }, 2000);
-    }
-  };
-
-  const saveReservation = async (paymentIntentId: string) => {
-    try {
-      await fetch('/api/reservations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...reservationData,
-          paymentIntentId,
-          totalAmount: totalPrice,
-          status: 'confirmed',
-          createdAt: new Date().toISOString()
-        }),
-      });
-    } catch (error) {
-      console.error('Error saving reservation:', error);
     }
   };
 
@@ -141,9 +134,12 @@ function PaymentForm({ project, reservationData, updateData, onPrev }: PaymentSt
             <div className="space-y-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <div className="font-medium text-gray-900">{project.name}</div>
-                  <div className="text-sm text-gray-600">Unit {reservationData.unitNumber}</div>
+                  <div className="font-medium text-gray-900">{reservationDetails.property_name || project.name}</div>
+                  <div className="text-sm text-gray-600">Unit {reservationData.unitNumber || reservationDetails.unit_number}</div>
                   <div className="text-sm text-gray-600">{project.location}</div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Reservering: {reservationDetails.reservation_number}
+                  </div>
                 </div>
               </div>
               
@@ -152,16 +148,11 @@ function PaymentForm({ project, reservationData, updateData, onPrev }: PaymentSt
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Reserveringskosten</span>
-                  <span className="font-medium">€{reservationFee.toLocaleString()}</span>
+                  <span className="font-medium">€{(reservationDetails.reservation_fee_amount / 100).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">BTW (21%)</span>
-                  <span className="font-medium">€{btw.toLocaleString()}</span>
-                </div>
-                <hr className="border-gray-200" />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Totaal</span>
-                  <span>€{totalPrice.toLocaleString()}</span>
+                  <span>€{(reservationDetails.reservation_fee_amount / 100).toFixed(2)}</span>
                 </div>
               </div>
 
@@ -170,7 +161,17 @@ function PaymentForm({ project, reservationData, updateData, onPrev }: PaymentSt
                   <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
                   <div className="text-sm text-blue-800">
                     <div className="font-medium mb-1">Reserveringskosten</div>
-                    <div>Dit is een eenmalige betaling voor het reserveren van uw {project.slug.includes('opslagbox') ? 'opslagbox' : 'bedrijfsunit'}. De volledige koopprijs wordt later afgehandeld.</div>
+                    <div>Dit is een eenmalige betaling voor het reserveren van uw {project.slug.includes('opslagbox') ? 'opslagbox' : 'bedrijfsunit'}. De volledige koopprijs (€{reservationDetails.total_property_price?.toLocaleString('nl-NL')}) wordt later afgehandeld.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
+                <div className="flex items-start">
+                  <Clock className="h-5 w-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" />
+                  <div className="text-sm text-yellow-800">
+                    <div className="font-medium mb-1">Betaal binnen 15 minuten</div>
+                    <div>Uw reservering vervalt automatisch als de betaling niet binnen 15 minuten is voltooid.</div>
                   </div>
                 </div>
               </div>
@@ -238,7 +239,7 @@ function PaymentForm({ project, reservationData, updateData, onPrev }: PaymentSt
                   ) : (
                     <>
                       <CreditCard className="mr-2 h-5 w-5" />
-                      Betaal €{totalPrice.toLocaleString()}
+                      Betaal €{(reservationDetails.reservation_fee_amount / 100).toFixed(2)}
                     </>
                   )}
                 </button>
@@ -253,91 +254,103 @@ function PaymentForm({ project, reservationData, updateData, onPrev }: PaymentSt
 
 export default function PaymentStep(props: PaymentStepProps) {
   const [clientSecret, setClientSecret] = useState('');
+  const [reservationDetails, setReservationDetails] = useState<any>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
   useEffect(() => {
-    // Create payment intent for Elements
-    const createIntent = async () => {
+    // Create reservation and payment intent
+    const createReservation = async () => {
       try {
         setLoading(true);
         setError('');
         
-        const isOpslagbox = props.project.slug.includes('opslagbox');
-        const reservationFee = isOpslagbox ? 50 : 250;
-        const btw = Math.round(reservationFee * 0.21);
-        const totalPrice = reservationFee + btw;
+        // Get auth token
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('Je moet ingelogd zijn om een reservering te maken');
+        }
 
-        console.log('Creating payment intent with amount:', totalPrice * 100);
+        const authHeaders = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        };
 
-        const response = await fetch('/api/create-payment-intent', {
+        // First, get the property ID based on the project slug and unit number
+        const unitsResponse = await fetch(`/api/units?type=${props.project.slug.includes('opslagbox') ? 'opslagbox' : 'bedrijfsunit'}&unit_number=${props.reservationData.unitNumber}&status=`);
+        
+        if (!unitsResponse.ok) {
+          throw new Error('Failed to fetch unit details');
+        }
+
+        const unitsData = await unitsResponse.json();
+        
+        if (!unitsData.units || unitsData.units.length === 0) {
+          throw new Error('Unit niet gevonden');
+        }
+
+        const property = unitsData.units[0];
+
+        console.log('Creating reservation for property:', property.id);
+
+        // Create reservation with payment intent
+        const response = await fetch('/api/reservations/create', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
-            amount: totalPrice * 100,
-            currency: 'eur',
-            metadata: {
-              projectSlug: props.project.slug,
-              unitNumber: props.reservationData.unitNumber,
-              customerEmail: props.reservationData.customerInfo?.email || '',
-              customerName: `${props.reservationData.customerInfo?.firstName || ''} ${props.reservationData.customerInfo?.lastName || ''}`
-            }
+            property_id: property.id,
+            customer_details: {
+              first_name: props.reservationData.customerInfo.firstName,
+              last_name: props.reservationData.customerInfo.lastName,
+              email: props.reservationData.customerInfo.email,
+              phone: props.reservationData.customerInfo.phone,
+              company: props.reservationData.customerInfo.company || '',
+              address: props.reservationData.customerInfo.address,
+              city: props.reservationData.customerInfo.city,
+              postal_code: props.reservationData.customerInfo.postalCode,
+              country: props.reservationData.customerInfo.country || 'Netherlands',
+            },
+            intended_use: props.reservationData.preferences?.additionalRequests || 'Aankoop',
+            notes: `Move-in date: ${props.reservationData.preferences?.moveInDate || 'TBD'}`,
           }),
         });
 
-        console.log('Payment intent response status:', response.status);
+        console.log('Reservation creation response status:', response.status);
 
         if (response.ok) {
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
             const data = await response.json();
-            console.log('Payment intent data:', data);
-            if (data.client_secret) {
-              setClientSecret(data.client_secret);
-            } else {
-              throw new Error('No client secret received');
-            }
+          console.log('Reservation created:', data);
+          
+          if (data.payment_intent?.client_secret) {
+            setClientSecret(data.payment_intent.client_secret);
+            setReservationDetails({
+              id: data.reservation.id,
+              reservation_number: data.reservation.reservation_number,
+              property_name: property.name,
+              unit_number: property.unit_number,
+              reservation_fee_amount: data.reservation.reservation_fee_amount,
+              total_property_price: data.reservation.total_property_price,
+              expires_at: data.expires_at,
+            });
           } else {
-            const text = await response.text();
-            console.error('Expected JSON but got:', text.substring(0, 200));
-            throw new Error('Server returned invalid response format');
+            throw new Error('No client secret received');
           }
         } else {
-          const contentType = response.headers.get('content-type');
-          let errorMessage = 'Failed to create payment intent';
-          
-          try {
-            if (contentType && contentType.includes('application/json')) {
               const errorData = await response.json();
-              console.error('Payment intent error:', errorData);
-              errorMessage = errorData.error || errorMessage;
-            } else {
-              const text = await response.text();
-              console.error('Non-JSON error response:', text.substring(0, 200));
-              // Check if it's an HTML error page
-              if (text.includes('<!DOCTYPE') || text.includes('<html>')) {
-                errorMessage = 'Server configuration error - please check environment variables in Coolify';
-              } else {
-                errorMessage = text.substring(0, 200); // First 200 chars of error
-              }
-            }
-          } catch (parseError) {
-            console.error('Error parsing error response:', parseError);
-            errorMessage = `Server error (HTTP ${response.status}) - unable to parse response`;
-          }
-          
-          throw new Error(errorMessage);
+          console.error('Reservation creation error:', errorData);
+          throw new Error(errorData.error || 'Failed to create reservation');
         }
-      } catch (error) {
-        console.error('Error creating payment intent:', error);
+      } catch (error: any) {
+        console.error('Error creating reservation:', error);
         setError(error.message || 'Failed to initialize payment');
       } finally {
         setLoading(false);
       }
     };
 
-    createIntent();
-  }, []);
+    createReservation();
+  }, [supabase]);
 
   const options = {
     clientSecret,
@@ -360,7 +373,7 @@ export default function PaymentStep(props: PaymentStepProps) {
       <div className="p-8 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Betaling voorbereiden...</p>
+          <p className="text-gray-600">Reservering aanmaken...</p>
         </div>
       </div>
     );
@@ -374,23 +387,32 @@ export default function PaymentStep(props: PaymentStepProps) {
             <XCircle className="h-8 w-8 text-red-600" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Betaling kan niet worden geladen
+            Reservering kan niet worden aangemaakt
           </h2>
           <p className="text-gray-600 mb-6">
             {error}
           </p>
+          <div className="flex gap-4 justify-center">
           <button
             onClick={() => window.location.reload()}
             className="inline-flex items-center bg-yellow-500 text-white font-semibold px-6 py-3 rounded-lg hover:bg-yellow-600 transition-colors"
           >
             Opnieuw proberen
           </button>
+            <button
+              onClick={props.onPrev}
+              className="inline-flex items-center border border-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Terug
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!clientSecret) {
+  if (!clientSecret || !reservationDetails) {
     return (
       <div className="p-8">
         <div className="max-w-2xl mx-auto text-center">
@@ -401,7 +423,7 @@ export default function PaymentStep(props: PaymentStepProps) {
             Betaling wordt voorbereid...
           </h2>
           <p className="text-gray-600">
-            Een moment geduld terwijl we uw betaling voorbereiden.
+            Een moment geduld terwijl we uw reservering klaarmaken.
           </p>
         </div>
       </div>
@@ -410,7 +432,7 @@ export default function PaymentStep(props: PaymentStepProps) {
 
   return (
     <Elements stripe={stripePromise} options={options}>
-      <PaymentForm {...props} />
+      <PaymentForm {...props} clientSecret={clientSecret} reservationDetails={reservationDetails} />
     </Elements>
   );
 }
