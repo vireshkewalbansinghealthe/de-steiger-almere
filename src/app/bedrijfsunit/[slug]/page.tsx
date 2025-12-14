@@ -135,12 +135,12 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       facilities: [
         '2 parkeerplaatsen per unit',
         '24/7 toegang',
-        'Zonnepanelen op dak',
-        'Elektrische laadpalen',
+        'Zonnepanelen op dak (optie)',
+        'Elektrische laadpalen (optie)',
       ],
       location: 'De Steiger 74/77, Almere',
       accessibility: 'Uitstekende bereikbaarheid via A6 en openbaar vervoer',
-      sustainability: 'Energielabel A+ met zonnepanelen en slimme systemen',
+      sustainability: 'Energielabel A+ met optionele zonnepanelen en slimme systemen',
       investorInfo: {
         expectedReturn: '6.5% - 8.2%',
         maintenanceRisk: 'Minimaal',

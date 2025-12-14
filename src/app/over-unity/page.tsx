@@ -114,7 +114,7 @@ export default function AboutUnityPage() {
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  Zonnepanelen en LED-verlichting
+                  Zonnepanelen (optie) en LED-verlichting
                 </li>
                 <li className="flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>

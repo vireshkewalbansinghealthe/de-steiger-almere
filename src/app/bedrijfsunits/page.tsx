@@ -812,7 +812,7 @@ export default function BedrijfsunitsPage() {
               </div>
               <h3 className="text-xl font-bold mb-4">Duurzaam & Modern</h3>
               <p className="text-slate-100">
-                Energielabel A+, zonnepanelen, slimme systemen. Klaar voor de toekomst en aantrekkelijk voor kopers en gebruikers.
+                Energielabel A+, optionele zonnepanelen en laadpalen, slimme systemen. Klaar voor de toekomst en aantrekkelijk voor kopers en gebruikers.
               </p>
             </div>
 
