@@ -8,6 +8,50 @@ import VideoModal from '../components/VideoModal';
 import { Project } from '../types';
 import { Filter, Search, ArrowDown, Play, Grid, List, Share2, Link as LinkIcon, Copy, Facebook, Twitter, X } from 'lucide-react';
 
+// Search aliases for better search matching
+const SEARCH_ALIASES: Record<string, string[]> = {
+  'bedrijfsunit': ['unit', 'kantoor', 'kantoorunit', 'bedrijfsruimte', 'werkruimte', 'werkplek', 'office'],
+  'opslagbox': ['opslag', 'box', 'garage', 'garagebox', 'berging', 'storage', 'loods', 'opslagruimte'],
+  'almere': ['de steiger', 'steiger', 'flevoland'],
+};
+
+// Helper function for enhanced search matching on projects
+const matchesProjectSearch = (project: Project, searchTerm: string, category: string): boolean => {
+  if (!searchTerm) return true;
+  
+  const term = searchTerm.toLowerCase().trim();
+  const searchTerms = term.split(/\s+/); // Split on whitespace for multi-word search
+  
+  // Check each search term
+  return searchTerms.every(singleTerm => {
+    // Direct field matches
+    const directMatch = 
+      project.name?.toLowerCase().includes(singleTerm) ||
+      project.location?.toLowerCase().includes(singleTerm) ||
+      project.description?.toLowerCase().includes(singleTerm) ||
+      project.features?.some(f => f.toLowerCase().includes(singleTerm));
+    
+    if (directMatch) return true;
+    
+    // Check aliases
+    for (const [key, aliases] of Object.entries(SEARCH_ALIASES)) {
+      // If search term matches an alias, check if project relates to that category
+      if (aliases.some(alias => alias.includes(singleTerm) || singleTerm.includes(alias))) {
+        if (key === 'bedrijfsunit' && category === 'bedrijfsunits') return true;
+        if (key === 'opslagbox' && category === 'opslagboxen') return true;
+        if (key === 'almere' && project.location?.toLowerCase().includes('almere')) return true;
+      }
+      // If search term matches the key, check aliases in project fields
+      if (key.includes(singleTerm) || singleTerm.includes(key)) {
+        const projectText = `${project.name} ${project.location} ${project.description}`.toLowerCase();
+        if (aliases.some(alias => projectText.includes(alias))) return true;
+      }
+    }
+    
+    return false;
+  });
+};
+
 export default function HomePage() {
 
   const [filter, setFilter] = useState<'all' | 'nu-in-verkoop' | 'coming-soon' | 'uitverkocht'>('all');
@@ -245,10 +289,8 @@ export default function HomePage() {
       (filter === 'coming-soon' && project.status === 'COMING SOON') ||
       (filter === 'uitverkocht' && project.status === 'UITVERKOCHT');
 
-    const matchesSearch = searchTerm === '' || 
-      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase());
+    // Enhanced search with aliases
+    const matchesSearch = matchesProjectSearch(project, searchTerm, category);
 
       // Status filter - for projects, we'll use the project status
       const matchesStatus = statusFilter === 'all' || 
@@ -964,7 +1006,7 @@ export default function HomePage() {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Zoek op locatie of projectnaam..."
+                placeholder="Zoek op locatie, garage, kantoor, box, unit..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm text-lg"

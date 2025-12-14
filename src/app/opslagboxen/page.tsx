@@ -28,6 +28,52 @@ interface Unit {
   sold_units_in_type?: number;
 }
 
+// Search aliases for better search matching
+const SEARCH_ALIASES: Record<string, string[]> = {
+  'opslagbox': ['opslag', 'box', 'garage', 'garagebox', 'berging', 'storage', 'loods', 'opslagruimte'],
+  'bedrijfsunit': ['unit', 'kantoor', 'kantoorunit', 'bedrijfsruimte', 'werkruimte', 'werkplek', 'office'],
+  'almere': ['de steiger', 'steiger', 'flevoland'],
+};
+
+// Helper function for enhanced search matching
+const matchesSearchTerm = (unit: Unit, searchTerm: string): boolean => {
+  if (!searchTerm) return true;
+  
+  const term = searchTerm.toLowerCase().trim();
+  const searchTerms = term.split(/\s+/); // Split on whitespace for multi-word search
+  
+  // Check each search term
+  return searchTerms.every(singleTerm => {
+    // Direct field matches
+    const directMatch = 
+      unit.name?.toLowerCase().includes(singleTerm) ||
+      unit.location?.toLowerCase().includes(singleTerm) ||
+      unit.description?.toLowerCase().includes(singleTerm) ||
+      unit.unit_number?.toLowerCase().includes(singleTerm) ||
+      unit.type?.toLowerCase().includes(singleTerm) ||
+      `type ${unit.type_number}`.toLowerCase().includes(singleTerm);
+    
+    if (directMatch) return true;
+    
+    // Check aliases
+    for (const [key, aliases] of Object.entries(SEARCH_ALIASES)) {
+      // If search term matches an alias, check if unit relates to that key
+      if (aliases.some(alias => alias.includes(singleTerm) || singleTerm.includes(alias))) {
+        if (key === 'opslagbox' && unit.type === 'opslagbox') return true;
+        if (key === 'bedrijfsunit' && unit.type === 'bedrijfsunit') return true;
+        if (key === 'almere' && unit.location?.toLowerCase().includes('almere')) return true;
+      }
+      // If search term matches the key, check aliases in unit fields
+      if (key.includes(singleTerm) || singleTerm.includes(key)) {
+        const unitText = `${unit.name} ${unit.location} ${unit.description} ${unit.type}`.toLowerCase();
+        if (aliases.some(alias => unitText.includes(alias))) return true;
+      }
+    }
+    
+    return false;
+  });
+};
+
 export default function OpslagboxenPage() {
   const router = useRouter();
   const [storageUnits, setStorageUnits] = useState<Unit[]>([]);
@@ -71,11 +117,8 @@ export default function OpslagboxenPage() {
 
   const getFilteredAndSortedProjects = () => {
     let filtered = storageUnits.filter(unit => {
-      // Search filter
-      const matchesSearch = searchTerm === '' || 
-        unit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        unit.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        unit.description.toLowerCase().includes(searchTerm.toLowerCase());
+      // Search filter with enhanced matching
+      const matchesSearch = matchesSearchTerm(unit, searchTerm);
 
       // Status filter
       const matchesStatus = statusFilter === 'all' || 
@@ -437,7 +480,7 @@ export default function OpslagboxenPage() {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Zoek op type of beschrijving..."
+                placeholder="Zoek op locatie, garage, box, opslag..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm text-lg"

@@ -5,6 +5,45 @@ import { createClient } from '@/lib/supabase';
 import { Building2, Plus, Edit, Trash2, Search, Filter } from 'lucide-react';
 import { Unit } from '@/hooks/useUnits';
 
+// Search aliases for better search matching
+const SEARCH_ALIASES: Record<string, string[]> = {
+  'bedrijfsunit': ['unit', 'kantoor', 'kantoorunit', 'bedrijfsruimte', 'werkruimte', 'werkplek', 'office'],
+  'opslagbox': ['opslag', 'box', 'garage', 'garagebox', 'berging', 'storage', 'loods', 'opslagruimte'],
+  'almere': ['de steiger', 'steiger', 'flevoland'],
+};
+
+// Helper function for enhanced search matching
+const matchesSearchTerm = (unit: Unit, searchTerm: string): boolean => {
+  if (!searchTerm) return true;
+  
+  const term = searchTerm.toLowerCase().trim();
+  const searchTerms = term.split(/\s+/);
+  
+  return searchTerms.every(singleTerm => {
+    // Direct field matches
+    const directMatch = 
+      unit.name?.toLowerCase().includes(singleTerm) ||
+      unit.location?.toLowerCase().includes(singleTerm) ||
+      unit.description?.toLowerCase().includes(singleTerm) ||
+      unit.unit_number?.toLowerCase().includes(singleTerm) ||
+      unit.type?.toLowerCase().includes(singleTerm) ||
+      `type ${unit.type_number}`.toLowerCase().includes(singleTerm);
+    
+    if (directMatch) return true;
+    
+    // Check aliases
+    for (const [key, aliases] of Object.entries(SEARCH_ALIASES)) {
+      if (aliases.some(alias => alias.includes(singleTerm) || singleTerm.includes(alias))) {
+        if (key === 'bedrijfsunit' && unit.type === 'bedrijfsunit') return true;
+        if (key === 'opslagbox' && unit.type === 'opslagbox') return true;
+        if (key === 'almere' && unit.location?.toLowerCase().includes('almere')) return true;
+      }
+    }
+    
+    return false;
+  });
+};
+
 export default function AdminUnitsPage() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,10 +119,8 @@ export default function AdminUnitsPage() {
     }
   };
 
-  const filteredUnits = units.filter(unit => 
-    unit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    unit.unit_number.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Enhanced filtering with search aliases
+  const filteredUnits = units.filter(unit => matchesSearchTerm(unit, searchTerm));
 
   const getStatusBadge = (status: string) => {
     const styles = {
@@ -136,7 +173,7 @@ export default function AdminUnitsPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="text"
-                  placeholder="Zoek op naam of unitnummer..."
+                  placeholder="Zoek op naam, locatie, garage, kantoor, unit..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
