@@ -94,15 +94,15 @@ export async function POST(request: NextRequest) {
     // Step 2: Clean up expired locks first (optional - requires service role key)
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (serviceRoleKey && serviceRoleKey.length > 50) {
-      const supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
         serviceRoleKey
-      );
-      
-      await supabaseAdmin
-        .from('payment_locks')
-        .delete()
-        .lt('expires_at', new Date().toISOString());
+    );
+    
+    await supabaseAdmin
+      .from('payment_locks')
+      .delete()
+      .lt('expires_at', new Date().toISOString());
     } else {
       // Try cleanup with user's client (may be limited by RLS)
       await supabase

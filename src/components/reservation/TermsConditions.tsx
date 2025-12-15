@@ -152,9 +152,9 @@ export default function TermsConditions({ reservationData, updateData, onNext, o
           
           <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-2 sm:p-4">
             <div className="w-full" style={{ maxWidth: '100%', overflow: 'hidden' }}>
-              <SignatureCanvas
-                ref={sigCanvas}
-                canvasProps={{
+            <SignatureCanvas
+              ref={sigCanvas}
+              canvasProps={{
                   className: 'signature-canvas w-full border rounded touch-none',
                   style: { 
                     width: '100%', 
@@ -162,9 +162,9 @@ export default function TermsConditions({ reservationData, updateData, onNext, o
                     maxWidth: '100%',
                     touchAction: 'none'
                   }
-                }}
-                onEnd={saveSignature}
-              />
+              }}
+              onEnd={saveSignature}
+            />
             </div>
             
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-3 sm:mt-4">

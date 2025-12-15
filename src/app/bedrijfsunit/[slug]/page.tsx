@@ -43,6 +43,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
   const [sortBy, setSortBy] = useState<'unitNumber' | 'price' | 'area'>('unitNumber');
   const [modalTab, setModalTab] = useState<'overview' | 'floorplan' | 'contact'>('overview');
+  const [floorView, setFloorView] = useState<'totaal' | 'bg' | '1e' | '2e'>('totaal');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showImageGallery, setShowImageGallery] = useState(false);
   const [showReservationModal, setShowReservationModal] = useState(false);
@@ -562,7 +563,89 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             </p>
           </div>
 
-          <div className="bg-gray-50 rounded-2xl p-4 sm:p-8">
+          {/* Visual Floor Plan Section */}
+          <div className="mb-12 bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-slate-800 to-slate-700 text-white">
+              <h3 className="text-xl font-semibold flex items-center">
+                <Building2 className="h-5 w-5 mr-2" />
+                Gebouw Overzicht - De Steiger Almere
+              </h3>
+              <p className="text-slate-300 text-sm mt-1">Klik op de afbeelding voor een groter formaat</p>
+            </div>
+            
+            {/* Floor Tabs */}
+            <div className="flex border-b border-gray-200 bg-gray-50">
+              {[
+                { id: 'totaal', label: 'Totaal Overzicht', image: '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png' },
+                { id: 'bg', label: 'Begane Grond', image: '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_Begane_Grond.png' },
+                { id: '1e', label: '1e Verdieping', image: '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_1e_Verdieping.png' },
+                { id: '2e', label: '2e Verdieping', image: '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_2e_Verdieping.png' },
+              ].map((floor, index) => (
+                <button
+                  key={floor.id}
+                  onClick={() => setFloorView(floor.id)}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                    floorView === floor.id
+                      ? 'bg-white text-slate-800 border-b-2 border-slate-800'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  {floor.label}
+                </button>
+              ))}
+            </div>
+            
+            {/* Floor Plan Image */}
+            <div className="p-4 bg-white">
+              <div className="relative group">
+                <img
+                  src={
+                    floorView === 'totaal' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png' :
+                    floorView === 'bg' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_Begane_Grond.png' :
+                    floorView === '1e' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_1e_Verdieping.png' :
+                    '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_2e_Verdieping.png'
+                  }
+                  alt={`Plattegrond ${floorView === 'totaal' ? 'Totaal' : floorView === 'bg' ? 'Begane Grond' : floorView === '1e' ? '1e Verdieping' : '2e Verdieping'}`}
+                  className="w-full h-auto cursor-zoom-in transition-transform duration-300 hover:scale-[1.02]"
+                  onClick={() => window.open(
+                    floorView === 'totaal' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png' :
+                    floorView === 'bg' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_Begane_Grond.png' :
+                    floorView === '1e' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_1e_Verdieping.png' :
+                    '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_2e_Verdieping.png',
+                    '_blank'
+                  )}
+                />
+                <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                  Klik voor vergroten
+                </div>
+              </div>
+              
+              {/* Floor Legend */}
+              <div className="mt-4 p-4 bg-slate-50 rounded-lg">
+                <div className="flex flex-wrap justify-center gap-6 text-sm">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-white border-2 border-gray-300 mr-2"></div>
+                    <span className="text-gray-700">Bedrijfsunits</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-green-100 border-2 border-green-400 mr-2"></div>
+                    <span className="text-gray-700">Opslagboxen</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-500 text-xs">Links: De Steiger 74 | Rechts: De Steiger 77</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Unit Selection Section */}
+          <div className="bg-slate-800 text-white rounded-t-2xl p-4 -mb-2">
+            <h3 className="text-lg font-semibold">Selecteer een Unit</h3>
+            <p className="text-slate-300 text-sm">Kies hieronder de specifieke unit die je wilt bekijken of reserveren</p>
+          </div>
+          
+          <div className="bg-gray-50 rounded-b-2xl p-4 sm:p-8">
             {/* View Controls - Mobile Optimized */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
               <div className="flex bg-white rounded-lg p-1 shadow-sm">

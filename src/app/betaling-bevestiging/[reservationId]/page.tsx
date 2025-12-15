@@ -47,7 +47,7 @@ export default function PaymentConfirmationPage() {
     try {
       // Only show loading on initial load, not during polling
       if (!isPolling) {
-        setLoading(true);
+      setLoading(true);
       }
       
       // Check if user is logged in
@@ -68,36 +68,36 @@ export default function PaymentConfirmationPage() {
       if (reservationError) {
         console.error('Error fetching reservation:', reservationError);
         if (!isPolling) {
-          setError('Reservering niet gevonden');
-          setLoading(false);
+        setError('Reservering niet gevonden');
+        setLoading(false);
         }
         return;
       }
 
       if (!reservationData) {
         if (!isPolling) {
-          setError('Reservering niet gevonden');
-          setLoading(false);
+        setError('Reservering niet gevonden');
+        setLoading(false);
         }
         return;
       }
 
       // Only log on initial load to avoid console spam
       if (!isPolling) {
-        console.log('Reservation data:', reservationData);
+      console.log('Reservation data:', reservationData);
       }
       
       setReservation(reservationData);
       setProperty(reservationData.properties);
       
       if (!isPolling) {
-        setLoading(false);
+      setLoading(false);
       }
     } catch (error) {
       console.error('Error fetching reservation:', error);
       if (!isPolling) {
-        setError('Er is een fout opgetreden bij het ophalen van de reservering');
-        setLoading(false);
+      setError('Er is een fout opgetreden bij het ophalen van de reservering');
+      setLoading(false);
       }
     }
   };
