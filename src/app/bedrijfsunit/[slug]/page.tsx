@@ -43,7 +43,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
   const [sortBy, setSortBy] = useState<'unitNumber' | 'price' | 'area'>('unitNumber');
   const [modalTab, setModalTab] = useState<'overview' | 'floorplan' | 'contact'>('overview');
-  const [floorView, setFloorView] = useState<'totaal' | 'bg' | '1e' | '2e'>('totaal');
+  const [floorView, setFloorView] = useState<'type' | 'gevels' | 'totaal' | 'bg' | '1e' | '2e'>('type');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showImageGallery, setShowImageGallery] = useState(false);
   const [showReservationModal, setShowReservationModal] = useState(false);
@@ -563,261 +563,6 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             </p>
           </div>
 
-          {/* Interactive Floor Plan with Selectable Units */}
-          <div className="mb-8 bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="p-4 bg-gradient-to-r from-slate-800 to-slate-700 text-white">
-              <h3 className="text-xl font-semibold flex items-center">
-                <Building2 className="h-5 w-5 mr-2" />
-                Selecteer een Unit - De Steiger Almere
-              </h3>
-              <p className="text-slate-300 text-sm mt-1">Klik direct op een unit om details te bekijken en te reserveren</p>
-            </div>
-            
-            {/* Legend */}
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 p-3 bg-gray-50 border-b">
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-green-100 border-2 border-green-500 rounded mr-2"></div>
-                <span className="text-sm text-gray-700">Beschikbaar</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-red-100 border-2 border-red-500 rounded mr-2"></div>
-                <span className="text-sm text-gray-700">Gereserveerd</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-gray-200 border-2 border-gray-400 rounded mr-2"></div>
-                <span className="text-sm text-gray-700">Verkocht</span>
-              </div>
-            </div>
-            
-            {/* Schematic Building Layout with Clickable Units */}
-            <div className="p-4 sm:p-6 bg-slate-100 overflow-x-auto">
-              <div className="min-w-[800px]">
-                {/* Building Header */}
-                <div className="flex justify-between mb-4 text-sm text-gray-600">
-                  <span className="font-semibold">← De Steiger 74</span>
-                  <span className="font-semibold">De Steiger 77 →</span>
-                </div>
-                
-                {/* Building Layout Grid */}
-                <div className="flex gap-2">
-                  {/* Column 1: Units 01-12 (vertical on left) */}
-                  <div className="flex flex-col gap-1">
-                    <div className="text-xs text-gray-500 text-center mb-1 font-semibold">01-12</div>
-                    {[12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((num) => {
-                      const unitData = project.details?.unitDetails?.find(u => u.unitNumber === num);
-                      const status = unitData?.status || 'beschikbaar';
-                      return (
-                        <button
-                          key={num}
-                          onClick={() => {
-                            setSelectedUnit(num.toString());
-                            const foundUnit = units.find(u => parseInt(u.unit_number) === num);
-                            if (foundUnit) setSelectedPropertyId(foundUnit.id);
-                          }}
-                          className={`w-12 h-8 rounded text-xs font-bold transition-all hover:scale-110 hover:shadow-lg ${
-                            status === 'beschikbaar' ? 'bg-green-100 border-2 border-green-500 text-green-800 hover:bg-green-200' :
-                            status === 'gereserveerd' ? 'bg-red-100 border-2 border-red-500 text-red-800 hover:bg-red-200' :
-                            'bg-gray-200 border-2 border-gray-400 text-gray-600 hover:bg-gray-300'
-                          }`}
-                        >
-                          {num.toString().padStart(2, '0')}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  
-                  {/* Spacer */}
-                  <div className="w-4"></div>
-                  
-                  {/* Columns 2-3: Units 13-24 */}
-                  <div className="flex gap-1">
-                    <div className="flex flex-col gap-1">
-                      <div className="text-xs text-gray-500 text-center mb-1 font-semibold">13-24</div>
-                      {[13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24].map((num) => {
-                        const unitData = project.details?.unitDetails?.find(u => u.unitNumber === num);
-                        const status = unitData?.status || 'beschikbaar';
-                        return (
-                          <button
-                            key={num}
-                            onClick={() => {
-                              setSelectedUnit(num.toString());
-                              const foundUnit = units.find(u => parseInt(u.unit_number) === num);
-                              if (foundUnit) setSelectedPropertyId(foundUnit.id);
-                            }}
-                            className={`w-12 h-8 rounded text-xs font-bold transition-all hover:scale-110 hover:shadow-lg ${
-                              status === 'beschikbaar' ? 'bg-green-100 border-2 border-green-500 text-green-800 hover:bg-green-200' :
-                              status === 'gereserveerd' ? 'bg-red-100 border-2 border-red-500 text-red-800 hover:bg-red-200' :
-                              'bg-gray-200 border-2 border-gray-400 text-gray-600 hover:bg-gray-300'
-                            }`}
-                          >
-                            {num}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <div className="text-xs text-gray-500 text-center mb-1 font-semibold">25-35</div>
-                      {[25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35].map((num) => {
-                        const unitData = project.details?.unitDetails?.find(u => u.unitNumber === num);
-                        const status = unitData?.status || 'beschikbaar';
-                        return (
-                          <button
-                            key={num}
-                            onClick={() => {
-                              setSelectedUnit(num.toString());
-                              const foundUnit = units.find(u => parseInt(u.unit_number) === num);
-                              if (foundUnit) setSelectedPropertyId(foundUnit.id);
-                            }}
-                            className={`w-12 h-8 rounded text-xs font-bold transition-all hover:scale-110 hover:shadow-lg ${
-                              status === 'beschikbaar' ? 'bg-green-100 border-2 border-green-500 text-green-800 hover:bg-green-200' :
-                              status === 'gereserveerd' ? 'bg-red-100 border-2 border-red-500 text-red-800 hover:bg-red-200' :
-                              'bg-gray-200 border-2 border-gray-400 text-gray-600 hover:bg-gray-300'
-                            }`}
-                          >
-                            {num}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  {/* Spacer */}
-                  <div className="w-4"></div>
-                  
-                  {/* Columns 4-5: Units 36-56 */}
-                  <div className="flex gap-1">
-                    <div className="flex flex-col gap-1">
-                      <div className="text-xs text-gray-500 text-center mb-1 font-semibold">36-45</div>
-                      {[36, 37, 38, 39, 40, 41, 42, 43, 44, 45].map((num) => {
-                        const unitData = project.details?.unitDetails?.find(u => u.unitNumber === num);
-                        const status = unitData?.status || 'beschikbaar';
-                        return (
-                          <button
-                            key={num}
-                            onClick={() => {
-                              setSelectedUnit(num.toString());
-                              const foundUnit = units.find(u => parseInt(u.unit_number) === num);
-                              if (foundUnit) setSelectedPropertyId(foundUnit.id);
-                            }}
-                            className={`w-12 h-8 rounded text-xs font-bold transition-all hover:scale-110 hover:shadow-lg ${
-                              status === 'beschikbaar' ? 'bg-green-100 border-2 border-green-500 text-green-800 hover:bg-green-200' :
-                              status === 'gereserveerd' ? 'bg-red-100 border-2 border-red-500 text-red-800 hover:bg-red-200' :
-                              'bg-gray-200 border-2 border-gray-400 text-gray-600 hover:bg-gray-300'
-                            }`}
-                          >
-                            {num}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <div className="text-xs text-gray-500 text-center mb-1 font-semibold">46-56</div>
-                      {[46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56].map((num) => {
-                        const unitData = project.details?.unitDetails?.find(u => u.unitNumber === num);
-                        const status = unitData?.status || 'beschikbaar';
-                        return (
-                          <button
-                            key={num}
-                            onClick={() => {
-                              setSelectedUnit(num.toString());
-                              const foundUnit = units.find(u => parseInt(u.unit_number) === num);
-                              if (foundUnit) setSelectedPropertyId(foundUnit.id);
-                            }}
-                            className={`w-12 h-8 rounded text-xs font-bold transition-all hover:scale-110 hover:shadow-lg ${
-                              status === 'beschikbaar' ? 'bg-green-100 border-2 border-green-500 text-green-800 hover:bg-green-200' :
-                              status === 'gereserveerd' ? 'bg-red-100 border-2 border-red-500 text-red-800 hover:bg-red-200' :
-                              'bg-gray-200 border-2 border-gray-400 text-gray-600 hover:bg-gray-300'
-                            }`}
-                          >
-                            {num}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  {/* Spacer */}
-                  <div className="w-8"></div>
-                  
-                  {/* Column: Units 57-67 (center-right) */}
-                  <div className="flex flex-col gap-1">
-                    <div className="text-xs text-gray-500 text-center mb-1 font-semibold">57-67</div>
-                    {[57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67].map((num) => {
-                      const unitData = project.details?.unitDetails?.find(u => u.unitNumber === num);
-                      const status = unitData?.status || 'beschikbaar';
-                      return (
-                        <button
-                          key={num}
-                          onClick={() => {
-                            setSelectedUnit(num.toString());
-                            const foundUnit = units.find(u => parseInt(u.unit_number) === num);
-                            if (foundUnit) setSelectedPropertyId(foundUnit.id);
-                          }}
-                          className={`w-12 h-8 rounded text-xs font-bold transition-all hover:scale-110 hover:shadow-lg ${
-                            status === 'beschikbaar' ? 'bg-green-100 border-2 border-green-500 text-green-800 hover:bg-green-200' :
-                            status === 'gereserveerd' ? 'bg-red-100 border-2 border-red-500 text-red-800 hover:bg-red-200' :
-                            'bg-gray-200 border-2 border-gray-400 text-gray-600 hover:bg-gray-300'
-                          }`}
-                        >
-                          {num}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  
-                  {/* Spacer */}
-                  <div className="w-8"></div>
-                  
-                  {/* Column: Units 68-79 (right side) */}
-                  <div className="flex flex-col gap-1">
-                    <div className="text-xs text-gray-500 text-center mb-1 font-semibold">68-79</div>
-                    {[68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79].map((num) => {
-                      const unitData = project.details?.unitDetails?.find(u => u.unitNumber === num);
-                      const status = unitData?.status || 'beschikbaar';
-                      return (
-                        <button
-                          key={num}
-                          onClick={() => {
-                            setSelectedUnit(num.toString());
-                            const foundUnit = units.find(u => parseInt(u.unit_number) === num);
-                            if (foundUnit) setSelectedPropertyId(foundUnit.id);
-                          }}
-                          className={`w-12 h-8 rounded text-xs font-bold transition-all hover:scale-110 hover:shadow-lg ${
-                            status === 'beschikbaar' ? 'bg-green-100 border-2 border-green-500 text-green-800 hover:bg-green-200' :
-                            status === 'gereserveerd' ? 'bg-red-100 border-2 border-red-500 text-red-800 hover:bg-red-200' :
-                            'bg-gray-200 border-2 border-gray-400 text-gray-600 hover:bg-gray-300'
-                          }`}
-                        >
-                          {num}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                
-                {/* DE STEIGER label */}
-                <div className="mt-4 text-center">
-                  <span className="text-lg font-bold text-slate-700 tracking-widest">DE STEIGER ALMERE</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* View Full Floorplan Link */}
-            <div className="p-4 bg-white border-t flex justify-between items-center">
-              <div className="text-sm text-gray-600">
-                <span className="font-medium">{getFilteredAndSortedUnits().filter(u => u.status === 'beschikbaar').length}</span> van {project.details?.unitDetails?.length || 0} units beschikbaar
-              </div>
-              <button
-                onClick={() => window.open('/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png', '_blank')}
-                className="flex items-center text-sm text-slate-600 hover:text-slate-800 transition-colors"
-              >
-                <Building2 className="h-4 w-4 mr-1" />
-                Bekijk volledige plattegrond
-              </button>
-            </div>
-          </div>
-
-          {/* Detailed Filters (collapsible) */}
           <div className="bg-gray-50 rounded-2xl p-4 sm:p-8">
             {/* View Controls - Mobile Optimized */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
@@ -977,39 +722,122 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             </div>
           )}
 
-          {/* Floorplan Images - Below specifications */}
-          <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="p-4 bg-slate-800 text-white">
-                <h3 className="text-lg font-semibold">Plattegrond Type {typeNumberFromSlug}</h3>
-              </div>
-              <div className="p-4">
-                <img
-                  src={floorplanImages.plattegrond}
-                  alt={`Plattegrond Type ${typeNumberFromSlug}`}
-                  className="w-full h-auto max-h-[500px] object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
-                  onClick={() => window.open(floorplanImages.plattegrond, '_blank')}
-                />
-                <p className="text-center text-gray-500 text-sm mt-2">Klik op afbeelding voor vergroten</p>
-              </div>
+          {/* Floorplan Images - Tabbed View */}
+          <div className="mt-12 bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-slate-800 to-slate-700 text-white">
+              <h3 className="text-xl font-semibold">Plattegronden</h3>
+              <p className="text-slate-300 text-sm">Bekijk de plattegrond van dit type en het gebouw overzicht</p>
             </div>
             
-            {floorplanImages.gevels && (
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="p-4 bg-slate-700 text-white">
-                  <h3 className="text-lg font-semibold">Gevels Type {typeNumberFromSlug}</h3>
-                </div>
-                <div className="p-4">
-                  <img
-                    src={floorplanImages.gevels}
-                    alt={`Gevels Type ${typeNumberFromSlug}`}
-                    className="w-full h-auto max-h-[500px] object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
-                    onClick={() => window.open(floorplanImages.gevels, '_blank')}
-                  />
-                  <p className="text-center text-gray-500 text-sm mt-2">Klik op afbeelding voor vergroten</p>
+            {/* Tabs */}
+            <div className="flex flex-wrap border-b border-gray-200 bg-gray-50">
+              <button
+                onClick={() => setFloorView('type')}
+                className={`px-4 py-3 text-sm font-medium transition-colors ${
+                  floorView === 'type'
+                    ? 'bg-white text-slate-800 border-b-2 border-slate-800'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Type {typeNumberFromSlug}
+              </button>
+              {floorplanImages.gevels && (
+                <button
+                  onClick={() => setFloorView('gevels')}
+                  className={`px-4 py-3 text-sm font-medium transition-colors ${
+                    floorView === 'gevels'
+                      ? 'bg-white text-slate-800 border-b-2 border-slate-800'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  Gevels
+                </button>
+              )}
+              <button
+                onClick={() => setFloorView('totaal')}
+                className={`px-4 py-3 text-sm font-medium transition-colors ${
+                  floorView === 'totaal'
+                    ? 'bg-white text-slate-800 border-b-2 border-slate-800'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Totaal Overzicht
+              </button>
+              <button
+                onClick={() => setFloorView('bg')}
+                className={`px-4 py-3 text-sm font-medium transition-colors ${
+                  floorView === 'bg'
+                    ? 'bg-white text-slate-800 border-b-2 border-slate-800'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                Begane Grond
+              </button>
+              <button
+                onClick={() => setFloorView('1e')}
+                className={`px-4 py-3 text-sm font-medium transition-colors ${
+                  floorView === '1e'
+                    ? 'bg-white text-slate-800 border-b-2 border-slate-800'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                1e Verdieping
+              </button>
+              <button
+                onClick={() => setFloorView('2e')}
+                className={`px-4 py-3 text-sm font-medium transition-colors ${
+                  floorView === '2e'
+                    ? 'bg-white text-slate-800 border-b-2 border-slate-800'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                2e Verdieping
+              </button>
+            </div>
+            
+            {/* Floor Plan Image */}
+            <div className="p-4 bg-white">
+              <div className="relative group">
+                <img
+                  src={
+                    floorView === 'type' ? floorplanImages.plattegrond :
+                    floorView === 'gevels' ? (floorplanImages.gevels || floorplanImages.plattegrond) :
+                    floorView === 'totaal' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png' :
+                    floorView === 'bg' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_Begane_Grond.png' :
+                    floorView === '1e' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_1e_Verdieping.png' :
+                    '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_2e_Verdieping.png'
+                  }
+                  alt={`Plattegrond ${
+                    floorView === 'type' ? `Type ${typeNumberFromSlug}` :
+                    floorView === 'gevels' ? 'Gevels' :
+                    floorView === 'totaal' ? 'Totaal Overzicht' :
+                    floorView === 'bg' ? 'Begane Grond' :
+                    floorView === '1e' ? '1e Verdieping' : '2e Verdieping'
+                  }`}
+                  className="w-full h-auto max-h-[600px] object-contain cursor-zoom-in transition-transform duration-300 hover:scale-[1.02]"
+                  onClick={() => window.open(
+                    floorView === 'type' ? floorplanImages.plattegrond :
+                    floorView === 'gevels' ? (floorplanImages.gevels || floorplanImages.plattegrond) :
+                    floorView === 'totaal' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png' :
+                    floorView === 'bg' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_Begane_Grond.png' :
+                    floorView === '1e' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_1e_Verdieping.png' :
+                    '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_2e_Verdieping.png',
+                    '_blank'
+                  )}
+                />
+                <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                  Klik voor vergroten
                 </div>
               </div>
-            )}
+              <p className="text-center text-gray-500 text-sm mt-3">
+                {floorView === 'type' && `Plattegrond voor Bedrijfsunit Type ${typeNumberFromSlug}`}
+                {floorView === 'gevels' && `Gevels voor Bedrijfsunit Type ${typeNumberFromSlug}`}
+                {floorView === 'totaal' && 'Compleet overzicht van alle units in De Steiger Almere'}
+                {floorView === 'bg' && 'Alle bedrijfsunits op de begane grond'}
+                {floorView === '1e' && 'Alle bedrijfsunits op de 1e verdieping'}
+                {floorView === '2e' && 'Alle bedrijfsunits op de 2e verdieping'}
+              </p>
+            </div>
           </div>
         </div>
       </section>
