@@ -3,290 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bevestig uw account - Unity Units</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #374151;
-            background-color: #f8fafc;
-        }
-        
-        .email-container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-            padding: 40px 32px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 30%, rgba(250, 204, 21, 0.1) 50%, transparent 70%);
-            animation: shimmer 3s ease-in-out infinite;
-        }
-        
-        @keyframes shimmer {
-            0%, 100% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-        }
-        
-        .logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            border-radius: 20px;
-            margin: 0 auto 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
-            position: relative;
-            z-index: 1;
-        }
-        
-        .logo-text {
-            color: #0f172a;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        
-        .welcome-title {
-            color: #ffffff;
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .welcome-subtitle {
-            color: #cbd5e1;
-            font-size: 18px;
-            font-weight: 400;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .content {
-            background: #ffffff;
-            padding: 48px 32px;
-        }
-        
-        .greeting {
-            font-size: 20px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 24px;
-        }
-        
-        .message {
-            font-size: 16px;
-            color: #6b7280;
-            margin-bottom: 32px;
-            line-height: 1.7;
-        }
-        
-        .cta-container {
-            text-align: center;
-            margin: 40px 0;
-        }
-        
-        .cta-button {
-            display: inline-block;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            color: #0f172a;
-            text-decoration: none;
-            padding: 16px 32px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 16px;
-            box-shadow: 0 4px 14px 0 rgba(251, 191, 36, 0.4);
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px 0 rgba(251, 191, 36, 0.5);
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
-        
-        .alternative-link {
-            margin-top: 24px;
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: 8px;
-            border-left: 4px solid #fbbf24;
-        }
-        
-        .alternative-text {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 8px;
-        }
-        
-        .link-text {
-            font-size: 13px;
-            color: #374151;
-            word-break: break-all;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            background: #ffffff;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #e5e7eb;
-        }
-        
-        .footer {
-            background: #f8fafc;
-            padding: 32px;
-            text-align: center;
-            border-top: 1px solid #e5e7eb;
-        }
-        
-        .footer-text {
-            color: #9ca3af;
-            font-size: 14px;
-            margin-bottom: 16px;
-        }
-        
-        .company-info {
-            color: #6b7280;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-        
-        .security-note {
-            background: #fef3c7;
-            border: 1px solid #fcd34d;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 24px;
-        }
-        
-        .security-title {
-            color: #92400e;
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-        
-        .security-text {
-            color: #a16207;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-        
-        @media (max-width: 600px) {
-            .email-container {
-                margin: 16px;
-                border-radius: 12px;
-            }
-            
-            .header {
-                padding: 32px 24px;
-            }
-            
-            .content {
-                padding: 32px 24px;
-            }
-            
-            .welcome-title {
-                font-size: 28px;
-            }
-            
-            .logo {
-                width: 64px;
-                height: 64px;
-            }
-            
-            .logo-text {
-                font-size: 24px;
-            }
-        }
-    </style>
+    <title>Bevestig uw e-mailadres - De Steiger Almere</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
 </head>
-<body>
-    <div style="padding: 32px 16px; background-color: #f8fafc; min-height: 100vh;">
-        <div class="email-container">
-            <!-- Header with Logo -->
-            <div class="header">
-                <div class="logo">
-                    <div class="logo-text">U</div>
-                </div>
-                <h1 class="welcome-title">Welkom bij Unity Units!</h1>
-                <p class="welcome-subtitle">Bevestig uw account om te beginnen</p>
-            </div>
-            
-            <!-- Main Content -->
-            <div class="content">
-                <div class="greeting">Hallo daar! 👋</div>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f1f5f9; line-height: 1.6;">
+    
+    <!-- Email Wrapper -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 40px 20px;">
+        <tr>
+            <td align="center">
                 
-                <div class="message">
-                    Bedankt voor het aanmelden bij Unity Units! We zijn verheugd u te verwelkomen in onze community van ondernemers en investeerders.
-                    <br><br>
-                    Om uw account te activeren en toegang te krijgen tot al onze premium bedrijfsunits en opslagboxen, hoeft u alleen maar op onderstaande knop te klikken.
-                </div>
+                <!-- Main Container -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 48px 40px; text-align: center;">
+                            <!-- Logo -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center">
+                                        <div style="width: 70px; height: 70px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border-radius: 16px; display: inline-block; line-height: 70px; text-align: center; box-shadow: 0 4px 14px rgba(251, 191, 36, 0.4);">
+                                            <span style="color: #1e293b; font-size: 32px; font-weight: 800;">DS</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding-top: 24px;">
+                                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
+                                            Welkom bij De Steiger!
+                                        </h1>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding-top: 8px;">
+                                        <p style="margin: 0; color: #94a3b8; font-size: 16px;">
+                                            Nog één stap om uw account te activeren
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 48px 40px;">
+                            
+                            <!-- Greeting -->
+                            <p style="margin: 0 0 24px 0; font-size: 18px; font-weight: 600; color: #1e293b;">
+                                Hallo! 👋
+                            </p>
+                            
+                            <!-- Message -->
+                            <p style="margin: 0 0 16px 0; font-size: 16px; color: #64748b; line-height: 1.7;">
+                                Bedankt voor uw registratie bij De Steiger Almere. Om uw reservering af te ronden en toegang te krijgen tot uw account, vragen wij u om uw e-mailadres te bevestigen.
+                            </p>
+                            
+                            <p style="margin: 0 0 32px 0; font-size: 16px; color: #64748b; line-height: 1.7;">
+                                Klik op onderstaande knop om uw e-mailadres te bevestigen:
+                            </p>
+                            
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center" style="padding: 8px 0 32px 0;">
+                                        <a href="{{ .ConfirmationURL }}" style="display: inline-block; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1e293b; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 14px rgba(251, 191, 36, 0.4);">
+                                            ✉️ Bevestig mijn e-mailadres
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Divider -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin: 16px 0;">
+                                <tr>
+                                    <td style="border-top: 1px solid #e2e8f0;"></td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Alternative Link -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border-radius: 12px; border-left: 4px solid #fbbf24;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #475569;">
+                                            Werkt de knop niet?
+                                        </p>
+                                        <p style="margin: 0 0 12px 0; font-size: 13px; color: #64748b;">
+                                            Kopieer en plak deze link in uw browser:
+                                        </p>
+                                        <p style="margin: 0; font-size: 12px; color: #1e293b; word-break: break-all; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: 'Monaco', 'Menlo', monospace;">
+                                            {{ .ConfirmationURL }}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Security Note -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 24px; background-color: #fef9c3; border-radius: 12px; border: 1px solid #fde047;">
+                                <tr>
+                                    <td style="padding: 16px 20px;">
+                                        <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 600; color: #854d0e;">
+                                            🔒 Beveiligingsmelding
+                                        </p>
+                                        <p style="margin: 0; font-size: 13px; color: #a16207; line-height: 1.5;">
+                                            Deze link is 24 uur geldig. Heeft u zich niet aangemeld? Negeer deze e-mail dan.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 32px 40px; border-top: 1px solid #e2e8f0;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center">
+                                        <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 600; color: #1e293b;">
+                                            De Steiger Almere
+                                        </p>
+                                        <p style="margin: 0 0 16px 0; font-size: 13px; color: #64748b;">
+                                            Premium Bedrijfsunits & Opslagboxen
+                                        </p>
+                                        <p style="margin: 0; font-size: 12px; color: #94a3b8;">
+                                            De Steiger 74/77, 1351 AA Almere<br>
+                                            © 2024 De Steiger. Alle rechten voorbehouden.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                </table>
                 
-                <!-- Call to Action -->
-                <div class="cta-container">
-                    <a href="{{ .ConfirmationURL }}" class="cta-button">
-                        ✨ Activeer Mijn Account
-                    </a>
-                </div>
+                <!-- Help Text -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin-top: 24px;">
+                    <tr>
+                        <td align="center">
+                            <p style="margin: 0; font-size: 12px; color: #94a3b8;">
+                                Vragen? Neem contact op via info@desteigeralmere.nl
+                            </p>
+                        </td>
+                    </tr>
+                </table>
                 
-                <!-- Alternative Link -->
-                <div class="alternative-link">
-                    <div class="alternative-text">
-                        <strong>Werkt de knop niet?</strong> Kopieer en plak deze link in uw browser:
-                    </div>
-                    <div class="link-text">{{ .ConfirmationURL }}</div>
-                </div>
-                
-                <!-- Security Note -->
-                <div class="security-note">
-                    <div class="security-title">🔒 Veiligheid eerst</div>
-                    <div class="security-text">
-                        Deze link is 24 uur geldig en kan slechts één keer worden gebruikt. Als u deze aanmelding niet heeft gedaan, kunt u deze e-mail veilig negeren.
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Footer -->
-            <div class="footer">
-                <div class="footer-text">
-                    Deze e-mail werd verzonden door Unity Units
-                </div>
-                <div class="company-info">
-                    Unity Units BV<br>
-                    Premium Bedrijfsruimtes & Opslagoplossingen<br>
-                    Nederland
-                </div>
-            </div>
-        </div>
-    </div>
+            </td>
+        </tr>
+    </table>
+    
 </body>
 </html>
