@@ -57,7 +57,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const routePath = isOpslagbox ? `/opslagbox/${project.slug}` : `/bedrijfsunit/${project.slug}`;
   const IconComponent = isOpslagbox ? Package : Building;
   
-  // Image gallery navigation
+  // Image gallery navigation - use onMouseDown to prevent Link navigation
   const nextImage = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -73,9 +73,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
       setCurrentImageIndex((prev) => (prev - 1 + project.images.length) % project.images.length);
     }
   };
+  
+  // Handle card click - navigate to details
+  const handleCardClick = (e: React.MouseEvent) => {
+    // If clicking on nav buttons, don't navigate
+    const target = e.target as HTMLElement;
+    if (target.closest('.nav-arrow')) {
+      e.preventDefault();
+      return;
+    }
+  };
 
   return (
-    <Link href={routePath}>
+    <Link href={routePath} onClick={handleCardClick}>
       <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer overflow-hidden group">
         {/* Image Container with Gallery */}
         <div className="relative h-48 overflow-hidden">
@@ -97,17 +107,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
               {/* Left Arrow */}
               <button
                 onClick={prevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-800 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+                onMouseDown={(e) => e.stopPropagation()}
+                className="nav-arrow absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-800 rounded-full p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 hover:scale-110 z-10 shadow-md"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-5 w-5" />
               </button>
               
               {/* Right Arrow */}
               <button
                 onClick={nextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-800 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+                onMouseDown={(e) => e.stopPropagation()}
+                className="nav-arrow absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-800 rounded-full p-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 hover:scale-110 z-10 shadow-md"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-5 w-5" />
               </button>
               
               {/* Image Counter */}

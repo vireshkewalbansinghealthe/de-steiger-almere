@@ -364,32 +364,8 @@ export default function HomePage() {
   const scrollToProjects = () => {
     const projectsSection = document.getElementById('projects');
     if (projectsSection) {
-      // Custom smooth scroll with enhanced easing
-      const startPosition = window.pageYOffset;
-      const targetPosition = projectsSection.offsetTop - 80; // Offset for header
-      const distance = targetPosition - startPosition;
-      const duration = 1200; // 1.2 seconds
-      let start: number | null = null;
-
-      // Easing function - cubic-bezier(0.4, 0, 0.2, 1)
-      const easeInOutCubic = (t: number) => {
-        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      };
-
-      const animation = (currentTime: number) => {
-        if (start === null) start = currentTime;
-        const timeElapsed = currentTime - start;
-        const progress = Math.min(timeElapsed / duration, 1);
-        const easedProgress = easeInOutCubic(progress);
-        
-        window.scrollTo(0, startPosition + distance * easedProgress);
-        
-        if (timeElapsed < duration) {
-          requestAnimationFrame(animation);
-        }
-      };
-
-      requestAnimationFrame(animation);
+      // Fast smooth scroll using native behavior
+      projectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
