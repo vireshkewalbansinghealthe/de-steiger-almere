@@ -562,41 +562,6 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             </p>
           </div>
 
-          {/* Floorplan Images */}
-          <div className="mb-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="p-4 bg-slate-800 text-white">
-                <h3 className="text-lg font-semibold">Plattegrond Type {typeNumberFromSlug}</h3>
-              </div>
-              <div className="p-4">
-                <img
-                  src={floorplanImages.plattegrond}
-                  alt={`Plattegrond Type ${typeNumberFromSlug}`}
-                  className="w-full h-auto max-h-[500px] object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
-                  onClick={() => window.open(floorplanImages.plattegrond, '_blank')}
-                />
-                <p className="text-center text-gray-500 text-sm mt-2">Klik op afbeelding voor vergroten</p>
-              </div>
-            </div>
-            
-            {floorplanImages.gevels && (
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="p-4 bg-slate-700 text-white">
-                  <h3 className="text-lg font-semibold">Gevels Type {typeNumberFromSlug}</h3>
-                </div>
-                <div className="p-4">
-                  <img
-                    src={floorplanImages.gevels}
-                    alt={`Gevels Type ${typeNumberFromSlug}`}
-                    className="w-full h-auto max-h-[500px] object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
-                    onClick={() => window.open(floorplanImages.gevels, '_blank')}
-                  />
-                  <p className="text-center text-gray-500 text-sm mt-2">Klik op afbeelding voor vergroten</p>
-                </div>
-              </div>
-            )}
-          </div>
-
           <div className="bg-gray-50 rounded-2xl p-4 sm:p-8">
             {/* View Controls - Mobile Optimized */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
@@ -755,6 +720,41 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
               </div>
             </div>
           )}
+
+          {/* Floorplan Images - Below specifications */}
+          <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="p-4 bg-slate-800 text-white">
+                <h3 className="text-lg font-semibold">Plattegrond Type {typeNumberFromSlug}</h3>
+              </div>
+              <div className="p-4">
+                <img
+                  src={floorplanImages.plattegrond}
+                  alt={`Plattegrond Type ${typeNumberFromSlug}`}
+                  className="w-full h-auto max-h-[500px] object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
+                  onClick={() => window.open(floorplanImages.plattegrond, '_blank')}
+                />
+                <p className="text-center text-gray-500 text-sm mt-2">Klik op afbeelding voor vergroten</p>
+              </div>
+            </div>
+            
+            {floorplanImages.gevels && (
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="p-4 bg-slate-700 text-white">
+                  <h3 className="text-lg font-semibold">Gevels Type {typeNumberFromSlug}</h3>
+                </div>
+                <div className="p-4">
+                  <img
+                    src={floorplanImages.gevels}
+                    alt={`Gevels Type ${typeNumberFromSlug}`}
+                    className="w-full h-auto max-h-[500px] object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
+                    onClick={() => window.open(floorplanImages.gevels, '_blank')}
+                  />
+                  <p className="text-center text-gray-500 text-sm mt-2">Klik op afbeelding voor vergroten</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
