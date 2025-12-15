@@ -61,6 +61,33 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
   
   console.log('🔄 Component render - units:', units.length, '| loading:', isLoading, '| error:', error);
 
+  // Get floorplan image based on type number (Opslagbox types 1-16)
+  const getFloorplanImage = (typeNumber: number): string => {
+    const floorplanMap: Record<number, string> = {
+      1: '/images/floorplans/Opslagbox_Type_1.png',
+      2: '/images/floorplans/Opslagbox_Type_2.png',
+      3: '/images/floorplans/Opslagbox_Type_3.png',
+      4: '/images/floorplans/Opslagbox_Type_4.png',
+      5: '/images/floorplans/Opslagbox_Type_5.png',
+      6: '/images/floorplans/Opslagbox_Type_6.png',
+      7: '/images/floorplans/Opslagbox_Type_7.png',
+      8: '/images/floorplans/Opslagbox_Type_8.png',
+      9: '/images/floorplans/Opslagbox_Type_9.png',
+      10: '/images/floorplans/Opslagbox_Type_10.png',
+      11: '/images/floorplans/Opslagbox_Type_11.png',
+      12: '/images/floorplans/Opslagbox_Type_12.png',
+      13: '/images/floorplans/Opslagbox_Type_13.png',
+      14: '/images/floorplans/Opslagbox_Type_14.png',
+      15: '/images/floorplans/Opslagbox_Type_15.png',
+      16: '/images/floorplans/Opslagbox_Type_16.png',
+    };
+    return floorplanMap[typeNumber] || '/images/placeholder.png';
+  };
+
+  // Extract type number from slug
+  const typeNumberFromSlug = parseInt(resolvedParams.slug.match(/type-(\d+)/)?.[1] || '1');
+  const floorplanImage = getFloorplanImage(typeNumberFromSlug);
+
   // Fetch units from backend based on slug (ALL units of a TYPE)
   useEffect(() => {
     const fetchUnits = async () => {
@@ -676,6 +703,24 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
               </div>
             </div>
           )}
+
+          {/* Floorplan Image - Below specifications */}
+          <div className="mt-12">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden max-w-2xl mx-auto">
+              <div className="p-4 bg-slate-800 text-white">
+                <h3 className="text-lg font-semibold">Plattegrond Type {typeNumberFromSlug}</h3>
+              </div>
+              <div className="p-4">
+                <img
+                  src={floorplanImage}
+                  alt={`Plattegrond Opslagbox Type ${typeNumberFromSlug}`}
+                  className="w-full h-auto max-h-[500px] object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
+                  onClick={() => window.open(floorplanImage, '_blank')}
+                />
+                <p className="text-center text-gray-500 text-sm mt-2">Klik op afbeelding voor vergroten</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1225,7 +1270,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                             </div>
                             <div className="flex space-x-2">
                               <button
-                                onClick={() => window.open(project.images[0], '_blank')}
+                                onClick={() => window.open(floorplanImage, '_blank')}
                                 className="flex items-center px-3 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors text-sm"
                               >
                                 <Building2 className="h-4 w-4 mr-2" />
@@ -1246,10 +1291,10 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                           <div className="bg-white rounded-lg shadow-inner overflow-hidden">
                             <div className="relative">
                               <img
-                                src={project.images[0]}
-                              alt={`Vloerplan Unit ${selectedUnit}`}
+                                src={floorplanImage}
+                                alt={`Plattegrond Type ${typeNumberFromSlug}`}
                                 className="w-full h-auto max-h-[600px] object-contain cursor-zoom-in"
-                                onClick={() => window.open(project.images[0], '_blank')}
+                                onClick={() => window.open(floorplanImage, '_blank')}
                               />
                               
                               {/* Overlay with unit info */}
