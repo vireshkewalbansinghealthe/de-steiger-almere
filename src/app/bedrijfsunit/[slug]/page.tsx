@@ -61,6 +61,29 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   
   console.log('🔄 Component render - units:', units.length, '| loading:', isLoading, '| error:', error);
 
+  // Get floorplan image based on type number
+  const getFloorplanImage = (typeNumber: number): { plattegrond: string; gevels?: string } => {
+    const floorplanMap: Record<number, { plattegrond: string; gevels?: string }> = {
+      1: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_1.png' },
+      2: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_2.png' },
+      3: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_3.png' },
+      4: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_4_plattegrond.png', gevels: '/images/floorplans/Bedrijfsunit_Type_4_gevels.png' },
+      5: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_5_plattegrond.png', gevels: '/images/floorplans/Bedrijfsunit_Type_5_gevels.png' },
+      6: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_6.png' },
+      7: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_7.png' },
+      8: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_8_plattegrond.png', gevels: '/images/floorplans/Bedrijfsunit_Type_8_gevels.png' },
+      9: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_9.png' },
+      10: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_10.png' },
+      11: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_11.png' },
+      12: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_12.png' },
+    };
+    return floorplanMap[typeNumber] || { plattegrond: '/images/placeholder.png' };
+  };
+
+  // Extract type number from slug
+  const typeNumberFromSlug = parseInt(resolvedParams.slug.match(/type-(\d+)/)?.[1] || '1');
+  const floorplanImages = getFloorplanImage(typeNumberFromSlug);
+
   // Fetch units from backend based on slug (ALL units of a TYPE)
   useEffect(() => {
     const fetchUnits = async () => {
@@ -537,6 +560,41 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Bekijk welke units nog beschikbaar zijn in {project.name}
             </p>
+          </div>
+
+          {/* Floorplan Images */}
+          <div className="mb-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="p-4 bg-slate-800 text-white">
+                <h3 className="text-lg font-semibold">Plattegrond Type {typeNumberFromSlug}</h3>
+              </div>
+              <div className="p-4">
+                <img
+                  src={floorplanImages.plattegrond}
+                  alt={`Plattegrond Type ${typeNumberFromSlug}`}
+                  className="w-full h-auto max-h-[500px] object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
+                  onClick={() => window.open(floorplanImages.plattegrond, '_blank')}
+                />
+                <p className="text-center text-gray-500 text-sm mt-2">Klik op afbeelding voor vergroten</p>
+              </div>
+            </div>
+            
+            {floorplanImages.gevels && (
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="p-4 bg-slate-700 text-white">
+                  <h3 className="text-lg font-semibold">Gevels Type {typeNumberFromSlug}</h3>
+                </div>
+                <div className="p-4">
+                  <img
+                    src={floorplanImages.gevels}
+                    alt={`Gevels Type ${typeNumberFromSlug}`}
+                    className="w-full h-auto max-h-[500px] object-contain cursor-zoom-in hover:scale-105 transition-transform duration-300"
+                    onClick={() => window.open(floorplanImages.gevels, '_blank')}
+                  />
+                  <p className="text-center text-gray-500 text-sm mt-2">Klik op afbeelding voor vergroten</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="bg-gray-50 rounded-2xl p-4 sm:p-8">
@@ -1305,10 +1363,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                         <div className="bg-white rounded-lg shadow-inner overflow-hidden">
                           <div className="relative">
                             <img
-                              src={project.images[0]}
-                              alt={`Vloerplan Unit ${selectedUnit}`}
+                              src={floorplanImages.plattegrond}
+                              alt={`Plattegrond Type ${typeNumberFromSlug}`}
                               className="w-full h-auto max-h-[600px] object-contain cursor-zoom-in"
-                              onClick={() => window.open(project.images[0], '_blank')}
+                              onClick={() => window.open(floorplanImages.plattegrond, '_blank')}
                             />
                             
                             {/* Overlay with unit info */}
@@ -1326,6 +1384,26 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                             </div>
                           </div>
                         </div>
+                        
+                        {/* Gevels image if available */}
+                        {floorplanImages.gevels && (
+                          <div className="mt-6">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-3">Gevels</h4>
+                            <div className="bg-white rounded-lg shadow-inner overflow-hidden">
+                              <div className="relative">
+                                <img
+                                  src={floorplanImages.gevels}
+                                  alt={`Gevels Type ${typeNumberFromSlug}`}
+                                  className="w-full h-auto max-h-[400px] object-contain cursor-zoom-in"
+                                  onClick={() => window.open(floorplanImages.gevels, '_blank')}
+                                />
+                                <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs px-3 py-2 rounded-lg">
+                                  Klik voor vergroten
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                         
                         <p className="text-gray-600 text-xs mt-3 text-center">
                           Schematische weergave van Unit {selectedUnit}. 
