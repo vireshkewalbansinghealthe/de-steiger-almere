@@ -78,7 +78,7 @@ export default function HomePage() {
   const [scrollY, setScrollY] = useState(0);
   
   useEffect(() => {
-    const targetDate = new Date('2025-12-15T00:00:00').getTime();
+    const targetDate = new Date('2026-04-01T00:00:00').getTime();
     
     const timer = setInterval(() => {
       const now = new Date().getTime();
@@ -801,7 +801,7 @@ export default function HomePage() {
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-yellow-400/30 shadow-2xl min-w-[450px] rubber-band-hover hover:shadow-3xl transition-all duration-700 ease-out">
             <div className="text-center mb-6">
               <div className="text-white font-bold text-xl mb-2">Eerste Fase Verkoop</div>
-              <div className="text-yellow-400 font-semibold text-base">15 December 2025</div>
+              <div className="text-yellow-400 font-semibold text-base">1 April 2026</div>
             </div>
             
             {/* Timer Display - Bigger with Smooth Animations */}
@@ -1266,7 +1266,7 @@ export default function HomePage() {
                   <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
                     <div className="h-80 md:h-96 relative bg-gray-100">
                       <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2430.1234567890123!2d5.2647!3d52.3676!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c609c3b9b1c3c3%3A0x1234567890123456!2sAlmere%2C%20Netherlands!5e0!3m2!1sen!2snl!4v1234567890123"
+                        src="https://maps.google.com/maps?q=De%20Steiger%2074-77%2C%20Almere&t=&z=15&ie=UTF8&iwloc=&output=embed"
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}
@@ -1280,7 +1280,7 @@ export default function HomePage() {
                         <div className="flex items-start space-x-2">
                           <div className="w-3 h-3 bg-yellow-400 rounded-full mt-1 animate-pulse"></div>
                           <div>
-                            <h3 className="font-bold text-gray-900 text-sm">De Steiger Almere</h3>
+                            <h3 className="font-bold text-gray-900 text-sm">De Steiger 74 t/m 77, Almere</h3>
                             <p className="text-gray-600 text-xs mb-2">Hoofdlocatie</p>
                             <div className="space-y-1 text-xs text-gray-500">
                               <p>🏢 28 Bedrijfsunits</p>

@@ -121,7 +121,7 @@ export default function ContactPage() {
               <h3 className="text-lg font-bold text-gray-900 mb-2">Telefoon</h3>
               <p className="text-gray-600">
                 <a href="tel:+31201234567" className="hover:text-slate-600 transition-colors">
-                  +31 (0)20 123 4567
+                  +31 (0)36 123 4567
                 </a>
               </p>
               <p className="text-sm text-gray-500 mt-1">

@@ -19,7 +19,7 @@ INSERT INTO public.properties (
   44.9,
   50.6,
   44.9,
-  322140,
+  306800,
   'bedrijfsunit-type-1-unit-1',
   'available',
   3.70,

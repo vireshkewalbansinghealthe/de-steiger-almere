@@ -487,7 +487,7 @@ export default function OndernemersPage() {
               href="tel:+31201234567"
               className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
             >
-              Bel Direct: +31 (0)20 123 4567
+              Bel Direct: +31 (0)36 123 4567
             </a>
           </div>
         </div>

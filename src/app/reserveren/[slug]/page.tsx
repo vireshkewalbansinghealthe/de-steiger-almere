@@ -467,8 +467,10 @@ export default function ReservationPage() {
   };
 
   const prevStep = async () => {
-    // Can't go back from step 2 (would need to release lock and return to property page)
-    if (currentStep > 2) {
+    // If on step 2, go back to property page
+    if (currentStep === 2) {
+      router.back();
+    } else if (currentStep > 2) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -535,7 +537,15 @@ export default function ReservationPage() {
         await handleStepChange(2, data.user); // Pass the user explicitly to handleStepChange
       }
     } catch (error: any) {
-      setAuthError(error.message || 'Er is een fout opgetreden');
+      let message = error.message || 'Er is een fout opgetreden';
+      if (message.includes('Email not confirmed')) {
+        message = 'E-mailadres is nog niet bevestigd. Controleer uw inbox.';
+      } else if (message.includes('Invalid login credentials')) {
+        message = 'Ongeldige inloggegevens. Controleer uw e-mail en wachtwoord.';
+      } else if (message.includes('User already registered')) {
+        message = 'Er bestaat al een account met dit e-mailadres.';
+      }
+      setAuthError(message);
     } finally {
       setAuthLoading(false);
     }
@@ -604,7 +614,7 @@ export default function ReservationPage() {
             
             <div className="flex items-center ml-2 flex-shrink-0">
               <div className="text-xs sm:text-sm text-gray-600 font-medium">
-                {currentStep}/{steps.length}
+                {currentStep === 1.5 ? 1 : currentStep === 0 ? 0 : Math.floor(currentStep)}/{steps.length}
               </div>
             </div>
           </div>
@@ -633,13 +643,13 @@ export default function ReservationPage() {
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-medium text-gray-500">Voortgang</span>
               <span className="text-xs font-medium text-yellow-600">
-                {currentStep === 1.5 ? 0 : Math.round(((currentStep - 1) / steps.length) * 100)}%
+                {currentStep <= 1.5 ? 0 : Math.round(((currentStep - 1) / steps.length) * 100)}%
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-2 rounded-full transition-all duration-500"
-                style={{ width: `${currentStep === 1.5 ? 0 : ((currentStep - 1) / steps.length) * 100}%` }}
+                style={{ width: `${currentStep <= 1.5 ? 0 : ((currentStep - 1) / steps.length) * 100}%` }}
               ></div>
             </div>
             <div className="flex justify-between mt-2">
@@ -863,7 +873,7 @@ export default function ReservationPage() {
                       <div className="flex gap-3 pt-4">
                         <button
                           type="button"
-                          onClick={() => setCurrentStep(1)}
+                          onClick={() => router.back()}
                           className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
                         >
                           Terug

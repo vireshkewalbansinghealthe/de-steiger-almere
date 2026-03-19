@@ -65,16 +65,16 @@ export default function InvestorsPage() {
               {/* Statistics Grid - Mobile Friendly */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8 mt-8 sm:mt-12 max-w-4xl mx-auto">
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">7.2%</div>
-                  <div className="text-white/80 text-sm sm:text-base">Gemiddeld rendement</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">7-8%</div>
+                  <div className="text-white/80 text-sm sm:text-base">Verwacht rendement</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">95%</div>
-                  <div className="text-white/80 text-sm sm:text-base">Bezettingsgraad</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">Hoog</div>
+                  <div className="text-white/80 text-sm sm:text-base">Verhuurpotentieel</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">€212k</div>
-                  <div className="text-white/80 text-sm sm:text-base">Vanaf investering</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">Vanaf</div>
+                  <div className="text-white/80 text-sm sm:text-base">€ 34.080 ex. BTW</div>
                 </div>
               </div>
               
@@ -142,7 +142,7 @@ export default function InvestorsPage() {
               <div className="space-y-4 mb-8">
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
-                  <span className="text-gray-700">Vanaf €212.520 per unit</span>
+                  <span className="text-gray-700">Vanaf €222.640 per unit</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
@@ -176,7 +176,7 @@ export default function InvestorsPage() {
               <div className="space-y-4 mb-8">
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
-                  <span className="text-gray-700">Vanaf €31.240 per box</span>
+                  <span className="text-gray-700">Vanaf €34.080 per box</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
@@ -269,20 +269,20 @@ export default function InvestorsPage() {
 
           <div className="grid md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold text-slate-800 mb-2">7.2%</div>
-              <div className="text-gray-600">Gemiddeld jaarrendement</div>
+              <div className="text-4xl font-bold text-slate-800 mb-2">7-8%</div>
+              <div className="text-gray-600">Verwacht jaarrendement</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-slate-800 mb-2">€2.1M</div>
-              <div className="text-gray-600">Totale waardecreatie</div>
+              <div className="text-4xl font-bold text-slate-800 mb-2">Minimaal</div>
+              <div className="text-gray-600">Onderhoudsrisico</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-slate-800 mb-2">250+</div>
-              <div className="text-gray-600">Tevreden huurders</div>
+              <div className="text-4xl font-bold text-slate-800 mb-2">Hoog</div>
+              <div className="text-gray-600">Verhuurpotentieel</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-slate-800 mb-2">99.2%</div>
-              <div className="text-gray-600">Klanttevredenheid</div>
+              <div className="text-4xl font-bold text-slate-800 mb-2">A+</div>
+              <div className="text-gray-600">Energielabel</div>
             </div>
           </div>
         </div>

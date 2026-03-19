@@ -48,8 +48,8 @@ async function createVireshReservationDemo() {
       
       // Financial Details
       reservation_fee_amount: 1500.00,
-      total_property_price: 322140,
-      total_including_btw: Math.round(322140 * 1.21),
+      total_property_price: 306800,
+      total_including_btw: Math.round(306800 * 1.21),
       
       // Additional Information
       notes: 'Demo reservation created via MCP script for viresh@flexyapp.com',

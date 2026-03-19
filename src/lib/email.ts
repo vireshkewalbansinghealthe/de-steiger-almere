@@ -108,7 +108,7 @@ export async function sendReservationConfirmationEmail(data: ReservationConfirma
               <p style="color: #6b7280; margin: 0;">Heeft u vragen? Neem gerust contact met ons op:</p>
               <p style="color: #1e293b; margin: 10px 0 0 0;">
                 <strong>Email:</strong> info@desteiger.nl<br>
-                <strong>Telefoon:</strong> +31 (0)20 123 4567
+                <strong>Telefoon:</strong> +31 (0)36 123 4567
               </p>
             </div>
             
@@ -228,7 +228,7 @@ export async function sendReservationReminderEmail(data: ReservationReminderEmai
               <p style="color: #6b7280; margin: 0;">Heeft u vragen of hulp nodig?</p>
               <p style="color: #1e293b; margin: 10px 0 0 0;">
                 <strong>Email:</strong> info@desteiger.nl<br>
-                <strong>Telefoon:</strong> +31 (0)20 123 4567
+                <strong>Telefoon:</strong> +31 (0)36 123 4567
               </p>
             </div>
             
@@ -314,7 +314,7 @@ export async function sendReservationExpiredEmail(data: {
               <p style="color: #6b7280; margin: 0;">Voor vragen kunt u contact met ons opnemen:</p>
               <p style="color: #1e293b; margin: 10px 0 0 0;">
                 <strong>Email:</strong> info@desteiger.nl<br>
-                <strong>Telefoon:</strong> +31 (0)20 123 4567
+                <strong>Telefoon:</strong> +31 (0)36 123 4567
               </p>
             </div>
             

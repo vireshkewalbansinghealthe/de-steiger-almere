@@ -26,6 +26,10 @@ interface Unit {
   location: string;
   description?: string;
   features?: string[];
+  industrie_net_area?: number;
+  industrie_gross_area?: number;
+  kantoor_net_area?: number;
+  kantoor_gross_area?: number;
 }
 
 export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
@@ -136,19 +140,21 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
     images: (units[0].images && units[0].images.length > 0) ? units[0].images : ['/images/placeholder.png'],
     units: units.length,
     status: 'NU IN DE VERKOOP',
-    startPrice: `€ ${Math.min(...units.map(u => u.sale_price)).toLocaleString('nl-NL')}`,
-    buildingStart: '2024',
+    startPrice: `€ ${Math.min(...units.map(u => u.sale_price)).toLocaleString('nl-NL')} (v.o.n. ex. BTW)`,
+    brutoStartPrice: `€ ${(Math.min(...units.map(u => u.sale_price)) * 1.1).toLocaleString('nl-NL')} (v.o.n. incl. BTW)`,
+    buildingStart: '2026',
     details: {
       unitDetails: units.map(unit => ({
         unitNumber: parseInt(unit.unit_number) || 0,
         netArea: unit.net_area || 0,
         grossArea: unit.gross_area || 0,
         price: `€ ${(unit.sale_price || 0).toLocaleString('nl-NL')}`,
+        brutoPrice: `€ ${((unit.sale_price || 0) * 1.1).toLocaleString('nl-NL')}`,
         status: unit.status === 'available' ? 'beschikbaar' : unit.status === 'reserved' ? 'gereserveerd' : 'verkocht',
-        industrieNetto: Math.floor((unit.net_area || 0) * 0.7),
-        industrieBruto: Math.floor((unit.gross_area || 0) * 0.7),
-        kantoorNetto: Math.floor((unit.net_area || 0) * 0.3),
-        kantoorBruto: Math.floor((unit.gross_area || 0) * 0.3),
+        industrieNetto: unit.industrie_net_area || Math.floor((unit.net_area || 0) * 0.7),
+        industrieBruto: unit.industrie_gross_area || Math.floor((unit.gross_area || 0) * 0.7),
+        kantoorNetto: unit.kantoor_net_area || Math.floor((unit.net_area || 0) * 0.3),
+        kantoorBruto: unit.kantoor_gross_area || Math.floor((unit.gross_area || 0) * 0.3),
       })),
       specifications: {
         ceiling: '3.70 meter vrije hoogte',
@@ -214,7 +220,14 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const headerOffset = 80; // Height of fixed header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -328,39 +341,43 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
           <thead className="bg-gray-50">
             <tr className="border-b border-gray-200">
               <th className="text-left py-3 px-4 font-medium text-gray-700">Unit</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Netto m²</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Bruto m²</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700">Oppervlakte (Netto / Bruto)</th>
               <th className="text-left py-3 px-4 font-medium text-gray-700">Industrie</th>
               <th className="text-left py-3 px-4 font-medium text-gray-700">Kantoor</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Prijs</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700">Prijs (Ex. / Incl. BTW)</th>
               <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
               <th className="text-left py-3 px-4 font-medium text-gray-700">Actie</th>
             </tr>
           </thead>
           <tbody>
-            {unitDetails.map((unit, index) => (
-              <tr 
-                key={unit.unitNumber} 
-                onClick={() => {
-                  setSelectedUnit(unit.unitNumber.toString());
-                  // Find the unit's property_id
-                  const foundUnit = units.find(u => parseInt(u.unit_number) === unit.unitNumber);
-                  if (foundUnit) {
-                    setSelectedPropertyId(foundUnit.id);
-                  }
-                }}
-                className={`border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-slate-50`}
-              >
-                <td className="py-3 px-4 font-medium text-gray-900">#{unit.unitNumber}</td>
-                <td className="py-3 px-4 text-gray-700">{unit.netArea}m²</td>
-                <td className="py-3 px-4 text-gray-700">{unit.grossArea}m²</td>
-                <td className="py-3 px-4 text-gray-600 text-xs">
-                  {unit.industrieNetto ? `${unit.industrieNetto}m²` : '-'}
-                </td>
-                <td className="py-3 px-4 text-gray-600 text-xs">
-                  {unit.kantoorNetto ? `${unit.kantoorNetto}m²` : '-'}
-                </td>
-                <td className="py-3 px-4 text-gray-900 font-medium">{unit.price}</td>
+            {unitDetails.map((unit, index) => {
+              const foundUnit = units.find(u => parseInt(u.unit_number) === unit.unitNumber);
+              return (
+                <tr 
+                  key={unit.unitNumber} 
+                  onClick={() => {
+                    setSelectedUnit(unit.unitNumber.toString());
+                    if (foundUnit) {
+                      setSelectedPropertyId(foundUnit.id);
+                    }
+                  }}
+                  className={`border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-slate-50`}
+                >
+                  <td className="py-3 px-4 font-medium text-gray-900">#{unit.unitNumber}</td>
+                  <td className="py-3 px-4 text-gray-700">
+                    <div className="font-medium">{unit.netArea}m² netto</div>
+                    <div className="text-xs text-gray-500">{unit.grossArea}m² bruto</div>
+                  </td>
+                  <td className="py-3 px-4 text-gray-600 text-xs">
+                    {unit.industrieNetto ? `${unit.industrieNetto}m²` : '-'}
+                  </td>
+                  <td className="py-3 px-4 text-gray-600 text-xs">
+                    {unit.kantoorNetto ? `${unit.kantoorNetto}m²` : '-'}
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="text-gray-900 font-medium">{unit.price}</div>
+                    <div className="text-[10px] text-gray-500">{unit.brutoPrice} incl.</div>
+                  </td>
                 <td className="py-3 px-4">
                   <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                     unit.status === 'beschikbaar' 
@@ -378,8 +395,9 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                     Klik voor details
                   </span>
                 </td>
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -399,6 +417,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       size: `${unitData.netArea}m²`,
       grossSize: `${unitData.grossArea}m²`,
       price: unitData.price,
+      brutoPrice: unitData.brutoPrice,
       available: unitData.status === 'beschikbaar',
       status: unitData.status,
       industrieNetto: unitData.industrieNetto || 0,
@@ -441,7 +460,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
               
               <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-                {project.name}
+                Bedrijfsunit Type {typeNumberFromSlug}
               </h1>
               
               <p className="text-base sm:text-lg md:text-2xl text-white/90 mb-6 sm:mb-8 md:mb-12 leading-relaxed max-w-3xl px-2">
@@ -462,21 +481,21 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                     <Car className="h-8 w-8 mx-auto text-white" />
                   </div>
                   <div className="text-white/80">Parkeerplaatsen</div>
-                  <div className="text-2xl font-bold text-white">158</div>
+                  <div className="text-2xl font-bold text-white">2 per unit</div>
                 </div>
                 <div className="text-center">
                   <div className="bg-white/20 rounded-lg p-4 mb-2">
                     <Calendar className="h-8 w-8 mx-auto text-white" />
                   </div>
                   <div className="text-white/80">Bouwstart</div>
-                  <div className="text-2xl font-bold text-white">{project.buildingStart || 'TBD'}</div>
+                  <div className="text-2xl font-bold text-white">2026</div>
                 </div>
                 <div className="text-center">
                   <div className="bg-white/20 rounded-lg p-4 mb-2">
                     <Building2 className="h-8 w-8 mx-auto text-white" />
                   </div>
                   <div className="text-white/80">Vanaf</div>
-                  <div className="text-2xl font-bold text-white">€ 212,520</div>
+                  <div className="text-2xl font-bold text-white">{project.startPrice}</div>
                 </div>
               </div>
               
@@ -655,7 +674,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
               {/* Reserve Button - Same Height Container */}
               <div className="lg:w-48 flex lg:flex-col justify-center items-center lg:items-stretch">
                 <Link
-                  href={`/reserveren/${project.slug}`}
+                  href={`/reserveren/${project.slug}${selectedUnit ? `?unit=${selectedUnit}` : ''}`}
                   className="inline-flex items-center justify-center bg-slate-800 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200 w-full lg:h-32 text-sm sm:text-base"
                 >
                   <Home className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
@@ -685,21 +704,39 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             <div className="mt-12 grid md:grid-cols-2 gap-8">
               <div className="bg-slate-50 rounded-xl p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Beschikbare formaten</h3>
-                <div className="space-y-3">
-                  {project.details?.unitDetails && 
-                   Array.from(new Set(project.details.unitDetails.map(unit => unit.netArea)))
-                   .sort((a, b) => a - b)
-                   .map((size, index) => {
-                     const unitsWithSize = project.details?.unitDetails?.filter(unit => unit.netArea === size) || [];
-                     const priceRange = unitsWithSize.length > 0 ? unitsWithSize[0].price : project.startPrice;
-                     return (
-                       <div key={index} className="flex items-center justify-between">
-                         <span className="text-gray-700">{size}m² netto ({unitsWithSize.length} units)</span>
-                         <span className="font-medium text-slate-800">{priceRange}</span>
-                       </div>
-                     );
-                   })
-                  }
+                <div className="space-y-4">
+                  {(() => {
+                    const groupedUnits: { [key: string]: { units: number[], netArea: number, grossArea: number, price: string } } = {};
+                    project.details.unitDetails.forEach(unit => {
+                      const key = `${unit.netArea}-${unit.price}`;
+                      if (!groupedUnits[key]) {
+                        groupedUnits[key] = { units: [], netArea: unit.netArea, grossArea: unit.grossArea, price: unit.price };
+                      }
+                      groupedUnits[key].units.push(unit.unitNumber);
+                    });
+
+                    return Object.values(groupedUnits)
+                      .sort((a, b) => a.netArea - b.netArea)
+                      .map((group, index) => {
+                        const unitRange = group.units.length === 1 
+                          ? `Unit ${group.units[0]}` 
+                          : group.units.length > 1 && Math.max(...group.units) - Math.min(...group.units) === group.units.length - 1
+                          ? `Unit ${Math.min(...group.units)} t/m ${Math.max(...group.units)}`
+                          : `Units ${group.units.join(', ')}`;
+
+                        return (
+                          <div key={index} className="flex flex-col border-b border-gray-200 pb-2 last:border-0">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-semibold text-slate-800">{unitRange}</span>
+                              <span className="font-bold text-slate-900">{group.price} ex. BTW</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm text-gray-600">
+                              <span>{group.netArea}m² netto / {group.grossArea}m² bruto</span>
+                            </div>
+                          </div>
+                        );
+                      });
+                  })()}
                 </div>
               </div>
               <div className="bg-slate-50 rounded-xl p-6">
@@ -891,7 +928,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   <Phone className="h-5 w-5 mr-3 text-slate-600" />
                   <div>
                     <div className="font-medium text-gray-900">Telefoon</div>
-                    <div className="text-gray-600">+31 (0)20 123 4567</div>
+                    <div className="text-gray-600">+31 (0)36 123 4567</div>
                   </div>
                 </div>
                 <div className="flex items-center">
@@ -1334,11 +1371,19 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                         
                         {/* Price Section */}
                         <div className="bg-blue-50 rounded-lg p-3 mb-3">
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-blue-900 mb-1">
-                              {unitDetails.price}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="text-center border-r border-blue-200">
+                              <div className="text-lg font-bold text-blue-900">
+                                {unitDetails.price}
+                              </div>
+                              <div className="text-xs text-blue-700">ex. BTW</div>
                             </div>
-                            <div className="text-xs text-blue-700">v.o.n. ex. BTW</div>
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-blue-900">
+                                {unitDetails.brutoPrice}
+                              </div>
+                              <div className="text-xs text-blue-700">incl. BTW</div>
+                            </div>
                           </div>
                         </div>
                         
@@ -1537,7 +1582,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                                   <Phone className="h-5 w-5 mr-3 text-slate-600" />
                                   <div>
                                     <div className="font-medium text-gray-900">Telefoon</div>
-                                    <div className="text-gray-600">+31 (0)20 123 4567</div>
+                                    <div className="text-gray-600">+31 (0)36 123 4567</div>
                                   </div>
                                 </div>
                                 <div className="flex items-center">

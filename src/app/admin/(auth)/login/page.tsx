@@ -119,7 +119,7 @@ export default function AdminLoginPage() {
           
           {/* Footer */}
           <div className="text-white/60 text-sm">
-            © 2025 De Steiger. Alle rechten voorbehouden.
+            © 2026 De Steiger. Alle rechten voorbehouden.
           </div>
         </div>
       </div>

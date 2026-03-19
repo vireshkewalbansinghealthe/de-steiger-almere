@@ -97,7 +97,7 @@ export default function AboutUnityPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="relative">
               <img 
-                src="/images/Image3.png" 
+                src="/images/Image10.png" 
                 alt="Duurzame bedrijfsruimtes" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -165,7 +165,7 @@ export default function AboutUnityPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
               <img 
-                src="/images/Image5.png" 
+                src="/images/Image11.png" 
                 alt="Moderne faciliteiten" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />

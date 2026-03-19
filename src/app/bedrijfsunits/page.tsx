@@ -744,7 +744,7 @@ export default function BedrijfsunitsPage() {
                               <div className="p-5">
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">{unit.name}</h3>
                                 <p className="text-sm text-gray-600 mb-1">
-                                  {unit.units_count ? `${unit.units_count} units beschikbaar` : `Unit: ${unit.unit_number}`}
+                                  {unit.units_count ? `${unit.units_count} ${unit.units_count === 1 ? 'unit' : 'units'} beschikbaar` : `Unit: ${unit.unit_number}`}
                                 </p>
                                 <p className="text-sm text-gray-600 mb-3">{unit.location || 'Almere'}</p>
                                 
@@ -878,7 +878,7 @@ export default function BedrijfsunitsPage() {
                   <Phone className="h-5 w-5 mr-3 text-slate-600" />
                   <div>
                     <div className="font-medium text-gray-900">Telefoon</div>
-                    <div className="text-gray-600">+31 (0)20 123 4567</div>
+                    <div className="text-gray-600">+31 (0)36 123 4567</div>
                   </div>
                 </div>
                 <div className="flex items-center">

@@ -674,7 +674,7 @@ export default function OpslagboxenPage() {
                           <div className="p-5">
                             <h3 className="text-xl font-bold text-gray-900 mb-2">{unit.name}</h3>
                             <p className="text-sm text-gray-600 mb-1">
-                              {unit.units_count ? `${unit.units_count} units beschikbaar` : `Unit: ${unit.unit_number}`}
+                              {unit.units_count ? `${unit.units_count} ${unit.units_count === 1 ? 'unit' : 'units'} beschikbaar` : `Unit: ${unit.unit_number}`}
                             </p>
                             <p className="text-sm text-gray-600 mb-3">{unit.location || 'Almere'}</p>
 

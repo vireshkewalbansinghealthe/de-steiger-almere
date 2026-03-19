@@ -26,7 +26,7 @@ export default function Footer() {
               <div className="flex items-center text-slate-200 hover:text-yellow-400 transition-colors group">
                 <Phone className="h-5 w-5 mr-3 text-yellow-400 group-hover:scale-110 transition-transform" />
                 <a href="tel:+31000000000" className="font-medium">
-                  +31 (0)20 123 4567
+                  +31 (0)36 123 4567
                 </a>
               </div>
               <div className="flex items-center text-slate-200">
@@ -117,7 +117,7 @@ export default function Footer() {
         <div className="border-t border-slate-700 pt-8 mt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-slate-400 text-sm">
-              © 2025 De Steiger. Alle rechten voorbehouden.
+              © 2026 De Steiger. Alle rechten voorbehouden.
             </div>
             <div className="flex flex-wrap justify-center md:justify-end gap-6">
               <Link href="/privacy" className="text-slate-400 hover:text-yellow-400 text-sm transition-colors relative group">
