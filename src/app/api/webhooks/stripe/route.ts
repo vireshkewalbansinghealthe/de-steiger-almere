@@ -8,14 +8,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
 });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabaseKey = serviceRoleKey && serviceRoleKey.length > 50 ? serviceRoleKey : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-/**
- * POST /api/webhooks/stripe
- * Handle Stripe webhook events
- */
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get('stripe-signature')!;
@@ -34,6 +26,17 @@ export async function POST(request: NextRequest) {
       { error: 'Webhook signature verification failed' },
       { status: 400 }
     );
+  }
+
+  // Evaluate env variables INSIDE the function to ensure they are read at runtime
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseKey = serviceRoleKey && serviceRoleKey.length > 50 ? serviceRoleKey : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  
+  if (!serviceRoleKey || serviceRoleKey.length < 50) {
+    console.warn('⚠️ WARNING: SUPABASE_SERVICE_ROLE_KEY is missing or invalid in the runtime environment. Webhook is using ANON key. RLS policies will likely block database updates!');
+  } else {
+    console.log('✅ Using Service Role Key for webhook database operations.');
   }
 
   // Use service role key to bypass RLS
