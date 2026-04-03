@@ -199,8 +199,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 5: Create Stripe Payment Intent for reservation fee
-    // Reservation fee is €1.00 (100 cents)
-    const reservationFee = parseInt(process.env.RESERVATION_FEE_AMOUNT || '100', 10);
+    // Default reservation fee is €1500.00 (150000 cents) unless overridden by env
+    let reservationFee = parseInt(process.env.RESERVATION_FEE_AMOUNT || '150000', 10);
+    
+    // Exception for Bedrijfsunit 12 (set to €1.00)
+    if (property.unit_number === '12' && property.type === 'bedrijfsunit') {
+      reservationFee = 100;
+    }
     
     const paymentIntent = await stripe.paymentIntents.create({
       amount: reservationFee, // Already in cents

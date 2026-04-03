@@ -45,6 +45,7 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.desteigeralmere.nl'}/auth/callback`,
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,

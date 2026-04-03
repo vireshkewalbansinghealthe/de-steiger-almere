@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Check, Building2, MapPin, User, CreditCard, FileText, Eye, EyeOff, Mail, Lock, AlertCircle, Clock } from 'lucide-react';
@@ -13,7 +13,7 @@ import CustomerInfo from '../../../components/reservation/CustomerInfo';
 import TermsConditions from '../../../components/reservation/TermsConditions';
 import PaymentStep from '../../../components/reservation/PaymentStep';
 
-export default function ReservationPage() {
+function ReservationContent() {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -510,6 +510,7 @@ export default function ReservationPage() {
           email: authData.email,
           password: authData.password,
           options: {
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.desteigeralmere.nl'}/auth/callback`,
             data: {
               first_name: authData.firstName,
               last_name: authData.lastName,
@@ -1039,5 +1040,13 @@ export default function ReservationPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ReservationPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800" /></div>}>
+      <ReservationContent />
+    </Suspense>
   );
 }

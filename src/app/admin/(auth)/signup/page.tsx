@@ -43,6 +43,7 @@ export default function AdminSignupPage() {
         email,
         password,
         options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.desteigeralmere.nl'}/auth/callback`,
           data: {
             first_name: firstName,
             last_name: lastName,
