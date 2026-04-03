@@ -142,7 +142,7 @@ export default function InvestorsPage() {
               <div className="space-y-4 mb-8">
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
-                  <span className="text-gray-700">Vanaf €222.640 per unit</span>
+                  <span className="text-gray-700">Vanaf €202.400 per unit</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
