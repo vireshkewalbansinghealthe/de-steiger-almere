@@ -63,7 +63,7 @@ export default function DownloadsPage() {
           url: '/pdf/verkoop_opslagboxen.pdf'
         },
         {
-          name: 'Beleggingsinformatie',
+          name: 'Financieringen',
           description: 'Informatie voor potentiële investeerders en beleggers',
           type: 'PDF',
           size: '1.2 MB',
@@ -114,10 +114,42 @@ export default function DownloadsPage() {
     },
     {
       id: 'technical',
-      title: 'Technische Specificaties',
+      title: 'Technische Specificaties & Opties',
       icon: Building2,
-      description: 'Technische documenten en specificaties',
+      description: 'Technische documenten, specificaties en afbouwopties',
       items: [
+        {
+          name: 'Omgevingsvergunning De Steiger',
+          description: 'Officieel besluit omgevingsvergunning (kenmerk 245703)',
+          type: 'PDF',
+          size: '0.4 MB',
+          date: '2026-03-30',
+          url: '/pdf/Omgevingsvergunning_245703.pdf'
+        },
+        {
+          name: 'Technische Omschrijving Bedrijfsunits',
+          description: 'Definitieve technische omschrijving voor de bedrijfsunits',
+          type: 'PDF',
+          size: '0.5 MB',
+          date: '2026-03-30',
+          url: '/pdf/technische_omschrijving_bedrijfsunits.pdf'
+        },
+        {
+          name: 'Technische Omschrijving Opslagboxen',
+          description: 'Definitieve technische omschrijving voor de opslagboxen',
+          type: 'PDF',
+          size: '0.6 MB',
+          date: '2026-03-30',
+          url: '/pdf/technische_omschrijving_opslagboxen.pdf'
+        },
+        {
+          name: 'Optielijst Afbouw',
+          description: 'Overzicht van alle mogelijke afbouwopties',
+          type: 'PDF',
+          size: '0.9 MB',
+          date: '2026-03-30',
+          url: '/pdf/optielijst_afbouw.pdf'
+        },
         {
           name: 'Bouwkundige Specificaties',
           description: 'Gedetailleerde bouwkundige en technische specificaties',

@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, FileText, Home, Clock, CreditCard } from 'lucide-react';
 
-export default function ContractCompletedPage() {
+function ContractCompletedContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [contractData, setContractData] = useState<any>(null);
@@ -239,5 +239,13 @@ export default function ContractCompletedPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ContractCompletedPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-800" /></div>}>
+      <ContractCompletedContent />
+    </Suspense>
   );
 }
