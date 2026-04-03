@@ -1,6 +1,10 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create a function to lazily initialize Resend to avoid build-time errors
+// when environment variables might not be fully available
+const getResendClient = () => {
+  return new Resend(process.env.RESEND_API_KEY || 're_placeholder_build_only');
+};
 
 interface ReservationConfirmationEmailData {
   customerName: string;
@@ -27,6 +31,7 @@ interface ReservationReminderEmailData {
 
 export async function sendReservationConfirmationEmail(data: ReservationConfirmationEmailData) {
   try {
+    const resend = getResendClient();
     const { data: emailData, error } = await resend.emails.send({
       from: 'De Steiger <noreply@desteiger.nl>',
       to: [data.customerEmail],
@@ -142,6 +147,7 @@ export async function sendReservationConfirmationEmail(data: ReservationConfirma
 
 export async function sendReservationReminderEmail(data: ReservationReminderEmailData) {
   try {
+    const resend = getResendClient();
     const urgency = data.daysRemaining <= 7 ? 'urgent' : 'normal';
     const { data: emailData, error } = await resend.emails.send({
       from: 'De Steiger <noreply@desteiger.nl>',
@@ -268,6 +274,7 @@ export async function sendReservationExpiredEmail(data: {
   unitNumber: string;
 }) {
   try {
+    const resend = getResendClient();
     const { data: emailData, error } = await resend.emails.send({
       from: 'De Steiger <noreply@desteiger.nl>',
       to: [data.customerEmail],
