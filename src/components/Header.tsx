@@ -174,6 +174,20 @@ export default function Header() {
               Opslagboxen
             </Link>
 
+            {/* Financiering */}
+            <a
+              href="https://clarencefinance.nl/desteiger/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                isScrolled 
+                  ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
+                  : 'text-white hover:text-slate-300 hover:bg-white/10'
+              }`}
+            >
+              Financiering
+            </a>
+
             {/* Informatie Dropdown */}
             <div className="relative group">
               <button
@@ -190,7 +204,7 @@ export default function Header() {
               {/* Invisible bridge to prevent gap */}
               <div className="absolute right-0 top-full w-56 h-2 invisible group-hover:visible"></div>
               
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl ring-1 ring-black ring-opacity-5 z-50 opacity-0 invisible scale-95 group-hover:opacity-100 group-hover:visible group-hover:scale-100 transition-all duration-200 transform-gpu origin-top-right">
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-2xl ring-1 ring-black ring-opacity-5 z-50 opacity-0 invisible scale-95 group-hover:opacity-100 group-hover:visible group-hover:scale-100 transition-all duration-200 transform-gpu origin-top-right">
                 <div className="p-2">
                   <Link
                     href="/beleggers"
@@ -212,6 +226,30 @@ export default function Header() {
                       <div className="text-xs text-gray-500">Huur je ideale unit</div>
                     </div>
                   </Link>
+                  <a
+                    href="/pdf/ontwikkelvisie_almere.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 hover:text-slate-800 rounded-lg transition-colors duration-150"
+                  >
+                    <div className="mr-3 text-slate-800">🗺️</div>
+                    <div>
+                      <div className="font-medium">Ontwikkelvisie Almere</div>
+                      <div className="text-xs text-gray-500">Toekomstvisie 2040</div>
+                    </div>
+                  </a>
+                  <a
+                    href="https://www.onderneeminalmere.nl/nl/nieuws/eerste-vestiging-op-high-tech-campus-almere"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 hover:text-slate-800 rounded-lg transition-colors duration-150"
+                  >
+                    <div className="mr-3 text-slate-800">🚀</div>
+                    <div>
+                      <div className="font-medium">Hi Tech Campus</div>
+                      <div className="text-xs text-gray-500">Eerste vestiging Almere</div>
+                    </div>
+                  </a>
                 </div>
               </div>
             </div>
@@ -411,6 +449,17 @@ export default function Header() {
                     Opslagboxen
                   </Link>
 
+                  <a
+                    href="https://clarencefinance.nl/desteiger/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 opacity-60"></div>
+                    Financiering
+                  </a>
+
                   <Link
                     href="/downloads"
                     className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
@@ -436,7 +485,7 @@ export default function Header() {
                     }`} />
                   </button>
                   <div className={`overflow-hidden transition-all duration-300 ${
-                    isInfoOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+                    isInfoOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
                   }`}>
                     <div className="pl-6 pt-2 space-y-1">
                       <Link
@@ -461,6 +510,32 @@ export default function Header() {
                         <span className="mr-3 text-base">🏢</span>
                         Voor Ondernemers
                       </Link>
+                      <a
+                        href="/pdf/ontwikkelvisie_almere.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center px-4 py-2 text-sm text-gray-600 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsInfoOpen(false);
+                        }}
+                      >
+                        <span className="mr-3 text-base">🗺️</span>
+                        Ontwikkelvisie Almere
+                      </a>
+                      <a
+                        href="https://www.onderneeminalmere.nl/nl/nieuws/eerste-vestiging-op-high-tech-campus-almere"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center px-4 py-2 text-sm text-gray-600 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsInfoOpen(false);
+                        }}
+                      >
+                        <span className="mr-3 text-base">🚀</span>
+                        Hi Tech Campus
+                      </a>
                     </div>
                   </div>
                 </div>
