@@ -213,7 +213,7 @@ function ContractCompletedContent() {
               </h3>
               <ul className="text-sm space-y-1">
                 <li>• 📧 info@desteiger.nl</li>
-                <li>• 📞 036-123-4567</li>
+                <li>• 📞 0578-769056</li>
                 <li>• 🕒 Ma-Vr 9:00-17:00</li>
               </ul>
             </div>

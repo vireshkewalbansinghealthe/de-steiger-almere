@@ -76,7 +76,7 @@ export default function ContactPage() {
                   Stuur een bericht
                 </a>
                 <a
-                  href="tel:+31201234567"
+                  href="tel:0578769056"
                   className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
                 >
                   Bel ons direct
@@ -120,8 +120,8 @@ export default function ContactPage() {
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">Telefoon</h3>
               <p className="text-gray-600">
-                <a href="tel:+31201234567" className="hover:text-slate-600 transition-colors">
-                  +31 (0)36 123 4567
+                <a href="tel:0578769056" className="hover:text-slate-600 transition-colors">
+                  0578-769056
                 </a>
               </p>
               <p className="text-sm text-gray-500 mt-1">

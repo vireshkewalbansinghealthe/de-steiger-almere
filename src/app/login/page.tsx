@@ -30,7 +30,14 @@ function CustomerLoginContent() {
       });
 
       if (error) {
-        setError(error.message);
+        const msg = error.message.toLowerCase();
+        if (msg.includes('invalid login') || msg.includes('invalid credentials') || msg.includes('email not confirmed')) {
+          setError('Onjuist e-mailadres of wachtwoord. Probeer het opnieuw.');
+        } else if (msg.includes('email not confirmed')) {
+          setError('Uw e-mailadres is nog niet bevestigd. Controleer uw inbox voor de activatiemail.');
+        } else {
+          setError(error.message);
+        }
       } else {
         // Redirect to returnTo URL if provided, otherwise to profile
         const redirectUrl = returnTo ? decodeURIComponent(returnTo) : '/profiel';

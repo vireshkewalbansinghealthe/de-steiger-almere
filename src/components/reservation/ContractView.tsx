@@ -32,7 +32,7 @@ export default function ContractView({
     // Verkoper (Seller) info
     verkoperNaam: 'De Steiger B.V.',
     verkoperAdres: 'De Steiger 74-77, 1317 AZ Almere',
-    verkoperContact: 'info@desteiger.nl | 036-123 4567',
+    verkoperContact: 'info@desteiger.nl | 0578-769056',
     
     // Gegadigde (Buyer) info
     gegadigdeNaam: `${reservationData.customerInfo?.firstName || ''} ${reservationData.customerInfo?.lastName || ''}`.trim(),

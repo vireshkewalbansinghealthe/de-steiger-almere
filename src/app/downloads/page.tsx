@@ -485,10 +485,10 @@ export default function DownloadsPage() {
               Neem Contact Op
             </Link>
             <a
-              href="tel:+31201234567"
+              href="tel:0578769056"
               className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
             >
-              Bel Direct: +31 (0)36 123 4567
+              Bel Direct: 0578-769056
             </a>
           </div>
         </div>

@@ -78,7 +78,7 @@ export default function HomePage() {
   const [scrollY, setScrollY] = useState(0);
   
   useEffect(() => {
-    const targetDate = new Date('2026-04-01T00:00:00').getTime();
+    const targetDate = new Date('2026-04-08T00:00:00').getTime();
     
     const timer = setInterval(() => {
       const now = new Date().getTime();
@@ -801,7 +801,7 @@ export default function HomePage() {
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-yellow-400/30 shadow-2xl min-w-[450px] rubber-band-hover hover:shadow-3xl transition-all duration-700 ease-out">
             <div className="text-center mb-6">
               <div className="text-white font-bold text-xl mb-2">Eerste Fase Verkoop</div>
-              <div className="text-yellow-400 font-semibold text-base">1 April 2026</div>
+              <div className="text-yellow-400 font-semibold text-base">8 April 2026</div>
             </div>
             
             {/* Timer Display - Bigger with Smooth Animations */}

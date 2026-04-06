@@ -56,7 +56,17 @@ export default function RegisterPage() {
       });
 
       if (error) {
-        setError(error.message);
+        // Translate common Supabase error messages to Dutch
+        const msg = error.message.toLowerCase();
+        if (msg.includes('invalid') && msg.includes('email')) {
+          setError('Dit e-mailadres lijkt niet geldig te zijn. Controleer of het adres correct is ingetypt. Als het adres correct is, neem dan contact met ons op via info@desteigeralmere.nl');
+        } else if (msg.includes('already registered') || msg.includes('already been registered')) {
+          setError('Er bestaat al een account met dit e-mailadres. Probeer in te loggen of gebruik een ander e-mailadres.');
+        } else if (msg.includes('password')) {
+          setError('Wachtwoord voldoet niet aan de eisen. Gebruik minimaal 8 karakters.');
+        } else {
+          setError(error.message);
+        }
       } else {
         setSuccess(true);
       }
