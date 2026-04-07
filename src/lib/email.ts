@@ -145,12 +145,8 @@ export async function generateContractPdf(reservation: any, property: any): Prom
     doc.moveDown(0.5);
     doc.font('Helvetica-Bold').fontSize(11).text('ONDERTEKENING');
     doc.moveDown(0.5);
-    doc.font('Helvetica').fontSize(10).text('Aldus overeengekomen en in tweevoud ondertekend:');
+    doc.font('Helvetica').fontSize(10).text('Aldus overeengekomen en ondertekend door Gegadigde:');
     doc.moveDown(1);
-
-    doc.font('Helvetica-Bold').text('Verkoper: De Steiger B.V.');
-    doc.font('Helvetica').text('Datum: ' + startDatum);
-    doc.moveDown(1.5);
 
     doc.font('Helvetica-Bold').text(`Gegadigde: ${gegadigdeNaam}`);
     if (gegadigdeBedrijf) doc.font('Helvetica').text(gegadigdeBedrijf);

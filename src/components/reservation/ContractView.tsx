@@ -171,15 +171,7 @@ ARTIKEL 8 - SLOTBEPALINGEN
 
 ONDERTEKENING
 
-Aldus overeengekomen en in tweevoud ondertekend:
-
-Verkoper:
-${contractVariables.verkoperNaam}
-
-Naam: _______________________
-Plaats: Almere
-Datum: ${contractVariables.ondertekeningDatum}
-
+Aldus overeengekomen en ondertekend door Gegadigde:
 
 Gegadigde:
 ${contractVariables.gegadigdeNaam}${contractVariables.gegadigdeBedrijf ? `\n${contractVariables.gegadigdeBedrijf}` : ''}
