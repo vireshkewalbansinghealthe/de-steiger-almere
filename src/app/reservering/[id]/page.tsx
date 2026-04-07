@@ -75,6 +75,8 @@ export default function ReservationDetailsPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const [user, setUser] = useState<any>(null);
+  const [downloadingContract, setDownloadingContract] = useState(false);
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
   const supabase = createClient();
 
@@ -182,6 +184,45 @@ export default function ReservationDetailsPage() {
     ];
 
     return steps;
+  };
+
+  const downloadDocument = async (docType: 'contract' | 'invoice') => {
+    if (!reservation) return;
+    const setLoading = docType === 'contract' ? setDownloadingContract : setDownloadingInvoice;
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { alert('Niet ingelogd'); return; }
+
+      const res = await fetch(
+        `/api/reservations/download?reservation_id=${reservation.id}&type=${docType}`,
+        { headers: { Authorization: `Bearer ${session.access_token}` } }
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Onbekende fout' }));
+        alert(`Fout: ${err.error || 'Kan document niet downloaden'}`);
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const unitLabel = reservation.properties.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
+      a.download = docType === 'invoice'
+        ? `Factuur-INV-${reservation.reservation_number}.pdf`
+        : `Reserveringsovereenkomst-${unitLabel}-${reservation.properties.unit_number}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Download error:', e);
+      alert('Er is een fout opgetreden bij het downloaden.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -833,30 +874,63 @@ export default function ReservationDetailsPage() {
 
             {/* Documents Tab */}
             {activeTab === 'documents' && (
-              <div className="space-y-8">
-                <div className="text-center py-12">
-                  <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Documenten</h3>
-                  <p className="text-gray-600 mb-6">
-                    Hier vindt u alle documenten gerelateerd aan uw reservering zodra deze beschikbaar zijn.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button
-                      disabled
-                      className="px-6 py-3 bg-gray-100 text-gray-400 font-semibold rounded-xl cursor-not-allowed"
-                    >
-                      <Download className="h-4 w-4 mr-2 inline" />
-                      Contract (Binnenkort beschikbaar)
-                    </button>
-                    <button
-                      disabled
-                      className="px-6 py-3 bg-gray-100 text-gray-400 font-semibold rounded-xl cursor-not-allowed"
-                    >
-                      <Download className="h-4 w-4 mr-2 inline" />
-                      Betalingsbewijs (Binnenkort beschikbaar)
-                    </button>
+              <div className="space-y-6">
+                {(reservation.status === 'reservation_paid' || reservation.status === 'fully_paid' || reservation.status === 'transferred') ? (
+                  <>
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
+                      <p className="text-green-800 font-medium">Uw documenten zijn beschikbaar. Klik hieronder om te downloaden.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {/* Contract */}
+                      <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow">
+                        <div className="bg-slate-100 rounded-full p-4 mb-4">
+                          <FileText className="h-8 w-8 text-slate-700" />
+                        </div>
+                        <h4 className="text-lg font-bold text-gray-900 mb-1">Reserveringsovereenkomst</h4>
+                        <p className="text-sm text-gray-500 mb-5">Ondertekend contract in PDF-formaat</p>
+                        <button
+                          onClick={() => downloadDocument('contract')}
+                          disabled={downloadingContract}
+                          className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white font-semibold rounded-xl hover:from-slate-900 hover:to-slate-700 transition-all duration-300 disabled:opacity-60 disabled:cursor-wait"
+                        >
+                          {downloadingContract ? (
+                            <><span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full" />Bezig...</>
+                          ) : (
+                            <><Download className="h-4 w-4" />Contract downloaden</>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Invoice */}
+                      <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow">
+                        <div className="bg-yellow-100 rounded-full p-4 mb-4">
+                          <Euro className="h-8 w-8 text-yellow-600" />
+                        </div>
+                        <h4 className="text-lg font-bold text-gray-900 mb-1">Factuur</h4>
+                        <p className="text-sm text-gray-500 mb-5">Factuur reserveringskosten (VVS Projectontwikkeling B.V.)</p>
+                        <button
+                          onClick={() => downloadDocument('invoice')}
+                          disabled={downloadingInvoice}
+                          className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-slate-900 font-bold rounded-xl hover:from-yellow-500 hover:to-yellow-400 transition-all duration-300 disabled:opacity-60 disabled:cursor-wait"
+                        >
+                          {downloadingInvoice ? (
+                            <><span className="animate-spin inline-block w-4 h-4 border-2 border-slate-800 border-t-transparent rounded-full" />Bezig...</>
+                          ) : (
+                            <><Download className="h-4 w-4" />Factuur downloaden</>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-12">
+                    <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Documenten</h3>
+                    <p className="text-gray-500 mb-2">Documenten zijn beschikbaar nadat de reservering is betaald en bevestigd.</p>
+                    <p className="text-sm text-gray-400">Huidige status: <span className="font-semibold capitalize">{reservation.status === 'pending' ? 'In behandeling' : reservation.status}</span></p>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>

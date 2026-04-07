@@ -1020,10 +1020,10 @@ export const projects: Project[] = [
     name: 'Bedrijfsunit Type 11',
     location: 'Almere',
     status: 'NU IN DE VERKOOP',
-    description: 'Bedrijfsunit Type 11 van 93.2m² netto op De Steiger 74/77 in Almere. Combinatie van industrie- en kantoorfunctie.',
-    units: 11,
-    startPrice: '€ 202,400 - € 205,600 v.o.n. ex. BTW',
-    features: ['93.2m² netto', '102.8m² bruto', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
+    description: 'Bedrijfsunit Type 11 op De Steiger 74/77 in Almere. Combinatie van industrie- en kantoorfunctie.',
+    units: 2,
+    startPrice: '€ 227,700 - € 231,300 v.o.n. ex. BTW',
+    features: ['101.2 - 102.8m² bruto', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(10),
     slug: 'bedrijfsunit-type-11',
     details: {
@@ -1033,141 +1033,13 @@ export const projects: Project[] = [
           unitNumber: 68, 
           netArea: 93.2, 
           grossArea: 102.8, 
-          price: '€ 205,600', 
+          price: '€ 231,300', 
           status: 'beschikbaar',
           industrieNetto: 46.6,
           industrieBruto: 51.4,
           kantoorNetto: 46.6,
           kantoorBruto: 51.4
         },
-        { 
-          unitNumber: 69, 
-          netArea: 93.8, 
-          grossArea: 101.2, 
-          price: '€ 202,400', 
-          status: 'beschikbaar',
-          industrieNetto: 46.9,
-          industrieBruto: 50.6,
-          kantoorNetto: 46.9,
-          kantoorBruto: 50.6
-        },
-        { 
-          unitNumber: 70, 
-          netArea: 93.8, 
-          grossArea: 101.2, 
-          price: '€ 202,400', 
-          status: 'beschikbaar',
-          industrieNetto: 46.9,
-          industrieBruto: 50.6,
-          kantoorNetto: 46.9,
-          kantoorBruto: 50.6
-        },
-        { 
-          unitNumber: 71, 
-          netArea: 93.8, 
-          grossArea: 101.2, 
-          price: '€ 202,400', 
-          status: 'beschikbaar',
-          industrieNetto: 46.9,
-          industrieBruto: 50.6,
-          kantoorNetto: 46.9,
-          kantoorBruto: 50.6
-        },
-        { 
-          unitNumber: 72, 
-          netArea: 93.8, 
-          grossArea: 101.2, 
-          price: '€ 202,400', 
-          status: 'beschikbaar',
-          industrieNetto: 46.9,
-          industrieBruto: 50.6,
-          kantoorNetto: 46.9,
-          kantoorBruto: 50.6
-        },
-        { 
-          unitNumber: 73, 
-          netArea: 93.8, 
-          grossArea: 101.2, 
-          price: '€ 202,400', 
-          status: 'beschikbaar',
-          industrieNetto: 46.9,
-          industrieBruto: 50.6,
-          kantoorNetto: 46.9,
-          kantoorBruto: 50.6
-        },
-        { 
-          unitNumber: 74, 
-          netArea: 93.8, 
-          grossArea: 101.2, 
-          price: '€ 202,400', 
-          status: 'beschikbaar',
-          industrieNetto: 46.9,
-          industrieBruto: 50.6,
-          kantoorNetto: 46.9,
-          kantoorBruto: 50.6
-        },
-        { 
-          unitNumber: 75, 
-          netArea: 93.8, 
-          grossArea: 101.2, 
-          price: '€ 202,400', 
-          status: 'beschikbaar',
-          industrieNetto: 46.9,
-          industrieBruto: 50.6,
-          kantoorNetto: 46.9,
-          kantoorBruto: 50.6
-        },
-        { 
-          unitNumber: 76, 
-          netArea: 93.8, 
-          grossArea: 101.2, 
-          price: '€ 202,400', 
-          status: 'beschikbaar',
-          industrieNetto: 46.9,
-          industrieBruto: 50.6,
-          kantoorNetto: 46.9,
-          kantoorBruto: 50.6
-        },
-        { 
-          unitNumber: 77, 
-          netArea: 93.8, 
-          grossArea: 101.2, 
-          price: '€ 202,400', 
-          status: 'beschikbaar',
-          industrieNetto: 46.9,
-          industrieBruto: 50.6,
-          kantoorNetto: 46.9,
-          kantoorBruto: 50.6
-        },
-        { 
-          unitNumber: 78, 
-          netArea: 93.8, 
-          grossArea: 101.2, 
-          price: '€ 202,400', 
-          status: 'beschikbaar',
-          industrieNetto: 46.9,
-          industrieBruto: 50.6,
-          kantoorNetto: 46.9,
-          kantoorBruto: 50.6
-        }
-      ]
-    }
-  },
-  // Type 12: 1 units (91.6m² netto)
-  {
-    id: 'bedrijfsunit-type-12',
-    name: 'Bedrijfsunit Type 12',
-    location: 'Almere',
-    status: 'NU IN DE VERKOOP',
-    description: 'Bedrijfsunit Type 12 van 91.6m² netto op De Steiger 74/77 in Almere. Combinatie van industrie- en kantoorfunctie.',
-    units: 1,
-    startPrice: '€ 227,700 v.o.n. ex. BTW',
-    features: ['91.6m² netto', '101.2m² bruto', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
-    images: getBedrijfsunitImages(11),
-    slug: 'bedrijfsunit-type-12',
-    details: {
-      location: 'De Steiger 74/77, Almere',
-      unitDetails: [
         { 
           unitNumber: 79, 
           netArea: 91.6, 
@@ -1179,6 +1051,34 @@ export const projects: Project[] = [
           kantoorNetto: 45.8,
           kantoorBruto: 50.6
         }
+      ]
+    }
+  },
+  // Type 12: 10 units (93.8m² netto / 101.2m² bruto)
+  {
+    id: 'bedrijfsunit-type-12',
+    name: 'Bedrijfsunit Type 12',
+    location: 'Almere',
+    status: 'NU IN DE VERKOOP',
+    description: 'Bedrijfsunit Type 12 van 93.8m² netto op De Steiger 74/77 in Almere. Combinatie van industrie- en kantoorfunctie.',
+    units: 10,
+    startPrice: '€ 227,700 v.o.n. ex. BTW',
+    features: ['93.8m² netto', '101.2m² bruto', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
+    images: getBedrijfsunitImages(11),
+    slug: 'bedrijfsunit-type-12',
+    details: {
+      location: 'De Steiger 74/77, Almere',
+      unitDetails: [
+        { unitNumber: 69, netArea: 93.8, grossArea: 101.2, price: '€ 227,700', status: 'beschikbaar', industrieNetto: 46.9, industrieBruto: 50.6, kantoorNetto: 46.9, kantoorBruto: 50.6 },
+        { unitNumber: 70, netArea: 93.8, grossArea: 101.2, price: '€ 227,700', status: 'beschikbaar', industrieNetto: 46.9, industrieBruto: 50.6, kantoorNetto: 46.9, kantoorBruto: 50.6 },
+        { unitNumber: 71, netArea: 93.8, grossArea: 101.2, price: '€ 227,700', status: 'beschikbaar', industrieNetto: 46.9, industrieBruto: 50.6, kantoorNetto: 46.9, kantoorBruto: 50.6 },
+        { unitNumber: 72, netArea: 93.8, grossArea: 101.2, price: '€ 227,700', status: 'beschikbaar', industrieNetto: 46.9, industrieBruto: 50.6, kantoorNetto: 46.9, kantoorBruto: 50.6 },
+        { unitNumber: 73, netArea: 93.8, grossArea: 101.2, price: '€ 227,700', status: 'beschikbaar', industrieNetto: 46.9, industrieBruto: 50.6, kantoorNetto: 46.9, kantoorBruto: 50.6 },
+        { unitNumber: 74, netArea: 93.8, grossArea: 101.2, price: '€ 227,700', status: 'beschikbaar', industrieNetto: 46.9, industrieBruto: 50.6, kantoorNetto: 46.9, kantoorBruto: 50.6 },
+        { unitNumber: 75, netArea: 93.8, grossArea: 101.2, price: '€ 227,700', status: 'beschikbaar', industrieNetto: 46.9, industrieBruto: 50.6, kantoorNetto: 46.9, kantoorBruto: 50.6 },
+        { unitNumber: 76, netArea: 93.8, grossArea: 101.2, price: '€ 227,700', status: 'beschikbaar', industrieNetto: 46.9, industrieBruto: 50.6, kantoorNetto: 46.9, kantoorBruto: 50.6 },
+        { unitNumber: 77, netArea: 93.8, grossArea: 101.2, price: '€ 227,700', status: 'beschikbaar', industrieNetto: 46.9, industrieBruto: 50.6, kantoorNetto: 46.9, kantoorBruto: 50.6 },
+        { unitNumber: 78, netArea: 93.8, grossArea: 101.2, price: '€ 227,700', status: 'beschikbaar', industrieNetto: 46.9, industrieBruto: 50.6, kantoorNetto: 46.9, kantoorBruto: 50.6 }
       ]
     }
   },
