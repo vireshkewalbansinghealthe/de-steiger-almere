@@ -690,7 +690,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   href="/pdf/technische_omschrijving_bedrijfsunits.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center bg-white border-2 border-slate-200 text-slate-700 px-4 py-3 rounded-lg font-semibold hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 w-full text-sm text-center"
+                  className="inline-flex items-center justify-center bg-yellow-500 text-slate-900 px-4 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors duration-200 w-full text-sm text-center"
                 >
                   Technische Specificaties
                 </a>
@@ -698,7 +698,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   href="/pdf/optielijst_afbouw.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center bg-white border-2 border-slate-200 text-slate-700 px-4 py-3 rounded-lg font-semibold hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 w-full text-sm text-center"
+                  className="inline-flex items-center justify-center bg-yellow-500 text-slate-900 px-4 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors duration-200 w-full text-sm text-center"
                 >
                   Optielijst Afbouw
                 </a>
