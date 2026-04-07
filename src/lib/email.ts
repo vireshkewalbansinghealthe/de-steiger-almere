@@ -69,9 +69,10 @@ export async function generateContractPdf(reservation: any, property: any): Prom
     doc.fontSize(11).font('Helvetica-Bold').text('De ondergetekenden:');
     doc.moveDown(0.5);
     doc.font('Helvetica')
-      .text('De Steiger B.V.')
-      .text('De Steiger 74-77, 1317 AZ Almere')
-      .text('info@desteigeralmere.nl | 0578-769056')
+      .text('VVS Projectontwikkeling B.V.')
+      .text('Hammerstraat 10 A, 8161 PH EPE, Nederland')
+      .text('administratie@vvsbouw.nl | 0578-769056 | www.vvsprojectontwikkeling.nl')
+      .text('KVK: 91341280 | BTW: NL865623661B01 | IBAN: NL17RABO0318905388')
       .text('hierna te noemen: "Verkoper";');
     doc.moveDown(0.5);
     doc.font('Helvetica-Bold').text('EN');

@@ -30,9 +30,9 @@ export default function ContractView({
   // Contract variables mapping
   const contractVariables = {
     // Verkoper (Seller) info
-    verkoperNaam: 'De Steiger B.V.',
-    verkoperAdres: 'De Steiger 74-77, 1317 AZ Almere',
-    verkoperContact: 'info@desteigeralmere.nl | 0578-769056',
+    verkoperNaam: 'VVS Projectontwikkeling B.V.',
+    verkoperAdres: 'Hammerstraat 10 A, 8161 PH EPE, Nederland',
+    verkoperContact: 'administratie@vvsbouw.nl | 0578-769056 | www.vvsprojectontwikkeling.nl',
     
     // Gegadigde (Buyer) info
     gegadigdeNaam: `${reservationData.customerInfo?.firstName || ''} ${reservationData.customerInfo?.lastName || ''}`.trim(),
