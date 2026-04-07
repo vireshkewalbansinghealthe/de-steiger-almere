@@ -12,7 +12,10 @@ import {
   Clock, 
   XCircle, 
   Download,
-  Eye
+  Eye,
+  FileText,
+  Receipt,
+  Loader2
 } from 'lucide-react'
 
 interface Reservation {
@@ -50,8 +53,38 @@ export default function MyReservationsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [user, setUser] = useState<any>(null)
+  const [downloading, setDownloading] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  const downloadDocument = async (reservationId: string, type: 'contract' | 'invoice', fileName: string) => {
+    setDownloading(`${reservationId}-${type}`)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return
+
+      const response = await fetch(
+        `/api/reservations/download?reservation_id=${reservationId}&type=${type}`,
+        { headers: { Authorization: `Bearer ${session.access_token}` } }
+      )
+
+      if (!response.ok) throw new Error('Download mislukt')
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Download error:', err)
+    } finally {
+      setDownloading(null)
+    }
+  }
 
   useEffect(() => {
     const checkAuthAndFetchReservations = async () => {
@@ -102,10 +135,11 @@ export default function MyReservationsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'confirmed':
+      case 'reservation_paid':
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
             <CheckCircle className="w-3 h-3 mr-1" />
-            Bevestigd
+            Bevestigd & Betaald
           </span>
         )
       case 'pending':
@@ -313,23 +347,52 @@ export default function MyReservationsPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-4 mt-4 border-t">
-                    <div className="flex space-x-3">
+                  <div className="pt-4 mt-4 border-t">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <Link
                         href={`/${reservation.properties.type}/${reservation.properties.type === 'bedrijfsunit' ? 'bedrijfsunit' : 'opslagbox'}-type-${reservation.properties.type_number}`}
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                       >
                         <Eye className="h-4 w-4 mr-2" />
-                        Bekijk Property
+                        Bekijk Unit
                       </Link>
+
+                      {(reservation.status === 'confirmed' || reservation.status === 'reservation_paid') && (
+                        <div className="flex flex-wrap gap-2">
+                          {/* Contract download */}
+                          <button
+                            onClick={() => downloadDocument(
+                              reservation.id,
+                              'contract',
+                              `Reserveringsovereenkomst-${reservation.properties.name.replace(/\s+/g, '-')}-unit-${reservation.properties.unit_number}.pdf`
+                            )}
+                            disabled={downloading === `${reservation.id}-contract`}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 disabled:opacity-60"
+                          >
+                            {downloading === `${reservation.id}-contract`
+                              ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              : <FileText className="h-4 w-4 mr-2" />}
+                            Overeenkomst (PDF)
+                          </button>
+
+                          {/* Invoice download */}
+                          <button
+                            onClick={() => downloadDocument(
+                              reservation.id,
+                              'invoice',
+                              `Factuur-INV-${reservation.reservation_number}.pdf`
+                            )}
+                            disabled={downloading === `${reservation.id}-invoice`}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100 disabled:opacity-60"
+                          >
+                            {downloading === `${reservation.id}-invoice`
+                              ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              : <Receipt className="h-4 w-4 mr-2" />}
+                            Factuur (PDF)
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    
-                    {reservation.status === 'confirmed' && (
-                      <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200">
-                        <Download className="h-4 w-4 mr-2" />
-                        Download Contract
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
