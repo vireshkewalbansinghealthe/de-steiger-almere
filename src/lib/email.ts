@@ -376,7 +376,80 @@ export async function sendContactFormEmails(data: {
   ]);
 }
 
-// ─── 4. Reservation confirmation + invoice ────────────────────────────────────
+// ─── 4. Reservation reminder email ───────────────────────────────────────────
+export async function sendReservationReminderEmail(data: {
+  customerName: string;
+  customerEmail: string;
+  reservationNumber: string;
+  unitName: string;
+  unitNumber: string;
+  totalPrice: number;
+  remainingAmount: number;
+  expiresAt: string;
+  daysRemaining: number;
+}) {
+  const { customerName, customerEmail, reservationNumber, unitName, unitNumber, daysRemaining, expiresAt } = data;
+  const expiryDate = new Date(expiresAt).toLocaleDateString('nl-NL', { day: '2-digit', month: 'long', year: 'numeric' });
+
+  const html = baseLayout(`
+    <h2>Herinnering: uw reservering verloopt binnenkort</h2>
+    <p>Geachte ${customerName},</p>
+    <p>Uw reservering voor <strong>${unitName} ${unitNumber}</strong> (nr. ${reservationNumber}) verloopt over <strong>${daysRemaining} dagen</strong> op ${expiryDate}.</p>
+    <div class="highlight">
+      <strong>Reserveringsnummer:</strong> ${reservationNumber}<br>
+      <strong>Unit:</strong> ${unitName} ${unitNumber}<br>
+      <strong>Verloopdatum:</strong> ${expiryDate}
+    </div>
+    <p>Laat ons binnen de reserveringsperiode weten of u tot aankoop wenst over te gaan.</p>
+    <p>Neem contact op:<br>
+      📧 <a href="mailto:info@desteigeralmere.nl">info@desteigeralmere.nl</a><br>
+      📞 0578-769056
+    </p>
+    <p>Met vriendelijke groet,<br><strong>Team De Steiger Almere</strong></p>
+  `);
+
+  await resend.emails.send({
+    from: FROM,
+    to: customerEmail,
+    subject: `Herinnering: reservering ${unitName} ${unitNumber} verloopt over ${daysRemaining} dagen`,
+    html,
+  });
+}
+
+// ─── 5. Reservation expired email ─────────────────────────────────────────────
+export async function sendReservationExpiredEmail(data: {
+  customerName: string;
+  customerEmail: string;
+  reservationNumber: string;
+  unitName: string;
+  unitNumber: string;
+}) {
+  const { customerName, customerEmail, reservationNumber, unitName, unitNumber } = data;
+
+  const html = baseLayout(`
+    <h2>Uw reservering is verlopen</h2>
+    <p>Geachte ${customerName},</p>
+    <p>Uw reservering voor <strong>${unitName} ${unitNumber}</strong> (nr. ${reservationNumber}) is verlopen.</p>
+    <div class="highlight">
+      <strong>Reserveringsnummer:</strong> ${reservationNumber}<br>
+      <strong>Unit:</strong> ${unitName} ${unitNumber}
+    </div>
+    <p>Bent u nog geïnteresseerd? Neem contact met ons op om de mogelijkheden te bespreken.</p>
+    <p>📧 <a href="mailto:info@desteigeralmere.nl">info@desteigeralmere.nl</a><br>
+      📞 0578-769056
+    </p>
+    <p>Met vriendelijke groet,<br><strong>Team De Steiger Almere</strong></p>
+  `);
+
+  await resend.emails.send({
+    from: FROM,
+    to: customerEmail,
+    subject: `Reservering ${unitName} ${unitNumber} verlopen – De Steiger Almere`,
+    html,
+  });
+}
+
+// ─── 6. Reservation confirmation + invoice ────────────────────────────────────
 export async function sendReservationConfirmationEmails(reservation: any, property: any) {
   const unitTypeLabel = property.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
   const customerName = `${reservation.customer_first_name} ${reservation.customer_last_name}`;

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
-import { sendReservationConfirmationEmail } from '@/lib/email';
+import { sendReservationConfirmationEmails } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,26 +90,20 @@ export async function POST(request: NextRequest) {
 
         console.log('✅ Payment succeeded for reservation:', reservation.reservation_number);
         
-        // Fetch property details for the email
+        // Fetch full property details for the email
         const { data: propertyData } = await supabase
           .from('properties')
-          .select('name, unit_number')
+          .select('*')
           .eq('id', reservation.property_id)
           .single();
 
         if (propertyData) {
-          // Send confirmation email
-          await sendReservationConfirmationEmail({
-            customerName: `${reservation.customer_first_name} ${reservation.customer_last_name}`,
-            customerEmail: reservation.customer_email,
-            reservationNumber: reservation.reservation_number,
-            unitName: propertyData.name,
-            unitNumber: propertyData.unit_number,
-            totalPrice: reservation.total_property_price,
-            reservationFee: reservation.reservation_fee_amount,
-            reservationExpiresAt: reservation.reservation_expires_at,
-          });
-          console.log('✅ Confirmation email triggered for:', reservation.customer_email);
+          try {
+            await sendReservationConfirmationEmails(reservation, propertyData);
+            console.log('✅ Confirmation email triggered for:', reservation.customer_email);
+          } catch (emailErr) {
+            console.error('⚠️ Email sending failed (non-blocking):', emailErr);
+          }
         } else {
           console.error('❌ Could not send confirmation email: property details not found');
         }
