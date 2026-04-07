@@ -287,7 +287,7 @@ export default function OpslagboxenPage() {
                   {unit.units_count || 1}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {Math.round(unit.gross_area)}m² bruto / {Math.round(unit.net_area)}m² netto
+                  {Math.round(unit.gross_area)}m² bruto
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   € {unit.sale_price?.toLocaleString('nl-NL')} v.o.n.

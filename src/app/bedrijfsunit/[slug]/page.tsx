@@ -148,6 +148,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
         unitNumber: parseInt(unit.unit_number) || 0,
         netArea: unit.net_area || 0,
         grossArea: unit.gross_area || 0,
+        rawPrice: unit.sale_price || 0,
         price: `€ ${(unit.sale_price || 0).toLocaleString('nl-NL')}`,
         brutoPrice: `€ ${((unit.sale_price || 0) * 1.1).toLocaleString('nl-NL')}`,
         status: unit.status === 'available' ? 'beschikbaar' : unit.status === 'reserved' ? 'gereserveerd' : 'verkocht',
@@ -341,7 +342,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
           <thead className="bg-gray-50">
             <tr className="border-b border-gray-200">
               <th className="text-left py-3 px-4 font-medium text-gray-700">Unit</th>
-              <th className="text-left py-3 px-4 font-medium text-gray-700">Oppervlakte (Netto / Bruto)</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-700">Oppervlakte (Bruto)</th>
               <th className="text-left py-3 px-4 font-medium text-gray-700">Industrie</th>
               <th className="text-left py-3 px-4 font-medium text-gray-700">Kantoor</th>
               <th className="text-left py-3 px-4 font-medium text-gray-700">Prijs (Ex. / Incl. BTW)</th>
@@ -365,8 +366,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 >
                   <td className="py-3 px-4 font-medium text-gray-900">#{unit.unitNumber}</td>
                   <td className="py-3 px-4 text-gray-700">
-                    <div className="font-medium">{unit.netArea}m² netto</div>
-                    <div className="text-xs text-gray-500">{unit.grossArea}m² bruto</div>
+                    <div className="font-medium">{unit.grossArea}m² bruto</div>
                   </td>
                   <td className="py-3 px-4 text-gray-600 text-xs">
                     {unit.industrieNetto ? `${unit.industrieNetto}m²` : '-'}
@@ -728,17 +728,17 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Beschikbare formaten</h3>
                 <div className="space-y-4">
                   {(() => {
-                    const groupedUnits: { [key: string]: { units: number[], netArea: number, grossArea: number, price: string } } = {};
+                    const groupedUnits: { [key: string]: { units: number[], netArea: number, grossArea: number, rawPrice: number, price: string } } = {};
                     project.details.unitDetails.forEach(unit => {
                       const key = `${unit.netArea}-${unit.price}`;
                       if (!groupedUnits[key]) {
-                        groupedUnits[key] = { units: [], netArea: unit.netArea, grossArea: unit.grossArea, price: unit.price };
+                        groupedUnits[key] = { units: [], netArea: unit.netArea, grossArea: unit.grossArea, rawPrice: unit.rawPrice, price: unit.price };
                       }
                       groupedUnits[key].units.push(unit.unitNumber);
                     });
 
                     return Object.values(groupedUnits)
-                      .sort((a, b) => a.netArea - b.netArea)
+                      .sort((a, b) => a.rawPrice - b.rawPrice)
                       .map((group, index) => {
                         const unitRange = group.units.length === 1 
                           ? `Unit ${group.units[0]}` 
@@ -753,7 +753,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                               <span className="font-bold text-slate-900">{group.price} ex. BTW</span>
                             </div>
                             <div className="flex justify-between items-center text-sm text-gray-600">
-                              <span>{group.netArea}m² netto / {group.grossArea}m² bruto</span>
+                              <span>{group.grossArea}m² bruto</span>
                             </div>
                           </div>
                         );

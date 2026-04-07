@@ -367,7 +367,7 @@ export default function BedrijfsunitsPage() {
                   {unit.location || 'Almere'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {unit.net_area || unit.gross_area} m²
+                  {unit.gross_area} m²
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   2 parkeerplaatsen
@@ -751,7 +751,7 @@ export default function BedrijfsunitsPage() {
                                 <div className="flex justify-between items-center mb-4">
                                   <div>
                                     <p className="text-xs text-gray-500">Oppervlakte</p>
-                                    <p className="text-sm font-semibold">{unit.net_area || unit.gross_area} m²</p>
+                                    <p className="text-sm font-semibold">{unit.gross_area} m²</p>
                                   </div>
                                   <div>
                                     <p className="text-xs text-gray-500">Prijs</p>
