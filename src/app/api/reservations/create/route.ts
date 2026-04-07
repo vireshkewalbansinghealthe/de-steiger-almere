@@ -202,8 +202,9 @@ export async function POST(request: NextRequest) {
     // Default reservation fee is €1500.00 (150000 cents) unless overridden by env
     let reservationFee = parseInt(process.env.RESERVATION_FEE_AMOUNT || '150000', 10);
     
-    // Exception for Bedrijfsunit 12 (set to €1.00)
-    if (property.unit_number === '12' && property.type === 'bedrijfsunit') {
+    // Exception for specific test units (set to €1.00)
+    const testUnits = ['12', '79'];
+    if (testUnits.includes(property.unit_number) && property.type === 'bedrijfsunit') {
       reservationFee = 100;
     }
     
