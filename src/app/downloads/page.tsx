@@ -63,6 +63,14 @@ export default function DownloadsPage() {
           url: '/pdf/verkoop_opslagboxen.pdf'
         },
         {
+          name: 'Projectplan Financiering Kopers',
+          description: 'Financieringsmogelijkheden voor kopers van De Steiger Almere',
+          type: 'PDF',
+          size: '4.2 MB',
+          date: '2026-03-27',
+          url: '/pdf/projectplan_financiering_kopers.pdf'
+        },
+        {
           name: 'Optielijst Afbouw',
           description: "Overzicht van alle mogelijke afbouwopties en extra's",
           type: 'PDF',
