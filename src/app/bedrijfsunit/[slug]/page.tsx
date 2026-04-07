@@ -3,7 +3,7 @@
 import React, { useState, use, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Calendar, Car, Building2, CheckCircle, Home, ArrowRight, Shield, Zap, Users, Phone, Mail, Grid, List, Filter, ChevronLeft, ChevronRight, CreditCard, Download, Loader2, Lock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Car, Building2, CheckCircle, Home, ArrowRight, Shield, Zap, Users, Phone, Mail, Grid, List, Filter, ChevronLeft, ChevronRight, CreditCard, Download, Loader2, Lock, AlertCircle, DoorOpen } from 'lucide-react';
 import ReservationModal from '../../../components/ReservationModal';
 import { useViewingLock } from '../../../hooks/useViewingLock';
 
@@ -468,34 +468,41 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
               </p>
               
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
                 <div className="text-center">
                   <div className="bg-white/20 rounded-lg p-4 mb-2">
                     <Home className="h-8 w-8 mx-auto text-white" />
                   </div>
-                  <div className="text-white/80">Units</div>
-                  <div className="text-2xl font-bold text-white">{project.units}</div>
+                  <div className="text-white/80 text-sm">Units</div>
+                  <div className="text-xl font-bold text-white">{project.units}</div>
                 </div>
                 <div className="text-center">
                   <div className="bg-white/20 rounded-lg p-4 mb-2">
                     <Car className="h-8 w-8 mx-auto text-white" />
                   </div>
-                  <div className="text-white/80">Parkeerplaatsen</div>
-                  <div className="text-2xl font-bold text-white">2 per unit</div>
+                  <div className="text-white/80 text-sm">Parkeerplaatsen</div>
+                  <div className="text-xl font-bold text-white">2 per unit</div>
+                </div>
+                <div className="text-center">
+                  <div className="bg-white/20 rounded-lg p-4 mb-2">
+                    <DoorOpen className="h-8 w-8 mx-auto text-white" />
+                  </div>
+                  <div className="text-white/80 text-sm">Balkon</div>
+                  <div className="text-xl font-bold text-white">Aanwezig</div>
                 </div>
                 <div className="text-center">
                   <div className="bg-white/20 rounded-lg p-4 mb-2">
                     <Calendar className="h-8 w-8 mx-auto text-white" />
                   </div>
-                  <div className="text-white/80">Bouwstart</div>
-                  <div className="text-2xl font-bold text-white">2026</div>
+                  <div className="text-white/80 text-sm">Bouwstart</div>
+                  <div className="text-xl font-bold text-white">2026</div>
                 </div>
                 <div className="text-center">
                   <div className="bg-white/20 rounded-lg p-4 mb-2">
                     <Building2 className="h-8 w-8 mx-auto text-white" />
                   </div>
-                  <div className="text-white/80">Vanaf</div>
-                  <div className="text-2xl font-bold text-white">{project.startPrice}</div>
+                  <div className="text-white/80 text-sm">Vanaf</div>
+                  <div className="text-xl font-bold text-white">{project.startPrice}</div>
                 </div>
               </div>
               
