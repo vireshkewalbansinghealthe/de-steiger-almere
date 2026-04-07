@@ -672,20 +672,36 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
               </div>
               
               {/* Reserve Button - Same Height Container */}
-              <div className="lg:w-52 flex lg:flex-col justify-center items-center lg:items-stretch gap-3">
+              <div className="lg:w-60 flex lg:flex-col justify-center items-center lg:items-stretch gap-2">
                 <Link
                   href={`/reserveren/${project.slug}${selectedUnit ? `?unit=${selectedUnit}` : ''}`}
-                  className="inline-flex items-center justify-center bg-slate-800 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200 w-full text-sm sm:text-base"
+                  className="inline-flex items-center justify-center bg-slate-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200 w-full text-sm text-center"
                 >
-                  <Home className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                  <Home className="h-4 w-4 mr-2 flex-shrink-0" />
                   Reserveer nu
                 </Link>
                 <Link
                   href="/beleggers"
-                  className="inline-flex items-center justify-center bg-yellow-500 text-slate-900 px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors duration-200 w-full text-sm sm:text-base text-center"
+                  className="inline-flex items-center justify-center bg-yellow-500 text-slate-900 px-4 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors duration-200 w-full text-sm text-center"
                 >
-                  Bekijk financieringsmogelijkheden
+                  Financieringsmogelijkheden
                 </Link>
+                <a
+                  href="/pdf/technische_omschrijving_bedrijfsunits.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center bg-white border-2 border-slate-200 text-slate-700 px-4 py-3 rounded-lg font-semibold hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 w-full text-sm text-center"
+                >
+                  Technische Specificaties
+                </a>
+                <a
+                  href="/pdf/optielijst_afbouw.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center bg-white border-2 border-slate-200 text-slate-700 px-4 py-3 rounded-lg font-semibold hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 w-full text-sm text-center"
+                >
+                  Optielijst Afbouw
+                </a>
               </div>
             </div>
 
