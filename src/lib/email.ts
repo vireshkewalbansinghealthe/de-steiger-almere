@@ -1,356 +1,323 @@
 import { Resend } from 'resend';
 
-// Create a function to lazily initialize Resend to avoid build-time errors
-// when environment variables might not be fully available
-const getResendClient = () => {
-  return new Resend(process.env.RESEND_API_KEY || 're_placeholder_build_only');
-};
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-interface ReservationConfirmationEmailData {
-  customerName: string;
-  customerEmail: string;
-  reservationNumber: string;
-  unitName: string;
-  unitNumber: string;
-  totalPrice: number;
-  reservationFee: number;
-  reservationExpiresAt: string;
-}
+const FROM = process.env.EMAIL_FROM || 'De Steiger Almere <noreply@desteigeralmere.nl>';
+const ADMIN_EMAIL = process.env.EMAIL_ADMIN || 'info@desteigeralmere.nl';
 
-interface ReservationReminderEmailData {
-  customerName: string;
-  customerEmail: string;
-  reservationNumber: string;
-  unitName: string;
-  unitNumber: string;
-  totalPrice: number;
-  remainingAmount: number;
-  expiresAt: string;
-  daysRemaining: number;
-}
+// ─── Contract PDF generator (server-side, pdfkit) ────────────────────────────
+export async function generateContractPdf(reservation: any, property: any): Promise<Buffer> {
+  const PDFDocument = (await import('pdfkit')).default;
 
-export async function sendReservationConfirmationEmail(data: ReservationConfirmationEmailData) {
-  try {
-    const resend = getResendClient();
-    const { data: emailData, error } = await resend.emails.send({
-      from: 'De Steiger <noreply@desteiger.nl>',
-      to: [data.customerEmail],
-      subject: `Reservering bevestigd - ${data.reservationNumber}`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Reservering Bevestigd</title>
-        </head>
-        <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Reservering Bevestigd! 🎉</h1>
-          </div>
-          
-          <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-            <p style="font-size: 16px; margin-bottom: 20px;">Beste ${data.customerName},</p>
-            
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              Uw reservering is succesvol bevestigd! Hartelijk dank voor uw vertrouwen in De Steiger.
-            </p>
-            
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 25px 0;">
-              <h2 style="color: #1e293b; margin-top: 0; font-size: 20px;">Reserveringsdetails</h2>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                  <td style="padding: 12px 0; font-weight: 600;">Reserveringsnummer:</td>
-                  <td style="padding: 12px 0; text-align: right;">${data.reservationNumber}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                  <td style="padding: 12px 0; font-weight: 600;">Unit:</td>
-                  <td style="padding: 12px 0; text-align: right;">${data.unitName}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                  <td style="padding: 12px 0; font-weight: 600;">Unit nummer:</td>
-                  <td style="padding: 12px 0; text-align: right;">#${data.unitNumber}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                  <td style="padding: 12px 0; font-weight: 600;">Verkoopprijs:</td>
-                  <td style="padding: 12px 0; text-align: right; font-size: 18px; color: #059669;">
-                    € ${data.totalPrice.toLocaleString('nl-NL')}
-                  </td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                  <td style="padding: 12px 0; font-weight: 600;">Betaalde reservering:</td>
-                  <td style="padding: 12px 0; text-align: right;">€ ${data.reservationFee.toLocaleString('nl-NL')}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 0; font-weight: 600;">Restbedrag:</td>
-                  <td style="padding: 12px 0; text-align: right; font-weight: bold;">
-                    € ${(data.totalPrice - data.reservationFee).toLocaleString('nl-NL')}
-                  </td>
-                </tr>
-              </table>
-            </div>
-            
-            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 25px 0; border-radius: 4px;">
-              <p style="margin: 0; color: #92400e;"><strong>⚠️ Belangrijk:</strong></p>
-              <p style="margin: 10px 0 0 0; color: #92400e;">
-                U heeft tot <strong>${new Date(data.reservationExpiresAt).toLocaleDateString('nl-NL', { 
-                  day: 'numeric', 
-                  month: 'long', 
-                  year: 'numeric' 
-                })}</strong> (6 weken) om het restbedrag te voldoen. U ontvangt herinneringen voor deze deadline.
-              </p>
-            </div>
-            
-            <h3 style="color: #1e293b; margin-top: 30px;">Volgende stappen:</h3>
-            <ol style="color: #4b5563; line-height: 1.8;">
-              <li>U ontvangt binnenkort de aankoopovereenkomst per e-mail</li>
-              <li>Regel uw financiering indien nodig</li>
-              <li>Binnen 6 weken dient het restbedrag te zijn voldaan</li>
-              <li>Na volledige betaling wordt de eigendomsoverdracht geregeld</li>
-            </ol>
-            
-            <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb; text-align: center;">
-              <p style="color: #6b7280; margin: 0;">Heeft u vragen? Neem gerust contact met ons op:</p>
-              <p style="color: #1e293b; margin: 10px 0 0 0;">
-                <strong>Email:</strong> info@desteiger.nl<br>
-                <strong>Telefoon:</strong> +31 (0)36 123 4567
-              </p>
-            </div>
-            
-            <p style="margin-top: 30px; font-size: 14px; color: #6b7280; text-align: center;">
-              Met vriendelijke groet,<br>
-              <strong>Het team van De Steiger</strong>
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
-            <p>De Steiger 74/77, Almere</p>
-            <p>© ${new Date().getFullYear()} De Steiger. Alle rechten voorbehouden.</p>
-          </div>
-        </body>
-        </html>
-      `,
-    });
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 60, size: 'A4' });
+    const chunks: Buffer[] = [];
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
 
-    if (error) {
-      console.error('Error sending confirmation email:', error);
-      return { success: false, error };
+    const unitTypeLabel = property.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
+    const koopprijs = property.sale_price
+      ? `€ ${property.sale_price.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : '[bedrag]';
+
+    const now = new Date();
+    const fmtDate = (d: Date) =>
+      d.toLocaleDateString('nl-NL', { day: '2-digit', month: 'long', year: 'numeric' });
+    const startDatum = fmtDate(now);
+    const eindDatum = fmtDate(new Date(now.getTime() + 8 * 7 * 24 * 60 * 60 * 1000));
+
+    const gegadigdeNaam = `${reservation.customer_first_name} ${reservation.customer_last_name}`;
+    const gegadigdeAdres = `${reservation.customer_address || ''}, ${reservation.customer_postal_code || ''} ${reservation.customer_city || ''}`.trim();
+    const gegadigdeContact = `${reservation.customer_email} | ${reservation.customer_phone || ''}`;
+    const gegadigdeBedrijf = reservation.customer_company || '';
+
+    // Header
+    doc.fontSize(16).font('Helvetica-Bold')
+      .text(`RESERVERINGSOVEREENKOMST ${unitTypeLabel.toUpperCase()}`, { align: 'center' });
+    doc.moveDown(0.5);
+    doc.moveTo(60, doc.y).lineTo(535, doc.y).stroke();
+    doc.moveDown(1);
+
+    // Parties
+    doc.fontSize(11).font('Helvetica-Bold').text('De ondergetekenden:');
+    doc.moveDown(0.5);
+    doc.font('Helvetica')
+      .text('De Steiger B.V.')
+      .text('De Steiger 74-77, 1317 AZ Almere')
+      .text('info@desteigeralmere.nl | 0578-769056')
+      .text('hierna te noemen: "Verkoper";');
+    doc.moveDown(0.5);
+    doc.font('Helvetica-Bold').text('EN');
+    doc.moveDown(0.5);
+    doc.font('Helvetica')
+      .text(gegadigdeNaam);
+    if (gegadigdeBedrijf) doc.text(gegadigdeBedrijf);
+    doc.text(gegadigdeAdres)
+      .text(gegadigdeContact)
+      .text('hierna te noemen: "Gegadigde";');
+    doc.moveDown(0.5);
+    doc.text('Hierna gezamenlijk aangeduid als "Partijen" of ieder afzonderlijk als "Partij".');
+
+    doc.moveDown(1);
+    doc.moveTo(60, doc.y).lineTo(535, doc.y).stroke();
+    doc.moveDown(0.5);
+
+    // Articles
+    const article = (title: string, lines: string[]) => {
+      doc.font('Helvetica-Bold').fontSize(11).text(title);
+      doc.moveDown(0.3);
+      lines.forEach(l => {
+        doc.font('Helvetica').fontSize(10).text(l, { align: 'justify' });
+        doc.moveDown(0.3);
+      });
+      doc.moveDown(0.5);
+    };
+
+    article('ARTIKEL 1 - RESERVERING EN RESERVERINGSPERIODE', [
+      `1.1 De Verkoper reserveert de ${unitTypeLabel.toLowerCase()} met nummer ${property.unit_number} gedurende acht (8) weken vanaf ${startDatum} tot ${eindDatum} voor Gegadigde.`,
+      `1.2 Uiterlijk vóór ${eindDatum} zal de Gegadigde schriftelijk meedelen of hij tot aankoop wenst over te gaan.`,
+      `1.3 Indien de Verkoper niet tijdig bericht heeft ontvangen, vervalt het recht op aankoop van rechtswege.`,
+    ]);
+
+    article('ARTIKEL 2 - RESERVERINGSVERGOEDING', [
+      `2.1 De Gegadigde is een reserveringsvergoeding verschuldigd van € 1.500,00, welke uiterlijk binnen 48 uur na factuurdatum voldaan dient te zijn.`,
+      `2.2 De koopprijs van de Unit bedraagt ${koopprijs}. De Reserveringsvergoeding wordt in mindering gebracht op de koopprijs bij aankoop.`,
+      `2.3 Bij niet-tijdige betaling is Gegadigde per direct in verzuim en heeft Verkoper het recht de Overeenkomst te ontbinden.`,
+      `2.4 Annulering binnen 48 uur: slechts 25% van de Reserveringsvergoeding verschuldigd. Na eerste week: geen recht op terugbetaling.`,
+      `2.5 Indien de aankoop geen doorgang vindt door faillissement Verkoper of intrekking vergunningen, zal de Reserveringsvergoeding volledig worden terugbetaald.`,
+    ]);
+
+    article('ARTIKEL 3 - EINDE VAN DE OVEREENKOMST', [
+      '3.1 Deze Overeenkomst eindigt door: (a) faillissement, (b) niet-tijdige betaling Reserveringsvergoeding, (c) verstrijken Reserveringsperiode, (d) aankoop van de Unit.',
+      '3.2 In geval van beëindiging op grond van art. 3.1 sub a-c heeft Gegadigde geen recht op terugbetaling.',
+      '3.3 Bij aankoop (art. 3.1 sub d) wordt de Reserveringsvergoeding in mindering gebracht op de koopprijs.',
+    ]);
+
+    article('ARTIKEL 4 - ONDERTEKENING KOOPAKTE', [
+      '4.1 Indien Gegadigde vóór afloop van de Reserveringsperiode schriftelijk heeft verklaard te willen kopen, verplicht hij zich de Koopakte binnen vijf (5) werkdagen te ondertekenen.',
+      '4.2 Indien Gegadigde in gebreke blijft, vervalt de reservering en blijft de volledige Reserveringsvergoeding aan Verkoper verschuldigd.',
+    ]);
+
+    article('ARTIKEL 5 - BOETE BIJ NIET-NAKOMING', [
+      '5.1 Indien Gegadigde nalaat de KAO te ondertekenen of anderszins zijn verplichtingen niet nakomt, verbeurt hij een direct opeisbare boete ter hoogte van de Reserveringsvergoeding.',
+    ]);
+
+    article('ARTIKEL 6 - BEPERKING AANSPRAKELIJKHEID VERKOPER', [
+      '6.1 De Overeenkomst geeft Gegadigde geen recht op schadevergoeding of compensatie voor gemaakte kosten, tenzij uitdrukkelijk schriftelijk anders overeengekomen.',
+    ]);
+
+    article('ARTIKEL 7 - GEEN GARANTIES', [
+      '7.1 Verkoper geeft geen garantie over bestemming, vergunningen en/of staat van de Unit, tenzij uitdrukkelijk schriftelijk anders overeengekomen in de KAO.',
+    ]);
+
+    article('ARTIKEL 8 - SLOTBEPALINGEN', [
+      '8.1 Deze Overeenkomst levert voor Gegadigde slechts strikt persoonlijke rechten op en kan niet worden overgedragen zonder voorafgaande schriftelijke toestemming van Verkoper.',
+      '8.2 Deze Overeenkomst wordt beheerst door Nederlands recht.',
+      '8.3 Alle geschillen worden voorgelegd aan de bevoegde rechter te Midden-Nederland.',
+    ]);
+
+    // Signature section
+    doc.moveTo(60, doc.y).lineTo(535, doc.y).stroke();
+    doc.moveDown(0.5);
+    doc.font('Helvetica-Bold').fontSize(11).text('ONDERTEKENING');
+    doc.moveDown(0.5);
+    doc.font('Helvetica').fontSize(10).text('Aldus overeengekomen en in tweevoud ondertekend:');
+    doc.moveDown(1);
+
+    doc.font('Helvetica-Bold').text('Verkoper: De Steiger B.V.');
+    doc.font('Helvetica').text('Datum: ' + startDatum);
+    doc.moveDown(1.5);
+
+    doc.font('Helvetica-Bold').text(`Gegadigde: ${gegadigdeNaam}`);
+    if (gegadigdeBedrijf) doc.font('Helvetica').text(gegadigdeBedrijf);
+    doc.font('Helvetica').text('Datum: ' + startDatum);
+    doc.moveDown(0.5);
+
+    // Embed signature image if available
+    if (reservation.signature_data && reservation.signature_data.startsWith('data:image/')) {
+      try {
+        const base64Data = reservation.signature_data.split(',')[1];
+        const imgBuffer = Buffer.from(base64Data, 'base64');
+        doc.text('Digitale handtekening:');
+        doc.moveDown(0.3);
+        doc.image(imgBuffer, { width: 200, height: 80 });
+      } catch {
+        doc.text('Digitale handtekening: [zie systeemregistratie]');
+      }
     }
 
-    console.log('✅ Confirmation email sent:', emailData);
-    return { success: true, data: emailData };
-  } catch (error) {
-    console.error('Error sending confirmation email:', error);
-    return { success: false, error };
-  }
+    doc.end();
+  });
 }
 
-export async function sendReservationReminderEmail(data: ReservationReminderEmailData) {
-  try {
-    const resend = getResendClient();
-    const urgency = data.daysRemaining <= 7 ? 'urgent' : 'normal';
-    const { data: emailData, error } = await resend.emails.send({
-      from: 'De Steiger <noreply@desteiger.nl>',
-      to: [data.customerEmail],
-      subject: `${urgency === 'urgent' ? '🚨 URGENT: ' : ''}Herinnering: Reservering verloopt ${data.daysRemaining === 1 ? 'morgen' : `over ${data.daysRemaining} dagen`}`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Reservering Herinnering</title>
-        </head>
-        <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: ${urgency === 'urgent' ? 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)' : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'}; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">
-              ${urgency === 'urgent' ? '🚨 Laatste Herinnering' : '⏰ Reservering Herinnering'}
-            </h1>
-          </div>
-          
-          <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-            <p style="font-size: 16px; margin-bottom: 20px;">Beste ${data.customerName},</p>
-            
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              Dit is een ${urgency === 'urgent' ? 'dringende ' : ''}herinnering dat uw reservering binnenkort verloopt.
-            </p>
-            
-            <div style="background: ${urgency === 'urgent' ? '#fee2e2' : '#fef3c7'}; border-left: 4px solid ${urgency === 'urgent' ? '#dc2626' : '#f59e0b'}; padding: 20px; margin: 25px 0; border-radius: 4px;">
-              <p style="margin: 0; font-size: 18px; font-weight: bold; color: ${urgency === 'urgent' ? '#991b1b' : '#92400e'};">
-                Nog ${data.daysRemaining} ${data.daysRemaining === 1 ? 'dag' : 'dagen'} tot vervaldatum!
-              </p>
-              <p style="margin: 10px 0 0 0; color: ${urgency === 'urgent' ? '#991b1b' : '#92400e'};">
-                Verloopt op: <strong>${new Date(data.expiresAt).toLocaleDateString('nl-NL', { 
-                  day: 'numeric', 
-                  month: 'long', 
-                  year: 'numeric' 
-                })}</strong>
-              </p>
-            </div>
-            
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 25px 0;">
-              <h2 style="color: #1e293b; margin-top: 0; font-size: 20px;">Reserveringsdetails</h2>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                  <td style="padding: 12px 0; font-weight: 600;">Reserveringsnummer:</td>
-                  <td style="padding: 12px 0; text-align: right;">${data.reservationNumber}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                  <td style="padding: 12px 0; font-weight: 600;">Unit:</td>
-                  <td style="padding: 12px 0; text-align: right;">${data.unitName}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                  <td style="padding: 12px 0; font-weight: 600;">Unit nummer:</td>
-                  <td style="padding: 12px 0; text-align: right;">#${data.unitNumber}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                  <td style="padding: 12px 0; font-weight: 600;">Totaalprijs:</td>
-                  <td style="padding: 12px 0; text-align: right;">€ ${data.totalPrice.toLocaleString('nl-NL')}</td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 0; font-weight: 600;">Nog te betalen:</td>
-                  <td style="padding: 12px 0; text-align: right; font-size: 20px; font-weight: bold; color: #dc2626;">
-                    € ${data.remainingAmount.toLocaleString('nl-NL')}
-                  </td>
-                </tr>
-              </table>
-            </div>
-            
-            <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 25px 0; border-radius: 4px;">
-              <p style="margin: 0; color: #1e40af;"><strong>ℹ️ Wat gebeurt er als u niet op tijd betaalt?</strong></p>
-              <p style="margin: 10px 0 0 0; color: #1e40af;">
-                Als het restbedrag niet voor de vervaldatum is ontvangen, vervalt uw reservering automatisch en komt de unit weer beschikbaar voor anderen. De betaalde reserveringskosten worden <strong>niet</strong> terugbetaald.
-              </p>
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="mailto:info@desteiger.nl?subject=Reservering%20${data.reservationNumber}" 
-                 style="display: inline-block; background: #059669; color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Neem Contact Op
-              </a>
-            </div>
-            
-            <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb; text-align: center;">
-              <p style="color: #6b7280; margin: 0;">Heeft u vragen of hulp nodig?</p>
-              <p style="color: #1e293b; margin: 10px 0 0 0;">
-                <strong>Email:</strong> info@desteiger.nl<br>
-                <strong>Telefoon:</strong> +31 (0)36 123 4567
-              </p>
-            </div>
-            
-            <p style="margin-top: 30px; font-size: 14px; color: #6b7280; text-align: center;">
-              Met vriendelijke groet,<br>
-              <strong>Het team van De Steiger</strong>
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
-            <p>De Steiger 74/77, Almere</p>
-            <p>© ${new Date().getFullYear()} De Steiger. Alle rechten voorbehouden.</p>
-          </div>
-        </body>
-        </html>
-      `,
-    });
-
-    if (error) {
-      console.error('Error sending reminder email:', error);
-      return { success: false, error };
-    }
-
-    console.log('✅ Reminder email sent:', emailData);
-    return { success: true, data: emailData };
-  } catch (error) {
-    console.error('Error sending reminder email:', error);
-    return { success: false, error };
-  }
+// ─── HTML email templates ─────────────────────────────────────────────────────
+function baseLayout(content: string) {
+  return `<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { margin:0; padding:0; background:#f4f4f5; font-family: Arial, sans-serif; }
+  .wrapper { max-width:600px; margin:32px auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,.08); }
+  .header { background:#1e293b; padding:28px 32px; text-align:center; }
+  .header img { height:40px; }
+  .header h1 { color:#f59e0b; margin:12px 0 0; font-size:22px; }
+  .body { padding:32px; color:#374151; line-height:1.6; }
+  .body h2 { color:#1e293b; margin-top:0; }
+  .highlight { background:#fef3c7; border-left:4px solid #f59e0b; padding:14px 18px; border-radius:6px; margin:20px 0; }
+  .grid { display:table; width:100%; border-collapse:collapse; margin:20px 0; }
+  .grid-row { display:table-row; }
+  .grid-cell { display:table-cell; padding:10px 14px; border:1px solid #e5e7eb; font-size:14px; }
+  .grid-cell.label { background:#f9fafb; font-weight:bold; width:45%; color:#6b7280; }
+  .footer { background:#f9fafb; border-top:1px solid #e5e7eb; padding:20px 32px; text-align:center; font-size:12px; color:#9ca3af; }
+  .btn { display:inline-block; background:#f59e0b; color:#1e293b!important; text-decoration:none; font-weight:bold; padding:12px 28px; border-radius:8px; margin:16px 0; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <h1>De Steiger Almere</h1>
+  </div>
+  <div class="body">${content}</div>
+  <div class="footer">
+    De Steiger B.V. · De Steiger 74-77, 1317 AZ Almere<br>
+    info@desteigeralmere.nl · 0578-769056<br><br>
+    <a href="https://www.desteigeralmere.nl">www.desteigeralmere.nl</a>
+  </div>
+</div>
+</body>
+</html>`;
 }
 
-export async function sendReservationExpiredEmail(data: {
-  customerName: string;
-  customerEmail: string;
-  reservationNumber: string;
-  unitName: string;
-  unitNumber: string;
+// ─── 1. Contact form ──────────────────────────────────────────────────────────
+export async function sendContactFormEmails(data: {
+  name: string;
+  email: string;
+  interest?: string;
+  message?: string;
+  formType?: string;
 }) {
-  try {
-    const resend = getResendClient();
-    const { data: emailData, error } = await resend.emails.send({
-      from: 'De Steiger <noreply@desteiger.nl>',
-      to: [data.customerEmail],
-      subject: `Reservering Verlopen - ${data.reservationNumber}`,
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Reservering Verlopen</title>
-        </head>
-        <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Reservering Verlopen</h1>
-          </div>
-          
-          <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
-            <p style="font-size: 16px; margin-bottom: 20px;">Beste ${data.customerName},</p>
-            
-            <p style="font-size: 16px; margin-bottom: 20px;">
-              Helaas moeten wij u mededelen dat uw reservering is verlopen omdat het restbedrag niet binnen de gestelde termijn is ontvangen.
-            </p>
-            
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 25px 0;">
-              <h2 style="color: #1e293b; margin-top: 0; font-size: 18px;">Reserveringsdetails</h2>
-              <p style="margin: 5px 0;"><strong>Reserveringsnummer:</strong> ${data.reservationNumber}</p>
-              <p style="margin: 5px 0;"><strong>Unit:</strong> ${data.unitName}</p>
-              <p style="margin: 5px 0;"><strong>Unit nummer:</strong> #${data.unitNumber}</p>
-            </div>
-            
-            <p style="font-size: 16px; margin: 20px 0;">
-              De unit is weer beschikbaar voor nieuwe reserveringen. Indien u nog steeds geïnteresseerd bent, kunt u opnieuw een reservering plaatsen via onze website.
-            </p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="https://desteiger.nl/bedrijfsunits" 
-                 style="display: inline-block; background: #3b82f6; color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Bekijk Beschikbare Units
-              </a>
-            </div>
-            
-            <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb; text-align: center;">
-              <p style="color: #6b7280; margin: 0;">Voor vragen kunt u contact met ons opnemen:</p>
-              <p style="color: #1e293b; margin: 10px 0 0 0;">
-                <strong>Email:</strong> info@desteiger.nl<br>
-                <strong>Telefoon:</strong> +31 (0)36 123 4567
-              </p>
-            </div>
-            
-            <p style="margin-top: 30px; font-size: 14px; color: #6b7280; text-align: center;">
-              Met vriendelijke groet,<br>
-              <strong>Het team van De Steiger</strong>
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
-            <p>De Steiger 74/77, Almere</p>
-            <p>© ${new Date().getFullYear()} De Steiger. Alle rechten voorbehouden.</p>
-          </div>
-        </body>
-        </html>
-      `,
-    });
+  const { name, email, interest, message, formType } = data;
 
-    if (error) {
-      console.error('Error sending expired email:', error);
-      return { success: false, error };
-    }
+  // Confirmation to visitor
+  const visitorHtml = baseLayout(`
+    <h2>Bedankt voor uw bericht, ${name}!</h2>
+    <p>We hebben uw aanvraag goed ontvangen en nemen binnen <strong>24 uur</strong> contact met u op.</p>
+    ${interest ? `<div class="highlight"><strong>Interesse in:</strong> ${interest}</div>` : ''}
+    ${message ? `<div class="highlight"><strong>Uw bericht:</strong><br>${message.replace(/\n/g, '<br>')}</div>` : ''}
+    <p>Met vriendelijke groet,<br><strong>Team De Steiger Almere</strong></p>
+  `);
 
-    console.log('✅ Expired email sent:', emailData);
-    return { success: true, data: emailData };
-  } catch (error) {
-    console.error('Error sending expired email:', error);
-    return { success: false, error };
-  }
+  // Notification to admin
+  const adminHtml = baseLayout(`
+    <h2>Nieuw contactformulier bericht</h2>
+    <div class="grid">
+      <div class="grid-row"><div class="grid-cell label">Naam</div><div class="grid-cell">${name}</div></div>
+      <div class="grid-row"><div class="grid-cell label">E-mail</div><div class="grid-cell"><a href="mailto:${email}">${email}</a></div></div>
+      ${interest ? `<div class="grid-row"><div class="grid-cell label">Interesse</div><div class="grid-cell">${interest}</div></div>` : ''}
+      ${formType ? `<div class="grid-row"><div class="grid-cell label">Formuliertype</div><div class="grid-cell">${formType}</div></div>` : ''}
+    </div>
+    ${message ? `<div class="highlight"><strong>Bericht:</strong><br>${message.replace(/\n/g, '<br>')}</div>` : ''}
+    <a href="mailto:${email}" class="btn">Direct beantwoorden</a>
+  `);
+
+  await Promise.all([
+    resend.emails.send({
+      from: FROM,
+      to: email,
+      subject: 'Bedankt voor uw bericht – De Steiger Almere',
+      html: visitorHtml,
+    }),
+    resend.emails.send({
+      from: FROM,
+      to: ADMIN_EMAIL,
+      subject: `Nieuw contactbericht van ${name}`,
+      html: adminHtml,
+    }),
+  ]);
 }
 
+// ─── 2. Reservation confirmation ──────────────────────────────────────────────
+export async function sendReservationConfirmationEmails(reservation: any, property: any) {
+  const unitTypeLabel = property.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
+  const customerName = `${reservation.customer_first_name} ${reservation.customer_last_name}`;
+  const koopprijs = property.sale_price
+    ? `€ ${property.sale_price.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : '–';
+  const fmtDate = (d: Date) =>
+    d.toLocaleDateString('nl-NL', { day: '2-digit', month: 'long', year: 'numeric' });
+  const now = new Date();
+  const eindDatum = fmtDate(new Date(now.getTime() + 8 * 7 * 24 * 60 * 60 * 1000));
 
+  // Generate contract PDF
+  const pdfBuffer = await generateContractPdf(reservation, property);
+
+  const fileName = `Reserveringsovereenkomst-${unitTypeLabel}-${property.unit_number}.pdf`;
+
+  // Customer email
+  const customerHtml = baseLayout(`
+    <h2>Uw reservering is bevestigd!</h2>
+    <p>Geachte ${customerName},</p>
+    <p>Hartelijk dank voor uw reservering bij De Steiger Almere. Uw reservering is succesvol verwerkt en de aanbetaling ontvangen.</p>
+    <div class="highlight">
+      <strong>Reserveringsnummer:</strong> ${reservation.reservation_number}<br>
+      <strong>Unit:</strong> ${unitTypeLabel} ${property.unit_number}<br>
+      <strong>Koopprijs:</strong> ${koopprijs}<br>
+      <strong>Reserveringskosten:</strong> € 1.500,00 (verrekend bij aankoop)<br>
+      <strong>Reserveringsperiode:</strong> tot ${eindDatum}
+    </div>
+    <p>In de bijlage vindt u de <strong>ondertekende reserveringsovereenkomst</strong> als PDF.</p>
+    <p>Binnen <strong>8 weken</strong> dient u schriftelijk te laten weten of u tot aankoop wenst over te gaan.</p>
+    <p>Heeft u vragen? Neem dan contact met ons op:</p>
+    <p>
+      📧 <a href="mailto:info@desteigeralmere.nl">info@desteigeralmere.nl</a><br>
+      📞 0578-769056
+    </p>
+    <p>Met vriendelijke groet,<br><strong>Team De Steiger Almere</strong></p>
+  `);
+
+  // Admin notification email
+  const adminHtml = baseLayout(`
+    <h2>🎉 Nieuwe reservering ontvangen!</h2>
+    <div class="grid">
+      <div class="grid-row"><div class="grid-cell label">Reserveringsnummer</div><div class="grid-cell">${reservation.reservation_number}</div></div>
+      <div class="grid-row"><div class="grid-cell label">Klant</div><div class="grid-cell">${customerName}</div></div>
+      <div class="grid-row"><div class="grid-cell label">E-mail</div><div class="grid-cell"><a href="mailto:${reservation.customer_email}">${reservation.customer_email}</a></div></div>
+      <div class="grid-row"><div class="grid-cell label">Telefoon</div><div class="grid-cell">${reservation.customer_phone || '–'}</div></div>
+      ${reservation.customer_company ? `<div class="grid-row"><div class="grid-cell label">Bedrijf</div><div class="grid-cell">${reservation.customer_company}</div></div>` : ''}
+      <div class="grid-row"><div class="grid-cell label">Unit</div><div class="grid-cell">${unitTypeLabel} ${property.unit_number}</div></div>
+      <div class="grid-row"><div class="grid-cell label">Koopprijs</div><div class="grid-cell">${koopprijs}</div></div>
+      <div class="grid-row"><div class="grid-cell label">Reserveringsperiode</div><div class="grid-cell">t/m ${eindDatum}</div></div>
+    </div>
+    <a href="mailto:${reservation.customer_email}" class="btn">Contact opnemen met klant</a>
+  `);
+
+  await Promise.all([
+    resend.emails.send({
+      from: FROM,
+      to: reservation.customer_email,
+      subject: `Reserveringsbevestiging ${unitTypeLabel} ${property.unit_number} – De Steiger Almere`,
+      html: customerHtml,
+      attachments: [
+        {
+          filename: fileName,
+          content: pdfBuffer,
+        },
+      ],
+    }),
+    resend.emails.send({
+      from: FROM,
+      to: ADMIN_EMAIL,
+      subject: `Nieuwe reservering: ${unitTypeLabel} ${property.unit_number} – ${customerName}`,
+      html: adminHtml,
+      attachments: [
+        {
+          filename: fileName,
+          content: pdfBuffer,
+        },
+      ],
+    }),
+  ]);
+}

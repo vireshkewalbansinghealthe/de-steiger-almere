@@ -6,7 +6,7 @@ const nextConfig = {
   },
 
   // Prevent webpack from bundling server-only packages that use non-relative imports
-  serverExternalPackages: ['docusign-esign'],
+  serverExternalPackages: ['docusign-esign', 'pdfkit'],
 
   // Fix for docusign-esign non-relative imports causing build errors
   webpack: (config) => {

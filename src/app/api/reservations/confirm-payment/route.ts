@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
+import { sendReservationConfirmationEmails } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -132,6 +133,24 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Payment confirmed via RPC:', rpcResult);
+
+    // Send confirmation emails with signed contract PDF
+    try {
+      const { data: property } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', reservation.property_id)
+        .single();
+
+      if (property) {
+        await sendReservationConfirmationEmails(reservation, property);
+        console.log('📧 Confirmation emails sent to', reservation.customer_email);
+      }
+    } catch (emailErr) {
+      // Don't fail the request if email fails — just log it
+      console.error('⚠️ Email sending failed (non-blocking):', emailErr);
+    }
+
     return NextResponse.json({
       success: true,
       message: rpcResult.message,
