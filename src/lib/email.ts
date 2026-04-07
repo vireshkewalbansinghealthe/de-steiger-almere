@@ -442,6 +442,7 @@ export async function sendReservationConfirmationEmails(reservation: any, proper
     resend.emails.send({
       from: FROM,
       to: reservation.customer_email,
+      cc: ['info@desteigeralmere.nl'],
       subject: `Reserveringsbevestiging ${unitTypeLabel} ${property.unit_number} – De Steiger Almere`,
       html: customerHtml,
       attachments,
