@@ -680,12 +680,14 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   <Home className="h-4 w-4 mr-2 flex-shrink-0" />
                   Reserveer nu
                 </Link>
-                <Link
-                  href="/beleggers"
+                <a
+                  href="https://clarencefinance.nl/desteiger/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center justify-center bg-yellow-500 text-slate-900 px-4 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors duration-200 w-full text-sm text-center"
                 >
                   Financieringsmogelijkheden
-                </Link>
+                </a>
                 <a
                   href="/pdf/technische_omschrijving_bedrijfsunits.pdf"
                   target="_blank"
