@@ -67,10 +67,10 @@ export default function HomePage() {
   const [shareUrl, setShareUrl] = useState('');
   const [showVideoModal, setShowVideoModal] = useState(false);
 
-  const [priceMin, setPriceMin] = useState(200);
-  const [priceMax, setPriceMax] = useState(900);
-  const [areaMin, setAreaMin] = useState(90);
-  const [areaMax, setAreaMax] = useState(400);
+  const [priceMin, setPriceMin] = useState(0);
+  const [priceMax, setPriceMax] = useState(1000);
+  const [areaMin, setAreaMin] = useState(0);
+  const [areaMax, setAreaMax] = useState(500);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Countdown timer for December 15, 2025
@@ -194,10 +194,10 @@ export default function HomePage() {
       };
     }
     return {
-      priceMin: 200,
-      priceMax: 900,
-      areaMin: 90,
-      areaMax: 400
+      priceMin: 0,
+      priceMax: 1000,
+      areaMin: 0,
+      areaMax: 500
     };
   };
 
@@ -242,13 +242,13 @@ export default function HomePage() {
       }
       
       if (params.get('area')) {
-        const [min, max] = params.get('area')?.split('-').map(Number) || [90, 400];
+        const [min, max] = params.get('area')?.split('-').map(Number) || [0, 500];
         setAreaMin(min);
         setAreaMax(max);
       }
       
       if (params.get('price')) {
-        const [min, max] = params.get('price')?.split('-').map(Number) || [200, 900];
+        const [min, max] = params.get('price')?.split('-').map(Number) || [0, 1000];
         setPriceMin(min);
         setPriceMax(max);
       }
@@ -376,8 +376,8 @@ export default function HomePage() {
     if (statusFilter !== 'all') params.set('status', statusFilter);
     if (sortBy !== 'name') params.set('sort', sortBy);
     if (selectedTypes.length > 0) params.set('types', selectedTypes.join(','));
-    if (areaMin !== 90 || areaMax !== 400) params.set('area', `${areaMin}-${areaMax}`);
-    if (priceMin !== 200 || priceMax !== 900) params.set('price', `${priceMin}-${priceMax}`);
+    if (areaMin !== 0 || areaMax !== 500) params.set('area', `${areaMin}-${areaMax}`);
+    if (priceMin !== 0 || priceMax !== 1000) params.set('price', `${priceMin}-${priceMax}`);
     if (searchTerm) params.set('search', searchTerm);
     if (viewMode !== 'grid') params.set('view', viewMode);
     
