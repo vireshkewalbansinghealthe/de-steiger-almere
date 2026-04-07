@@ -1269,18 +1269,12 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                         <div className="space-y-2 mb-3">
                           <div className="bg-gray-50 rounded-lg p-3">
                             <h4 className="font-semibold text-gray-900 mb-2 text-sm">Oppervlakte</h4>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Netto:</span>
-                                <span className="font-semibold">{unitDetails.size}</span>
-                                </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-600">Bruto:</span>
-                                <span className="font-semibold">{unitDetails.grossSize}</span>
-                              </div>
-                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Bruto:</span>
+                              <span className="font-semibold">{unitDetails.grossSize}</span>
                             </div>
                           </div>
+                        </div>
                           
                         {/* Specifications */}
                         <div className="mb-6">

@@ -684,10 +684,6 @@ export default function OpslagboxenPage() {
                                 <span className="font-semibold text-gray-900">{Math.round(unit.gross_area)}m²</span>
                               </div>
                               <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Netto oppervlakte:</span>
-                                <span className="font-semibold text-gray-900">{Math.round(unit.net_area)}m²</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Prijs:</span>
                                 <span className="font-bold text-slate-800">€ {unit.sale_price?.toLocaleString('nl-NL')}</span>
                               </div>
