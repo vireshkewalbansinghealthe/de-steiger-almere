@@ -313,6 +313,7 @@ export default function PaymentStep(props: PaymentStepProps) {
             },
             intended_use: props.reservationData.preferences?.additionalRequests || 'Aankoop',
             notes: `Move-in date: ${props.reservationData.preferences?.moveInDate || 'TBD'}`,
+            signature_data: props.reservationData.signatureData || null,
           }),
         });
 
