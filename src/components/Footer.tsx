@@ -19,8 +19,8 @@ export default function Footer() {
             <div className="space-y-4">
               <div className="flex items-center text-slate-200 hover:text-yellow-400 transition-colors group">
                 <Mail className="h-5 w-5 mr-3 text-yellow-400 group-hover:scale-110 transition-transform" />
-                <a href="mailto:info@desteiger.nl" className="font-medium">
-                  info@desteiger.nl
+                <a href="mailto:info@desteigeralmere.nl" className="font-medium">
+                  info@desteigeralmere.nl
                 </a>
               </div>
               <div className="flex items-center text-slate-200 hover:text-yellow-400 transition-colors group">

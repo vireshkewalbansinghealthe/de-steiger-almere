@@ -153,13 +153,13 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
       })),
       specifications: {
         height: '3.00 meter vrije hoogte',
-        security: '24/7 camera surveillance',
+        security: '24/7 toegangscontrole',
         access: '24/7 toegang',
         climate: 'Geïsoleerd en geventileerd',
       },
       facilities: [
         '24/7 toegang met persoonlijke code',
-        'Camera beveiliging',
+        'Toegangscontrole systeem',
         'Droge en schone opslag',
         'Laadperron beschikbaar',
       ],
@@ -813,7 +813,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                   <Mail className="h-5 w-5 mr-3 text-slate-600" />
                   <div>
                     <div className="font-medium text-gray-900">E-mail</div>
-                    <div className="text-gray-600">opslagboxen@desteiger.nl</div>
+                    <div className="text-gray-600">info@desteigeralmere.nl</div>
                   </div>
                   </div>
                 <div className="flex items-center">
@@ -855,7 +855,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">Beveiliging</h3>
               <p className="text-gray-700 mb-4 text-center">
-                24/7 camera surveillance en persoonlijke toegangscode
+                24/7 toegangscontrole met persoonlijke toegangscode
               </p>
             </div>
 
@@ -1409,7 +1409,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                                   <Mail className="h-5 w-5 mr-3 text-slate-600" />
                               <div>
                                     <div className="font-medium text-gray-900">E-mail</div>
-                                    <div className="text-gray-600">opslagboxen@desteiger.nl</div>
+                                    <div className="text-gray-600">info@desteigeralmere.nl</div>
                               </div>
                             </div>
                                 <div className="flex items-center">

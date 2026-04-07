@@ -136,8 +136,8 @@ export default function ContactPage() {
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">E-mail</h3>
               <p className="text-gray-600">
-                <a href="mailto:info@desteiger.nl" className="hover:text-slate-600 transition-colors">
-                  info@desteiger.nl
+                <a href="mailto:info@desteigeralmere.nl" className="hover:text-slate-600 transition-colors">
+                  info@desteigeralmere.nl
                 </a>
               </p>
               <p className="text-sm text-gray-500 mt-1">

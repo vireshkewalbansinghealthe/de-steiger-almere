@@ -724,7 +724,7 @@ export default function OpslagboxenPage() {
               </div>
               <h3 className="text-xl font-bold mb-4">Maximale Beveiliging</h3>
               <p className="text-slate-100">
-                24/7 camera surveillance, toegangscontrole en inbraakdetectie voor volledige gemoedsrust.
+                24/7 toegangscontrole, alarmsysteem en inbraakdetectie voor volledige gemoedsrust.
               </p>
             </div>
 

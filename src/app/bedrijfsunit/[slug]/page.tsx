@@ -310,7 +310,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   setSelectedPropertyId(foundUnit.id);
                 }
               }}
-              className={`h-16 sm:h-20 md:h-24 rounded border-2 flex flex-col items-center justify-center text-xs sm:text-sm font-semibold cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-md ${
+              className={`h-20 sm:h-24 md:h-28 rounded-lg border-2 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg relative ${
                 isAvailable 
                   ? 'bg-green-100 border-green-400 text-green-800 hover:bg-green-200' 
                   : isReserved
@@ -318,8 +318,8 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   : 'bg-gray-100 border-gray-400 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              <div className="font-bold text-xs sm:text-sm">{unit.unitNumber}</div>
-              <div className="text-[10px] sm:text-xs mt-0.5 sm:mt-1 leading-tight">
+              <div className="font-black text-xl sm:text-2xl md:text-3xl leading-none">{unit.unitNumber}</div>
+              <div className="text-[10px] sm:text-xs font-semibold mt-1 uppercase tracking-wide opacity-80">
                 {isAvailable ? 'Vrij' : isReserved ? 'Res.' : 'Verkocht'}
               </div>
             </div>
@@ -672,13 +672,19 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
               </div>
               
               {/* Reserve Button - Same Height Container */}
-              <div className="lg:w-48 flex lg:flex-col justify-center items-center lg:items-stretch">
+              <div className="lg:w-52 flex lg:flex-col justify-center items-center lg:items-stretch gap-3">
                 <Link
                   href={`/reserveren/${project.slug}${selectedUnit ? `?unit=${selectedUnit}` : ''}`}
-                  className="inline-flex items-center justify-center bg-slate-800 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200 w-full lg:h-32 text-sm sm:text-base"
+                  className="inline-flex items-center justify-center bg-slate-800 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-slate-900 transition-colors duration-200 w-full text-sm sm:text-base"
                 >
                   <Home className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   Reserveer nu
+                </Link>
+                <Link
+                  href="/beleggers"
+                  className="inline-flex items-center justify-center bg-yellow-500 text-slate-900 px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors duration-200 w-full text-sm sm:text-base text-center"
+                >
+                  Bekijk financieringsmogelijkheden
                 </Link>
               </div>
             </div>
@@ -935,7 +941,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   <Mail className="h-5 w-5 mr-3 text-slate-600" />
                   <div>
                     <div className="font-medium text-gray-900">E-mail</div>
-                    <div className="text-gray-600">info@unity-units.nl</div>
+                    <div className="text-gray-600">info@desteigeralmere.nl</div>
                   </div>
                 </div>
                 <div className="flex items-center">
@@ -987,7 +993,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">Beveiliging</h3>
               <p className="text-gray-700 mb-4 text-center">
-                24/7 toegang met app en camera beveiliging
+                24/7 toegang met persoonlijke app en toegangscode
               </p>
             </div>
 
@@ -1589,7 +1595,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                                   <Mail className="h-5 w-5 mr-3 text-slate-600" />
                                   <div>
                                     <div className="font-medium text-gray-900">E-mail</div>
-                                    <div className="text-gray-600">info@desteiger.nl</div>
+                                    <div className="text-gray-600">info@desteigeralmere.nl</div>
                                   </div>
                                 </div>
                                 <div className="flex items-center">

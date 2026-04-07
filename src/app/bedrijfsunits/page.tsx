@@ -885,7 +885,7 @@ export default function BedrijfsunitsPage() {
                   <Mail className="h-5 w-5 mr-3 text-slate-600" />
                   <div>
                     <div className="font-medium text-gray-900">E-mail</div>
-                    <div className="text-gray-600">bedrijfsunits@desteiger.nl</div>
+                    <div className="text-gray-600">info@desteigeralmere.nl</div>
                   </div>
                 </div>
                 <div className="flex items-center">

@@ -364,7 +364,7 @@ export default function OndernemersPage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">24/7 Beveiliging</h3>
               <p className="text-gray-600 leading-relaxed">
-                Professioneel beveiligingssysteem met camera's en toegangscontrole.
+                Professioneel beveiligingssysteem met toegangscontrole en alarmsysteem.
               </p>
             </div>
 

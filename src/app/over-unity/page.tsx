@@ -186,7 +186,7 @@ export default function AboutUnityPage() {
                 </li>
                 <li className="flex items-center">
                   <div className="w-2 h-2 bg-slate-500 rounded-full mr-3"></div>
-                  Beveiligingssysteem met camera's
+                  Beveiligingssysteem met toegangscontrole
                 </li>
                 <li className="flex items-center">
                   <div className="w-2 h-2 bg-slate-500 rounded-full mr-3"></div>

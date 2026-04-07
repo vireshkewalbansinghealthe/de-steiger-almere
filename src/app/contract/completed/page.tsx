@@ -212,7 +212,7 @@ function ContractCompletedContent() {
                 Contact & Support
               </h3>
               <ul className="text-sm space-y-1">
-                <li>• 📧 info@desteiger.nl</li>
+                <li>• 📧 info@desteigeralmere.nl</li>
                 <li>• 📞 0578-769056</li>
                 <li>• 🕒 Ma-Vr 9:00-17:00</li>
               </ul>

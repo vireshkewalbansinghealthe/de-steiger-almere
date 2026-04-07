@@ -63,12 +63,28 @@ export default function DownloadsPage() {
           url: '/pdf/verkoop_opslagboxen.pdf'
         },
         {
-          name: 'Financieringen',
-          description: 'Informatie voor potentiële investeerders en beleggers',
+          name: 'Optielijst Afbouw',
+          description: "Overzicht van alle mogelijke afbouwopties en extra's",
           type: 'PDF',
-          size: '1.2 MB',
-          date: '2024-01-08',
-          url: '/pdf/verkoop_bedrijfsunit.pdf' // Same as bedrijfsunits for now
+          size: '0.9 MB',
+          date: '2026-03-27',
+          url: '/pdf/optielijst_afbouw.pdf'
+        },
+        {
+          name: 'Technische Omschrijving Bedrijfsunits',
+          description: 'Definitieve technische omschrijving voor de bedrijfsunits',
+          type: 'PDF',
+          size: '0.5 MB',
+          date: '2025-11-12',
+          url: '/pdf/technische_omschrijving_bedrijfsunits.pdf'
+        },
+        {
+          name: 'Technische Omschrijving Opslagboxen',
+          description: 'Definitieve technische omschrijving voor de opslagboxen',
+          type: 'PDF',
+          size: '0.6 MB',
+          date: '2025-11-12',
+          url: '/pdf/technische_omschrijving_opslagboxen.pdf'
         }
       ]
     },
