@@ -76,7 +76,7 @@ export default function BedrijfsunitsPage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [priceMin, setPriceMin] = useState(200);
-  const [priceMax, setPriceMax] = useState(900);
+  const [priceMax, setPriceMax] = useState(1000);
   const [areaMin, setAreaMin] = useState(90);
   const [areaMax, setAreaMax] = useState(400);
   const [searchTerm, setSearchTerm] = useState('');
@@ -215,7 +215,7 @@ export default function BedrijfsunitsPage() {
     if (sortBy !== 'name') params.set('sort', sortBy);
     if (selectedTypes.length > 0) params.set('types', selectedTypes.join(','));
     if (areaMin !== 90 || areaMax !== 400) params.set('area', `${areaMin}-${areaMax}`);
-    if (priceMin !== 200 || priceMax !== 900) params.set('price', `${priceMin}-${priceMax}`);
+    if (priceMin !== 200 || priceMax !== 1000) params.set('price', `${priceMin}-${priceMax}`);
     if (viewMode !== 'grid') params.set('view', viewMode);
     
     const baseUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
@@ -608,7 +608,7 @@ export default function BedrijfsunitsPage() {
                       <input
                         type="range"
                         min="200"
-                        max="900"
+                        max="1000"
                         step="10"
                         value={priceMin}
                         onChange={(e) => setPriceMin(parseInt(e.target.value))}
@@ -616,7 +616,7 @@ export default function BedrijfsunitsPage() {
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>€200k</span>
-                        <span>€900k</span>
+                        <span>€1.000k</span>
                       </div>
                     </div>
                     <div>
@@ -624,7 +624,7 @@ export default function BedrijfsunitsPage() {
                       <input
                         type="range"
                         min="200"
-                        max="900"
+                        max="1000"
                         step="10"
                         value={priceMax}
                         onChange={(e) => setPriceMax(parseInt(e.target.value))}
@@ -632,7 +632,7 @@ export default function BedrijfsunitsPage() {
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>€200k</span>
-                        <span>€900k</span>
+                        <span>€1.000k</span>
                       </div>
                     </div>
                   </div>
@@ -647,7 +647,7 @@ export default function BedrijfsunitsPage() {
                     setAreaMin(90);
                     setAreaMax(400);
                     setPriceMin(200);
-                    setPriceMax(900);
+                    setPriceMax(1000);
                     setSortBy('name');
                   }}
                   className="w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50"
