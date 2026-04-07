@@ -77,8 +77,8 @@ export default function BedrijfsunitsPage() {
   const [shareUrl, setShareUrl] = useState('');
   const [priceMin, setPriceMin] = useState(200);
   const [priceMax, setPriceMax] = useState(1000);
-  const [areaMin, setAreaMin] = useState(90);
-  const [areaMax, setAreaMax] = useState(400);
+  const [areaMin, setAreaMin] = useState(0);
+  const [areaMax, setAreaMax] = useState(500);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
@@ -214,7 +214,7 @@ export default function BedrijfsunitsPage() {
     if (statusFilter !== 'all') params.set('status', statusFilter);
     if (sortBy !== 'name') params.set('sort', sortBy);
     if (selectedTypes.length > 0) params.set('types', selectedTypes.join(','));
-    if (areaMin !== 90 || areaMax !== 400) params.set('area', `${areaMin}-${areaMax}`);
+    if (areaMin !== 0 || areaMax !== 500) params.set('area', `${areaMin}-${areaMax}`);
     if (priceMin !== 200 || priceMax !== 1000) params.set('price', `${priceMin}-${priceMax}`);
     if (viewMode !== 'grid') params.set('view', viewMode);
     
@@ -566,32 +566,32 @@ export default function BedrijfsunitsPage() {
                       <label className="block text-xs text-gray-500 mb-1">Minimum</label>
                       <input
                         type="range"
-                        min="90"
-                        max="400"
+                        min="0"
+                        max="500"
                         step="5"
                         value={areaMin}
                         onChange={(e) => setAreaMin(parseInt(e.target.value))}
                         className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>90m²</span>
-                        <span>400m²</span>
+                        <span>0m²</span>
+                        <span>500m²</span>
                   </div>
                     </div>
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Maximum</label>
                       <input
                         type="range"
-                        min="90"
-                        max="400"
+                        min="0"
+                        max="500"
                         step="5"
                         value={areaMax}
                         onChange={(e) => setAreaMax(parseInt(e.target.value))}
                         className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
                       />
                       <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>90m²</span>
-                        <span>400m²</span>
+                        <span>0m²</span>
+                        <span>500m²</span>
                       </div>
                     </div>
                   </div>
@@ -644,8 +644,8 @@ export default function BedrijfsunitsPage() {
                     setSearchTerm('');
                     setStatusFilter('all');
                     setSelectedTypes([]);
-                    setAreaMin(90);
-                    setAreaMax(400);
+                    setAreaMin(0);
+                    setAreaMax(500);
                     setPriceMin(200);
                     setPriceMax(1000);
                     setSortBy('name');
