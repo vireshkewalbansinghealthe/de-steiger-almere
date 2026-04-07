@@ -1040,21 +1040,21 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
               <div className="text-center">
                 <div className="text-3xl font-bold text-white mb-2">
-                  {project.details.investorInfo.expectedReturn.split(' ')[0]}
+                  {project.details.investorInfo.expectedReturn}
                 </div>
                 <div className="text-slate-300">Verwacht rendement</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">Minimaal</div>
-                <div className="text-slate-300">Onderhoudsrisico</div>
+                <div className="text-2xl font-bold text-white mb-2">ASM</div>
+                <div className="text-slate-300">Ontwikkelingen</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">200+</div>
-                <div className="text-slate-300">Wachtlijst ondernemers</div>
+                <div className="text-xl font-bold text-white mb-2 leading-tight">High Tech Campus</div>
+                <div className="text-slate-300">Ontwikkelingen</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-2">De Steiger</div>
-                <div className="text-slate-300">Volledig beheer</div>
+                <div className="text-2xl font-bold text-white mb-2">Laag</div>
+                <div className="text-slate-300">In onderhoud</div>
               </div>
             </div>
 

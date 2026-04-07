@@ -269,20 +269,20 @@ export default function InvestorsPage() {
 
           <div className="grid md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold text-slate-800 mb-2">7-8%</div>
+              <div className="text-4xl font-bold text-slate-800 mb-2">6.5% - 8.2%</div>
               <div className="text-gray-600">Verwacht jaarrendement</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-slate-800 mb-2">Minimaal</div>
-              <div className="text-gray-600">Onderhoudsrisico</div>
+              <div className="text-3xl font-bold text-slate-800 mb-2">ASM</div>
+              <div className="text-gray-600">Ontwikkelingen</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-slate-800 mb-2">Hoog</div>
-              <div className="text-gray-600">Verhuurpotentieel</div>
+              <div className="text-2xl font-bold text-slate-800 mb-2">High Tech Campus</div>
+              <div className="text-gray-600">Ontwikkelingen</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-slate-800 mb-2">A+</div>
-              <div className="text-gray-600">Energielabel</div>
+              <div className="text-3xl font-bold text-slate-800 mb-2">Laag</div>
+              <div className="text-gray-600">In onderhoud</div>
             </div>
           </div>
         </div>
