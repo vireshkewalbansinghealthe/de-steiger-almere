@@ -182,13 +182,16 @@ export async function generateInvoicePdf(reservation: any, property: any): Promi
     doc.on('error', reject);
 
     const unitTypeLabel = property.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
-    const reservationFeeAmount = reservation.reservation_fee_amount
+    // Reservation fee is INCL. BTW — work backwards
+    const feeInclBtw = reservation.reservation_fee_amount
       ? parseFloat(reservation.reservation_fee_amount) / 100
       : 1500;
+    const feeExclBtw = feeInclBtw / 1.21;
+    const feeBtw = feeInclBtw - feeExclBtw;
 
     const now = new Date();
     const invoiceDate = fmtDate(now);
-    const dueDate = fmtDate(new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000)); // 48 hours
+    const paidDate = reservation.paid_at ? fmtDate(new Date(reservation.paid_at)) : invoiceDate;
     const invoiceNumber = `INV-${reservation.reservation_number || Date.now()}`;
 
     const customerName = `${reservation.customer_first_name} ${reservation.customer_last_name}`;
@@ -209,7 +212,7 @@ export async function generateInvoicePdf(reservation: any, property: any): Promi
     doc.fontSize(9).font('Helvetica').fillColor('#374151')
       .text(`Factuurnummer: ${invoiceNumber}`, 350, 98, { width: 185, align: 'right' })
       .text(`Factuurdatum: ${invoiceDate}`, { width: 185, align: 'right' })
-      .text(`Vervaldatum: ${dueDate}`, { width: 185, align: 'right' });
+      .text(`Betaald op: ${paidDate}`, { width: 185, align: 'right' });
 
     // Separator
     doc.moveDown(2);
@@ -241,20 +244,17 @@ export async function generateInvoicePdf(reservation: any, property: any): Promi
       .text('PRIJS', col3 + 6, tableTop + 6)
       .text('TOTAAL', col4 + 6, tableTop + 6);
 
-    // Table row
+    // Table row — price shown excl. BTW
     const row1Top = tableTop + 22;
     doc.rect(60, row1Top, 475, 28).fill('#f9fafb').stroke('#e5e7eb');
     doc.fontSize(9).font('Helvetica').fillColor('#374151')
       .text(`Reserveringskosten ${unitTypeLabel} unit ${property.unit_number}`, col1 + 6, row1Top + 8, { width: 250 })
       .text('1', col2 + 6, row1Top + 8)
-      .text(fmtMoney(reservationFeeAmount), col3 + 6, row1Top + 8)
-      .text(fmtMoney(reservationFeeAmount), col4 + 6, row1Top + 8);
+      .text(fmtMoney(feeExclBtw), col3 + 6, row1Top + 8)
+      .text(fmtMoney(feeExclBtw), col4 + 6, row1Top + 8);
 
-    // Totals
+    // Totals — fee is incl. BTW, so work backwards
     const totalsTop = row1Top + 36;
-    const btw = reservationFeeAmount * 0.21;
-    const exclBtw = reservationFeeAmount;
-    const inclBtw = reservationFeeAmount + btw;
 
     const totalsRow = (label: string, value: string, bold = false, y = 0) => {
       doc.fontSize(9)
@@ -264,23 +264,24 @@ export async function generateInvoicePdf(reservation: any, property: any): Promi
         .text(value, col4 + 6, y, { width: 89, align: 'right' });
     };
 
-    totalsRow('Subtotaal (excl. BTW)', fmtMoney(exclBtw), false, totalsTop);
-    totalsRow('BTW 21%', fmtMoney(btw), false, totalsTop + 16);
+    totalsRow('Subtotaal (excl. BTW)', fmtMoney(feeExclBtw), false, totalsTop);
+    totalsRow('BTW 21%', fmtMoney(feeBtw), false, totalsTop + 16);
     doc.moveTo(350, totalsTop + 34).lineTo(535, totalsTop + 34).stroke('#e5e7eb');
     doc.rect(350, totalsTop + 36, 185, 22).fill('#1e293b');
     doc.fontSize(10).font('Helvetica-Bold').fillColor('#ffffff')
-      .text('TOTAAL', 356, totalsTop + 41)
-      .text(fmtMoney(inclBtw), col4 + 6, totalsTop + 41, { width: 89, align: 'right' });
+      .text('TOTAAL (incl. BTW)', 356, totalsTop + 41)
+      .text(fmtMoney(feeInclBtw), col4 + 6, totalsTop + 41, { width: 89, align: 'right' });
 
-    // Payment details
+    // Payment confirmation — already paid via Stripe/creditcard
     doc.moveDown(5);
-    doc.fontSize(9).font('Helvetica-Bold').fillColor('#1e293b').text('BETALINGSGEGEVENS');
+    doc.fontSize(9).font('Helvetica-Bold').fillColor('#1e293b').text('BETALINGSSTATUS');
     doc.moveDown(0.3);
+    doc.rect(60, doc.y, 475, 36).fill('#f0fdf4').stroke('#86efac');
+    doc.fontSize(9).font('Helvetica-Bold').fillColor('#166534')
+      .text(`✓  Betaling ontvangen — ${fmtMoney(feeInclBtw)} voldaan op ${paidDate} via creditcard.`, 70, doc.y - 30, { width: 455 });
+    doc.moveDown(0.5);
     doc.fontSize(9).font('Helvetica').fillColor('#374151')
-      .text(`Gelieve het totaalbedrag van ${fmtMoney(inclBtw)} binnen 48 uur over te maken onder vermelding van factuurnummer ${invoiceNumber}.`)
-      .moveDown(0.5)
-      .text(`IBAN: ${VVS.iban}`)
-      .text(`Ten name van: ${VVS.naam}`);
+      .text(`Referentie: ${invoiceNumber}  |  IBAN verkoper: ${VVS.iban}  |  Ten name van: ${VVS.naam}`);
 
     // Footer
     const footerY = 750;
@@ -453,7 +454,11 @@ export async function sendReservationExpiredEmail(data: {
 export async function sendReservationConfirmationEmails(reservation: any, property: any) {
   const unitTypeLabel = property.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
   const customerName = `${reservation.customer_first_name} ${reservation.customer_last_name}`;
-  const koopprijs = property.sale_price ? fmtMoney(parseFloat(property.sale_price)) : '–';
+  // sale_price in DB is excl. BTW (from Excel column "VERKOOPPRIJS EX. BTW")
+  const koopprijsExclBtw = property.sale_price ? fmtMoney(parseFloat(property.sale_price)) : '–';
+  const koopprijsVon = property.sale_price
+    ? fmtMoney(parseFloat(property.sale_price) * 1.21)
+    : '–';
   const now = new Date();
   const eindDatum = fmtDate(new Date(now.getTime() + 8 * 7 * 24 * 60 * 60 * 1000));
   const invoiceNumber = `INV-${reservation.reservation_number}`;
@@ -470,12 +475,13 @@ export async function sendReservationConfirmationEmails(reservation: any, proper
   const customerHtml = baseLayout(`
     <h2>Uw reservering is bevestigd!</h2>
     <p>Geachte ${customerName},</p>
-    <p>Hartelijk dank voor uw reservering bij De Steiger Almere. Uw reservering is succesvol verwerkt en de aanbetaling ontvangen.</p>
+    <p>Hartelijk dank voor uw reservering bij De Steiger Almere. Uw reservering is succesvol verwerkt en de aanbetaling is succesvol ontvangen.</p>
     <div class="highlight">
       <strong>Reserveringsnummer:</strong> ${reservation.reservation_number}<br>
       <strong>Unit:</strong> ${unitTypeLabel} ${property.unit_number}<br>
-      <strong>Koopprijs:</strong> ${koopprijs}<br>
-      <strong>Reserveringskosten:</strong> € 1.500,00 (verrekend bij aankoop)<br>
+      <strong>Koopprijs excl. BTW:</strong> ${koopprijsExclBtw}<br>
+      <strong>Koopprijs v.o.n. (incl. BTW 21%):</strong> ${koopprijsVon}<br>
+      <strong>Reserveringskosten (incl. BTW):</strong> € 1.500,00 (verrekend bij aankoop)<br>
       <strong>Reserveringsperiode:</strong> tot ${eindDatum}
     </div>
     <p>In de bijlage vindt u:</p>
@@ -500,7 +506,8 @@ export async function sendReservationConfirmationEmails(reservation: any, proper
       <div class="grid-row"><div class="grid-cell label">Telefoon</div><div class="grid-cell">${reservation.customer_phone || '–'}</div></div>
       ${reservation.customer_company ? `<div class="grid-row"><div class="grid-cell label">Bedrijf</div><div class="grid-cell">${reservation.customer_company}</div></div>` : ''}
       <div class="grid-row"><div class="grid-cell label">Unit</div><div class="grid-cell">${unitTypeLabel} ${property.unit_number}</div></div>
-      <div class="grid-row"><div class="grid-cell label">Koopprijs</div><div class="grid-cell">${koopprijs}</div></div>
+      <div class="grid-row"><div class="grid-cell label">Koopprijs excl. BTW</div><div class="grid-cell">${koopprijsExclBtw}</div></div>
+      <div class="grid-row"><div class="grid-cell label">Koopprijs v.o.n.</div><div class="grid-cell">${koopprijsVon}</div></div>
       <div class="grid-row"><div class="grid-cell label">Reserveringsperiode</div><div class="grid-cell">t/m ${eindDatum}</div></div>
     </div>
     <a href="mailto:${reservation.customer_email}" class="btn">Contact opnemen met klant</a>
