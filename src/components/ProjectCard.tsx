@@ -7,11 +7,38 @@ import { Project } from '../types';
 
 interface ProjectCardProps {
   project: Project;
+  availability?: { available: number; reserved: number; sold: number; total: number };
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, availability }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
+
+  // Filter out netto features — only show bruto oppervlakte
+  const filteredFeatures = (project.features || []).filter(
+    f => !f.toLowerCase().includes('netto')
+  );
+
+  // Real availability badge
+  const getAvailabilityBadge = () => {
+    if (!availability) return null;
+    const { available, reserved, sold, total } = availability;
+    if (available === 0 && sold > 0 && reserved === 0) {
+      return { label: 'Uitverkocht', color: 'bg-red-100 text-red-700' };
+    }
+    if (available === 0 && reserved > 0) {
+      return { label: 'Gereserveerd', color: 'bg-orange-100 text-orange-700' };
+    }
+    if (available < total && available > 0) {
+      return { label: `${available} beschikbaar`, color: 'bg-green-100 text-green-700' };
+    }
+    if (available === total && available > 0) {
+      return { label: `${available} beschikbaar`, color: 'bg-green-100 text-green-700' };
+    }
+    return null;
+  };
+
+  const availBadge = getAvailabilityBadge();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'NU IN DE VERKOOP':
@@ -134,14 +161,23 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
             <ArrowRight className="h-5 w-5 text-slate-800" />
           </div>
           
-          {/* Status badge - positioned to avoid price overlap */}
-          {project.status && (
-            <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1 shadow-lg">
-              <span className={`text-xs font-bold uppercase px-2 py-1 rounded-full ${getStatusColor(project.status)}`}>
-                {getStatusText(project.status)}
-              </span>
-            </div>
-          )}
+          {/* Status badge */}
+          <div className="absolute top-4 left-4 flex flex-col gap-1">
+            {project.status && (
+              <div className="bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1 shadow-lg">
+                <span className={`text-xs font-bold uppercase px-2 py-1 rounded-full ${getStatusColor(project.status)}`}>
+                  {getStatusText(project.status)}
+                </span>
+              </div>
+            )}
+            {availBadge && (
+              <div className="bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1 shadow-lg">
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${availBadge.color}`}>
+                  {availBadge.label}
+                </span>
+              </div>
+            )}
+          </div>
           
           {/* Price badge - moved to bottom-left to avoid overlap */}
           <div className="absolute bottom-4 left-4 bg-slate-800 text-white rounded-lg px-3 py-2 shadow-lg">
@@ -176,18 +212,18 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
             </div>
           </div>
 
-          {/* Top Features */}
-          {project.features && project.features.length > 0 && (
+          {/* Top Features (bruto only, no netto) */}
+          {filteredFeatures.length > 0 && (
             <div className="mb-4">
               <div className="flex flex-wrap gap-1">
-                {project.features.slice(0, 2).map((feature, index) => (
+                {filteredFeatures.slice(0, 2).map((feature, index) => (
                   <span key={index} className="inline-block bg-slate-50 text-slate-700 px-2 py-1 rounded text-xs font-medium">
                     {feature}
                   </span>
                 ))}
-                {project.features.length > 2 && (
+                {filteredFeatures.length > 2 && (
                   <span className="inline-block bg-gray-50 text-gray-600 px-2 py-1 rounded text-xs">
-                    +{project.features.length - 2} meer
+                    +{filteredFeatures.length - 2} meer
                   </span>
                 )}
               </div>

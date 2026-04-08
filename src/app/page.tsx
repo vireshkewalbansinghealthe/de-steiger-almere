@@ -73,6 +73,9 @@ export default function HomePage() {
   const [areaMax, setAreaMax] = useState(500);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
+  // Real availability per type (typeNumber -> stats)
+  const [typeAvailability, setTypeAvailability] = useState<Record<number, { available: number; reserved: number; sold: number; total: number }>>({});
+
   // Countdown timer for December 15, 2025
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [scrollY, setScrollY] = useState(0);
@@ -265,6 +268,32 @@ export default function HomePage() {
     setSelectedTypes([]);
     setStatusFilter('all');
     setSearchTerm('');
+  }, [category]);
+
+  // Fetch real availability per type from database
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        const unitType = category === 'opslagboxen' ? 'opslagbox' : 'bedrijfsunit';
+        const res = await fetch(`/api/units?type=${unitType}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const units: any[] = data.units || [];
+        const map: Record<number, { available: number; reserved: number; sold: number; total: number }> = {};
+        for (const u of units) {
+          const t = u.type_number;
+          if (!map[t]) map[t] = { available: 0, reserved: 0, sold: 0, total: 0 };
+          map[t].total++;
+          if (u.status === 'available') map[t].available++;
+          else if (u.status === 'reserved') map[t].reserved++;
+          else if (u.status === 'sold') map[t].sold++;
+        }
+        setTypeAvailability(map);
+      } catch (e) {
+        console.error('Failed to fetch availability:', e);
+      }
+    };
+    fetchAvailability();
   }, [category]);
 
   const categoryProjects = projects.filter(project => {
@@ -1210,13 +1239,20 @@ export default function HomePage() {
                           {/* Projects Grid/Table */}
                 {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 lg:mb-16">
-            {filteredProjects.map((project, index) => (
-              <div key={project.id} className="rubber-band-hover">
-                <ProjectCard
-                  project={project}
-                />
-              </div>
-            ))}
+            {filteredProjects.map((project, index) => {
+              // Extract type number from slug (e.g. "bedrijfsunit-type-11" → 11)
+              const typeMatch = project.slug.match(/type-(\d+)/);
+              const typeNum = typeMatch ? parseInt(typeMatch[1]) : 0;
+              const avail = typeAvailability[typeNum];
+              return (
+                <div key={project.id} className="rubber-band-hover">
+                  <ProjectCard
+                    project={project}
+                    availability={avail}
+                  />
+                </div>
+              );
+            })}
           </div>
                 ) : (
                   <div className="mb-8 lg:mb-16">
