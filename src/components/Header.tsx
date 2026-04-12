@@ -101,29 +101,14 @@ export default function Header() {
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center group">
               <div className="flex items-center space-x-3">
-                {/* Logo Icon */}
-                <div className="relative">
-                  <div className={`w-10 h-10 rounded-lg transition-all duration-300 group-hover:scale-110 ${
-                    isScrolled 
-                      ? 'bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-lg' 
-                      : 'bg-gradient-to-br from-yellow-400 to-yellow-500 shadow-xl'
-                  }`}>
-                    <div className="absolute inset-0 rounded-lg overflow-hidden">
-                      {/* Buildings & Storage Icon */}
-                      <svg className="w-full h-full p-1.5 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
-                        {/* Building part */}
-                        <path d="M3 21h8V9l-4-3-4 3v12zm2-8h2v2H5v-2zm0 4h2v2H5v-2zm4-4h2v2H9v-2z"/>
-                        {/* Storage boxes part */}
-                        <rect x="13" y="4" width="3.5" height="3" rx="0.3"/>
-                        <rect x="17" y="4" width="3.5" height="3" rx="0.3"/>
-                        <rect x="13" y="8" width="3.5" height="3" rx="0.3"/>
-                        <rect x="17" y="8" width="3.5" height="3" rx="0.3"/>
-                        <rect x="13" y="12" width="7.5" height="4" rx="0.3"/>
-                        <rect x="13" y="17" width="7.5" height="3" rx="0.3"/>
-                      </svg>
-                    </div>
-                    {/* Subtle highlight */}
-                    <div className="absolute top-1 left-1 w-3 h-3 bg-white/30 rounded-full blur-sm"></div>
+                {/* VVS Logo as icon */}
+                <div className="relative transition-all duration-300 group-hover:scale-110">
+                  <div className="bg-black rounded-lg px-2 py-1.5 shadow-lg">
+                    <img
+                      src="/images/vvs-projectontwikkeling.png"
+                      alt="VVS Projectontwikkeling"
+                      className="h-8 w-auto object-contain"
+                    />
                   </div>
                 </div>
                 
@@ -154,16 +139,6 @@ export default function Header() {
               </div>
             </Link>
             
-            {/* VVS Projectontwikkeling logo - partner logo */}
-            <div className={`hidden lg:flex items-center ml-4 pl-4 border-l ${isScrolled ? 'border-gray-300' : 'border-white/30'}`}>
-              <div className="bg-black rounded-lg px-2 py-1">
-                <img
-                  src="/images/vvs-projectontwikkeling.png"
-                  alt="VVS Projectontwikkeling"
-                  className="h-7 w-auto object-contain"
-                />
-              </div>
-            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -420,16 +395,12 @@ export default function Header() {
             {/* Sidebar Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-lg flex items-center justify-center mr-3">
-                  <svg className="w-5 h-5 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3 21h8V9l-4-3-4 3v12zm2-8h2v2H5v-2zm0 4h2v2H5v-2zm4-4h2v2H9v-2z"/>
-                    <rect x="13" y="4" width="3.5" height="3" rx="0.3"/>
-                    <rect x="17" y="4" width="3.5" height="3" rx="0.3"/>
-                    <rect x="13" y="8" width="3.5" height="3" rx="0.3"/>
-                    <rect x="17" y="8" width="3.5" height="3" rx="0.3"/>
-                    <rect x="13" y="12" width="7.5" height="4" rx="0.3"/>
-                    <rect x="13" y="17" width="7.5" height="3" rx="0.3"/>
-                  </svg>
+                <div className="bg-black rounded-lg px-2 py-1 mr-3">
+                  <img
+                    src="/images/vvs-projectontwikkeling.png"
+                    alt="VVS Projectontwikkeling"
+                    className="h-6 w-auto object-contain"
+                  />
                 </div>
                 <div>
                   <div className="text-base font-extrabold text-slate-800 leading-none">A6 Garagepark Almere</div>
