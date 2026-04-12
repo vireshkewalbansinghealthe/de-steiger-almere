@@ -369,10 +369,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                     <div className="font-medium">{unit.grossArea}m² bruto</div>
                   </td>
                   <td className="py-3 px-4 text-gray-600 text-xs">
-                    {unit.industrieNetto ? `${unit.industrieNetto}m²` : '-'}
+                    {unit.industrieBruto ? `${unit.industrieBruto}m²` : '-'}
                   </td>
                   <td className="py-3 px-4 text-gray-600 text-xs">
-                    {unit.kantoorNetto ? `${unit.kantoorNetto}m²` : '-'}
+                    {unit.kantoorBruto ? `${unit.kantoorBruto}m²` : '-'}
                   </td>
                   <td className="py-3 px-4">
                     <div className="text-gray-900 font-medium">{unit.price}</div>
@@ -1423,50 +1423,46 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                           <div className="bg-gray-50 rounded-lg p-3">
                             <h4 className="font-semibold text-gray-900 mb-2 text-sm">Oppervlakte Details</h4>
                             <div className="space-y-2">
-                              {/* Total Areas */}
+                              {/* Total Area - bruto only */}
                               <div className="pb-2 border-b border-gray-200">
                                 <h5 className="font-medium text-gray-900 mb-1">Totaal</h5>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">Netto:</span>
-                                    <span className="font-semibold">{unitDetails.size}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">Bruto:</span>
-                                    <span className="font-semibold">{unitDetails.grossSize}</span>
-                                  </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Bruto:</span>
+                                  <span className="font-semibold">{unitDetails.grossSize}</span>
                                 </div>
                               </div>
                               
-                              {/* Industrie Areas - PRESERVED DATA */}
-                              <div className="pb-3 border-b border-gray-200">
-                                <h5 className="font-medium text-gray-900 mb-2">Industrie Functie</h5>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">Netto:</span>
-                                    <span className="font-semibold">{unitDetails.industrieNetto}m²</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">Bruto:</span>
-                                    <span className="font-semibold">{unitDetails.industrieBruto}m²</span>
-                                  </div>
+                              {/* Industrie Areas - bruto only */}
+                              <div className="pb-2 border-b border-gray-200">
+                                <h5 className="font-medium text-gray-900 mb-1">Industrie Functie</h5>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Bruto:</span>
+                                  <span className="font-semibold">{unitDetails.industrieBruto}m²</span>
                                 </div>
                               </div>
                               
-                              {/* Kantoor Areas - PRESERVED DATA */}
-                              <div>
-                                <h5 className="font-medium text-gray-900 mb-2">Kantoor Functie</h5>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">Netto:</span>
-                                    <span className="font-semibold">{unitDetails.kantoorNetto}m²</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">Bruto:</span>
-                                    <span className="font-semibold">{unitDetails.kantoorBruto}m²</span>
-                                  </div>
+                              {/* Kantoor Areas - bruto only */}
+                              <div className={(unitDetails.industrieBruto + unitDetails.kantoorBruto < parseFloat(unitDetails.grossSize)) ? 'pb-2 border-b border-gray-200' : ''}>
+                                <h5 className="font-medium text-gray-900 mb-1">Kantoor Functie</h5>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Bruto:</span>
+                                  <span className="font-semibold">{unitDetails.kantoorBruto}m²</span>
                                 </div>
                               </div>
+                              
+                              {/* 2e Verdieping - shown when total > industrie + kantoor */}
+                              {(() => {
+                                const verdieping2 = Math.round((parseFloat(unitDetails.grossSize) - unitDetails.industrieBruto - unitDetails.kantoorBruto) * 10) / 10;
+                                return verdieping2 > 0.5 ? (
+                                  <div>
+                                    <h5 className="font-medium text-gray-900 mb-1">2e Verdieping</h5>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Bruto:</span>
+                                      <span className="font-semibold">{verdieping2}m²</span>
+                                    </div>
+                                  </div>
+                                ) : null;
+                              })()}
                             </div>
                           </div>
                         </div>

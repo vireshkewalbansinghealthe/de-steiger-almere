@@ -182,7 +182,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, availability }) => {
           {/* Price badge - moved to bottom-left to avoid overlap */}
           <div className="absolute bottom-4 left-4 bg-slate-800 text-white rounded-lg px-3 py-2 shadow-lg">
             <span className="text-sm font-bold">
-              {project.startPrice ? project.startPrice.split(' ')[0] : 'Op aanvraag'}
+              {project.startPrice
+                ? project.startPrice.split(' ').slice(0, 2).join(' ')
+                : 'Op aanvraag'}
             </span>
           </div>
         </div>

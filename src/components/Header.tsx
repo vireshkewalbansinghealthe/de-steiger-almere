@@ -153,6 +153,17 @@ export default function Header() {
                 </div>
               </div>
             </Link>
+            
+            {/* VVS Projectontwikkeling logo - partner logo */}
+            <div className={`hidden lg:flex items-center ml-4 pl-4 border-l ${isScrolled ? 'border-gray-300' : 'border-white/30'}`}>
+              <div className="bg-black rounded-lg px-2 py-1">
+                <img
+                  src="/images/vvs-projectontwikkeling.png"
+                  alt="VVS Projectontwikkeling"
+                  className="h-7 w-auto object-contain"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Desktop Navigation */}

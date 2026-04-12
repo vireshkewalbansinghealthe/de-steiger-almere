@@ -136,7 +136,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                       <thead>
                         <tr className="border-b border-gray-200">
                           <th className="text-left py-2 px-3 font-medium text-gray-700">Unit</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">Totaal Netto</th>
+                          <th className="text-left py-2 px-3 font-medium text-gray-700">Totaal Bruto</th>
                           <th className="text-left py-2 px-3 font-medium text-gray-700">Industrie</th>
                           <th className="text-left py-2 px-3 font-medium text-gray-700">Kantoor</th>
                           <th className="text-left py-2 px-3 font-medium text-gray-700">Prijs</th>
@@ -147,21 +147,15 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                         {project.details.unitDetails.map((unit, index) => (
                           <tr key={index} className="border-b border-gray-100 hover:bg-white">
                             <td className="py-3 px-3 font-medium text-gray-900">#{unit.unitNumber}</td>
-                            <td className="py-3 px-3 text-gray-700">{unit.netArea}m²</td>
+                            <td className="py-3 px-3 text-gray-700">{unit.grossArea}m²</td>
                             <td className="py-3 px-3 text-gray-600 text-xs">
-                              {unit.industrieNetto ? (
-                                <div>
-                                  <div>{unit.industrieNetto}m² netto</div>
-                                  <div className="text-gray-500">{unit.industrieBruto}m² bruto</div>
-                                </div>
+                              {unit.industrieBruto ? (
+                                <div>{unit.industrieBruto}m²</div>
                               ) : '-'}
                             </td>
                             <td className="py-3 px-3 text-gray-600 text-xs">
-                              {unit.kantoorNetto ? (
-                                <div>
-                                  <div>{unit.kantoorNetto}m² netto</div>
-                                  <div className="text-gray-500">{unit.kantoorBruto}m² bruto</div>
-                                </div>
+                              {unit.kantoorBruto ? (
+                                <div>{unit.kantoorBruto}m²</div>
                               ) : '-'}
                             </td>
                             <td className="py-3 px-3 text-gray-900 font-medium">{unit.price}</td>
