@@ -1623,6 +1623,45 @@ export const projects: Project[] = [
       ]
     }
   },
+  // Type 7: 1 opslagbox (21.3m² bruto oppervlakte)
+  {
+    id: 'opslagbox-type-7',
+    name: 'Opslagbox Type 7',
+    location: 'Almere',
+    status: 'NU IN DE VERKOOP',
+    description: 'Opslagbox Type 7 van 21m² bruto op De Steiger 74/77 in Almere. Compacte opslagbox, ideaal voor kleinere opslag.',
+    garageBoxes: 1,
+    startPrice: '€ 46,860 v.o.n. ex. BTW',
+    features: [
+      "21.3m² bruto oppervlakte",
+      "Veilige opslag",
+      "Energielabel A+",
+      "24/7 toegang",
+      "Reservering: € 1,500"
+    ],
+    images: getOpslagboxImages(6),
+    slug: 'opslagbox-type-7',
+    details: {
+      location: 'De Steiger 74/77, Almere',
+      specifications: {
+        ceiling: '2.70 meter vrije hoogte',
+        floors: 'Betonvloer',
+        electricity: 'Standaard 1x16A aansluiting',
+        internet: 'Glasvezel beschikbaar',
+        access: '24/7 toegang via app en pincode',
+        security: 'Beveiligingssysteem met camera\'s'
+      },
+      unitDetails: [
+        {
+          unitNumber: 0,
+          netArea: 20,
+          grossArea: 21.3,
+          price: '51120',
+          status: 'beschikbaar'
+        }
+      ]
+    }
+  },
   // Type 6: 1 opslagboxen (49m² bruto oppervlakte)
   {
     id: 'opslagbox-type-6',
@@ -3319,6 +3358,7 @@ export const locations: Location[] = [
       'opslagbox-type-4',
       'opslagbox-type-5',
       'opslagbox-type-6',
+      'opslagbox-type-7',
       'opslagbox-type-8',
       'opslagbox-type-9',
       'opslagbox-type-10',
