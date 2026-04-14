@@ -74,7 +74,7 @@ export default function HomePage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Real availability per type (typeNumber -> stats)
-  const [typeAvailability, setTypeAvailability] = useState<Record<number, { available: number; reserved: number; sold: number; total: number }>>({});
+  const [typeAvailability, setTypeAvailability] = useState<Record<number, { available: number; reserved: number; sold: number; total: number; minPrice?: number; minGrossArea?: number }>>({});
 
   // Countdown timer for December 15, 2025
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -279,7 +279,7 @@ export default function HomePage() {
         if (!res.ok) return;
         const data = await res.json();
         const units: any[] = data.units || [];
-        const map: Record<number, { available: number; reserved: number; sold: number; total: number }> = {};
+        const map: Record<number, { available: number; reserved: number; sold: number; total: number; minPrice?: number; minGrossArea?: number }> = {};
         for (const u of units) {
           const t = u.type_number;
           if (!map[t]) map[t] = { available: 0, reserved: 0, sold: 0, total: 0 };
@@ -287,6 +287,15 @@ export default function HomePage() {
           if (u.status === 'available') map[t].available++;
           else if (u.status === 'reserved') map[t].reserved++;
           else if (u.status === 'sold') map[t].sold++;
+          // Track cheapest available price and gross area
+          const price = parseFloat(u.sale_price);
+          const area = parseFloat(u.gross_area);
+          if (!isNaN(price) && (map[t].minPrice === undefined || price < map[t].minPrice!)) {
+            map[t].minPrice = price;
+          }
+          if (!isNaN(area) && (map[t].minGrossArea === undefined || area < map[t].minGrossArea!)) {
+            map[t].minGrossArea = area;
+          }
         }
         setTypeAvailability(map);
       } catch (e) {
