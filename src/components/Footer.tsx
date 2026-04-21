@@ -82,11 +82,6 @@ export default function Footer() {
                   Beleggingsmogelijkheden
                 </Link>
               </li>
-              <li>
-                <span className="text-gray-300">
-                  158 Parkeerplaatsen
-                </span>
-              </li>
             </ul>
           </div>
         </div>
