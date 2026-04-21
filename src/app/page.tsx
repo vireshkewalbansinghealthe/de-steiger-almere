@@ -5,7 +5,6 @@ import { projects } from '../data/projects';
 import ProjectCard from '../components/ProjectCard';
 import ProjectModal from '../components/ProjectModal';
 import VideoModal from '../components/VideoModal';
-import NewsletterForm from '../components/NewsletterForm';
 import BezichtigingForm from '../components/BezichtigingForm';
 import { Project } from '../types';
 import { Filter, Search, ArrowDown, Play, Grid, List, Map, Share2, Link as LinkIcon, Copy, Facebook, Twitter, X } from 'lucide-react';
@@ -60,7 +59,7 @@ export default function HomePage() {
   const [filter, setFilter] = useState<'all' | 'nu-in-verkoop' | 'coming-soon' | 'uitverkocht'>('all');
   const [category, setCategory] = useState<'bedrijfsunits' | 'opslagboxen'>('bedrijfsunits');
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('map');
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location'>('name');
@@ -897,22 +896,17 @@ export default function HomePage() {
       <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 scroll-reveal-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-5 gap-16 items-start">
-            {/* Left Column - Narrower - Hide the newsletter on mobile, show on desktop */}
+            {/* Left Column - Interesse contact card (desktop) */}
             <div className="lg:col-span-2 hidden lg:block">
-              {/* Call to Action Box */}
               <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-8 shadow-xl">
-                <h3 className="text-2xl font-bold text-white mb-4">
-                  Blijf op de hoogte!
+                <h3 className="text-xl font-bold text-white mb-3">
+                  Interesse in een unit?
                 </h3>
-                <p className="text-slate-200 mb-6 leading-relaxed">
-                  Ontvang als eerste informatie over nieuwe projecten, beschikbare units en exclusieve aanbiedingen.
+                <p className="text-slate-200 mb-5 leading-relaxed text-sm">
+                  Maak een afspraak voor een bezichtiging of ontvang meer informatie over beschikbare units.
                 </p>
-                <NewsletterForm 
-                  containerClassName="space-y-3"
-                  inputClassName="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-slate-300 transition-all duration-300"
-                  buttonClassName="w-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-200 text-slate-900 px-6 py-3 rounded-xl font-semibold hover:from-yellow-300 hover:to-yellow-100 transform hover:scale-105 transition-all duration-300 shadow-lg disabled:opacity-50"
-                  locationName="De Steiger Algemeen"
-                />
+                <BezichtigingForm />
+                <p className="text-slate-400 text-xs mt-3">We nemen binnen 24 uur contact met u op.</p>
               </div>
             </div>
             
@@ -1238,13 +1232,32 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleShare}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Delen
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setViewMode(viewMode === 'map' ? 'grid' : 'map')}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                    >
+                      {viewMode === 'map' ? (
+                        <>
+                          <Grid className="w-4 h-4" />
+                          Bekijk Types
+                        </>
+                      ) : (
+                        <>
+                          <Map className="w-4 h-4" />
+                          Bekijk plattegrond
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleShare}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Delen
+                    </button>
+                  </div>
                 </div>
 
                 {/* Results Count */}
@@ -1371,22 +1384,18 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Mobile Newsletter Section - Only visible on mobile */}
+      {/* Mobile Interesse Section - Only visible on mobile */}
       <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 pt-2 pb-6 lg:hidden scroll-reveal-section">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 shadow-xl">
             <h3 className="text-xl font-bold text-white mb-3">
-              Blijf op de hoogte!
+              Interesse in een unit?
             </h3>
-            <p className="text-slate-200 mb-4 leading-relaxed">
-              Ontvang als eerste informatie over nieuwe projecten, beschikbare units en exclusieve aanbiedingen.
+            <p className="text-slate-200 mb-4 leading-relaxed text-sm">
+              Maak een afspraak voor een bezichtiging of ontvang meer informatie over beschikbare units.
             </p>
-            <NewsletterForm 
-              containerClassName="space-y-3"
-              inputClassName="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-slate-300 transition-all duration-300"
-              buttonClassName="w-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-200 text-slate-900 px-6 py-3 rounded-xl font-semibold hover:from-yellow-300 hover:to-yellow-100 transform hover:scale-105 transition-all duration-300 shadow-lg disabled:opacity-50"
-              locationName="De Steiger Algemeen"
-            />
+            <BezichtigingForm />
+            <p className="text-slate-400 text-xs mt-3">We nemen binnen 24 uur contact met u op.</p>
           </div>
         </div>
       </div>

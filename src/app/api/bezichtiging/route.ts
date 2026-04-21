@@ -17,12 +17,7 @@ export async function POST(request: NextRequest) {
     const resend = getResendClient();
 
     const { data, error } = await resend.emails.send({
-      from: 'De Steiger Website <onboarding@resend.dev>', // You should use a verified domain here in production if possible, or use onboarding for testing. Since the user wants to send to info@, we will use onboarding@resend.dev if they haven't verified a domain, but generally info@desteigeralmere.nl is the target. Let's assume info@desteigeralmere.nl is verified, or fallback to the onboarding sender for now to avoid hard crash if not verified.
-      // Or we can use the domain if verified: "De Steiger <info@desteigeralmere.nl>"
-      // Given we don't know the verified domain, let's use the requested sender format if they've set it up, otherwise it defaults to onboarding. 
-      // To be safe, we'll try to send FROM info@desteigeralmere.nl if possible, but Resend requires domain verification. Let's use it as FROM but if it fails, it will fail.
-      // Wait, Resend allows sending from onboarding@resend.dev to the registered email address during testing.
-      // But let's just use info@desteigeralmere.nl as requested for receiving the email.
+      from: 'De Steiger <noreply@desteigeralmere.nl>',
       to: ['info@desteigeralmere.nl'],
       subject: `Nieuwe Bezichtiging Aanvraag: ${name}`,
       html: `

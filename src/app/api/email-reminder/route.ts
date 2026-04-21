@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 const EMAIL_SERVICE = {
   provider: 'resend', // or 'sendgrid', 'nodemailer', etc.
   apiKey: process.env.RESEND_API_KEY || process.env.SENDGRID_API_KEY,
-  fromEmail: process.env.FROM_EMAIL || 'noreply@desteiger.nl',
+  fromEmail: process.env.FROM_EMAIL || 'noreply@desteigeralmere.nl',
   fromName: 'De Steiger'
 };
 
