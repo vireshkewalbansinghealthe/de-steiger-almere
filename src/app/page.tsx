@@ -8,7 +8,8 @@ import VideoModal from '../components/VideoModal';
 import NewsletterForm from '../components/NewsletterForm';
 import BezichtigingForm from '../components/BezichtigingForm';
 import { Project } from '../types';
-import { Filter, Search, ArrowDown, Play, Grid, List, Share2, Link as LinkIcon, Copy, Facebook, Twitter, X } from 'lucide-react';
+import { Filter, Search, ArrowDown, Play, Grid, List, Map, Share2, Link as LinkIcon, Copy, Facebook, Twitter, X } from 'lucide-react';
+import InteractiveFloorplan from '../components/InteractiveFloorplan';
 
 // Search aliases for better search matching
 const SEARCH_ALIASES: Record<string, string[]> = {
@@ -59,7 +60,7 @@ export default function HomePage() {
   const [filter, setFilter] = useState<'all' | 'nu-in-verkoop' | 'coming-soon' | 'uitverkocht'>('all');
   const [category, setCategory] = useState<'bedrijfsunits' | 'opslagboxen'>('bedrijfsunits');
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('map');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location'>('name');
@@ -1222,9 +1223,15 @@ export default function HomePage() {
                       </button>
                       <button
                         onClick={() => setViewMode('table')}
-                        className={`px-3 py-1 text-sm rounded-r ${viewMode === 'table' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                        className={`px-3 py-1 text-sm border-l border-r border-gray-200 ${viewMode === 'table' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
                       >
                         <List className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('map')}
+                        className={`px-3 py-1 text-sm rounded-r ${viewMode === 'map' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                      >
+                        <Map className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -1244,7 +1251,11 @@ export default function HomePage() {
                 </div>
 
                           {/* Projects Grid/Table */}
-                {viewMode === 'grid' ? (
+                {viewMode === 'map' ? (
+                  <div className="mb-8 lg:mb-16 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                    <InteractiveFloorplan />
+                  </div>
+                ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 lg:mb-16">
             {filteredProjects.map((project, index) => {
               // Extract type number from slug (e.g. "bedrijfsunit-type-11" → 11)

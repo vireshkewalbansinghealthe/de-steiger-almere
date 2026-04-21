@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 
 interface Unit {
   id: string;
@@ -24,7 +24,14 @@ interface UnitPolygon {
 // Hier komen de getekende polygons in
 const INITIAL_POLYGONS: UnitPolygon[] = [];
 
-export default function InteractiveFloorplan({ onUnitClick }: { onUnitClick?: (unit: Unit) => void } = {}) {
+export default function InteractiveFloorplan({ 
+  onUnitClick,
+  highlightUnits = []
+}: { 
+  onUnitClick?: (unit: Unit) => void,
+  highlightUnits?: string[]
+} = {}) {
+  const transformComponentRef = useRef<ReactZoomPanPinchRef | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredUnit, setHoveredUnit] = useState<Unit | null>(null);
@@ -88,6 +95,20 @@ export default function InteractiveFloorplan({ onUnitClick }: { onUnitClick?: (u
       }
     }
   }, []);
+
+  // Zoom to highlighted units when polygons are loaded
+  useEffect(() => {
+    if (highlightUnits.length > 0 && polygons.length > 0 && transformComponentRef.current) {
+      const firstUnit = highlightUnits[0];
+      const hasPolygon = polygons.some(p => p.unit_number === firstUnit);
+      if (hasPolygon) {
+        // Add a small delay to let the TransformComponent initialize and render SVG properly
+        setTimeout(() => {
+          transformComponentRef.current?.zoomToElement(`unit-${firstUnit}`, 3, 800);
+        }, 500);
+      }
+    }
+  }, [highlightUnits, polygons]);
 
   const saveCurrentPolygon = () => {
     if (currentPoints.length < 3) {
@@ -172,6 +193,7 @@ export default function InteractiveFloorplan({ onUnitClick }: { onUnitClick?: (u
         className="relative w-full h-[60vh] min-h-[500px] border border-gray-200 rounded-xl overflow-hidden bg-white shadow-lg bg-gray-50"
       >
         <TransformWrapper
+          ref={transformComponentRef}
           initialScale={1}
           minScale={0.5}
           maxScale={8}
@@ -231,6 +253,7 @@ export default function InteractiveFloorplan({ onUnitClick }: { onUnitClick?: (u
                       return (
                         <polygon
                           key={idx}
+                          id={`unit-${poly.unit_number}`}
                           points={poly.points}
                           fill={getStatusColor(status)}
                           stroke={getStatusBorderColor(status)}

@@ -69,7 +69,7 @@ const matchesSearchTerm = (unit: Unit, searchTerm: string): boolean => {
 };
 
 export default function BedrijfsunitsPage() {
-  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('map');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location' | 'unit_number'>('unit_number');

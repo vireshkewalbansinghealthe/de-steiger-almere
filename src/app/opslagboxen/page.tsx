@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Archive, CheckCircle, ArrowRight, MapPin, Shield, Home, Phone, Mail, Users, Car, Calendar, Lock, Zap, Grid, List, Share2, Copy, Facebook, Twitter, Link as LinkIcon, Search } from 'lucide-react';
+import { Archive, CheckCircle, ArrowRight, MapPin, Shield, Home, Phone, Mail, Users, Car, Calendar, Lock, Zap, Grid, List, Map, Share2, Copy, Facebook, Twitter, Link as LinkIcon, Search } from 'lucide-react';
+import InteractiveFloorplan from '../../components/InteractiveFloorplan';
 
 // Unit type from API
 interface Unit {
@@ -80,7 +81,7 @@ export default function OpslagboxenPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('map');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [sortBy, setSortBy] = useState<'type_number'>('type_number');
   const [showShareModal, setShowShareModal] = useState(false);
@@ -90,6 +91,7 @@ export default function OpslagboxenPage() {
   const [priceMax, setPriceMax] = useState(110);
   const [areaMin, setAreaMin] = useState(14);
   const [areaMax, setAreaMax] = useState(49);
+  const [selectedFloorplanUnit, setSelectedFloorplanUnit] = useState<any>(null);
 
   // Fetch opslagboxen from API (grouped by type)
   useEffect(() => {
@@ -635,9 +637,15 @@ export default function OpslagboxenPage() {
                       </button>
                       <button
                         onClick={() => setViewMode('table')}
-                        className={`px-3 py-1 text-sm rounded-r ${viewMode === 'table' ? 'bg-slate-800 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                        className={`px-3 py-1 text-sm border-l border-r border-gray-200 ${viewMode === 'table' ? 'bg-slate-800 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
                       >
                         <List className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('map')}
+                        className={`px-3 py-1 text-sm rounded-r ${viewMode === 'map' ? 'bg-slate-800 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                      >
+                        <Map className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -656,7 +664,11 @@ export default function OpslagboxenPage() {
                 </div>
 
                 {/* Opslagboxen Grid/Table */}
-                {viewMode === 'grid' ? (
+                {viewMode === 'map' ? (
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                    <InteractiveFloorplan onUnitClick={(unit) => setSelectedFloorplanUnit(unit)} />
+                  </div>
+                ) : viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {filteredProjects.map((unit) => (
                       <Link href={`/opslagbox/${unit.slug}`} key={unit.id}>
@@ -776,6 +788,73 @@ export default function OpslagboxenPage() {
           </div>
         </div>
       </section>
+
+      {/* Selected Floorplan Unit Modal */}
+      {selectedFloorplanUnit && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedFloorplanUnit(null)}>
+          <div 
+            className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl transform transition-all"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="relative h-48 sm:h-64 w-full bg-slate-100">
+              <img 
+                src={selectedFloorplanUnit.images?.[0] || '/images/placeholder.jpg'} 
+                alt={selectedFloorplanUnit.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute top-4 right-4 z-10 flex gap-2">
+                <span className={`px-3 py-1 text-sm font-semibold rounded-full shadow-md ${
+                  selectedFloorplanUnit.status === 'available' 
+                    ? 'bg-green-500 text-white' 
+                    : selectedFloorplanUnit.status === 'reserved' 
+                    ? 'bg-red-500 text-white' 
+                    : 'bg-gray-500 text-white'
+                }`}>
+                  {selectedFloorplanUnit.status === 'available' ? 'Beschikbaar' : selectedFloorplanUnit.status === 'reserved' ? 'Gereserveerd' : 'Verkocht'}
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedFloorplanUnit(null)}
+                className="absolute top-4 left-4 z-10 w-8 h-8 flex items-center justify-center bg-black/50 text-white rounded-full hover:bg-black/70 backdrop-blur-md transition-colors"
+              >
+                ✕
+              </button>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pt-12">
+                <h3 className="text-2xl font-bold text-white mb-1">{selectedFloorplanUnit.name}</h3>
+                <p className="text-white/90">Unit Nummer: {selectedFloorplanUnit.unit_number}</p>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                  <p className="text-sm text-gray-500 mb-1">Oppervlakte</p>
+                  <p className="text-xl font-semibold text-gray-900">{selectedFloorplanUnit.gross_area} m²</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                  <p className="text-sm text-gray-500 mb-1">Prijs v.o.n.</p>
+                  <p className="text-xl font-bold text-slate-800">€{selectedFloorplanUnit.sale_price.toLocaleString('nl-NL')}</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setSelectedFloorplanUnit(null)}
+                  className="flex-1 py-3 px-4 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                >
+                  Sluiten
+                </button>
+                <Link
+                  href={`/opslagbox/opslagbox-type-${selectedFloorplanUnit.type_number}?unit=${selectedFloorplanUnit.unit_number}`}
+                  className="flex-[2] py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 shadow-md transform hover:-translate-y-0.5 transition-all text-center flex justify-center items-center gap-2"
+                >
+                  Bekijk & Reserveer <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Share Modal */}
       {showShareModal && (

@@ -7,6 +7,8 @@ import { ArrowLeft, MapPin, Calendar, Car, Building2, CheckCircle, Home, ArrowRi
 import ReservationModal from '../../../components/ReservationModal';
 import { useViewingLock } from '../../../hooks/useViewingLock';
 
+import InteractiveFloorplan from '../../../components/InteractiveFloorplan';
+
 interface ProjectDetailPageProps {
   params: Promise<{
     slug: string;
@@ -609,6 +611,17 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                   <List className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Tabel
               </button>
+              <button
+                onClick={() => setViewMode('map')}
+                  className={`flex items-center px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                    viewMode === 'map'
+                      ? 'bg-slate-800 text-white'
+                      : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                Kaart
+              </button>
             </div>
             </div>
 
@@ -669,7 +682,14 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                     {viewMode === 'grid' ? 'Klik op een unit voor meer details' : 'Klik op "Details" voor meer informatie'}
             </p>
                 </div>
-                {viewMode === 'grid' ? renderGridView() : renderTableView()}
+                {viewMode === 'map' ? (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                    <InteractiveFloorplan 
+                      onUnitClick={(unit) => setSelectedUnit(unit.unit_number)}
+                      highlightUnits={getFilteredAndSortedUnits().map(u => String(u.unitNumber))}
+                    />
+                  </div>
+                ) : viewMode === 'grid' ? renderGridView() : renderTableView()}
           </div>
           
               {/* Reserve Button - Same Height Container */}
