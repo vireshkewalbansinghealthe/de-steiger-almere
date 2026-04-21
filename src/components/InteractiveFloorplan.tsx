@@ -291,7 +291,7 @@ export default function InteractiveFloorplan({
                               if (onUnitClick) {
                                 onUnitClick(unitData);
                               } else {
-                                window.location.href = `/${unitData.type}/${unitData.type}-type-${unitData.type_number}`;
+                                window.location.href = `/${unitData.type}/${unitData.type}-type-${unitData.type_number}?unit=${unitData.unit_number}`;
                               }
                             }
                           }}
