@@ -29,9 +29,13 @@ export default function Footer() {
                   0578-769056
                 </a>
               </div>
-              <div className="flex items-center text-slate-200">
-                <MapPin className="h-5 w-5 mr-3 text-yellow-400" />
-                <span>De Steiger 74/77, Almere</span>
+              <div className="flex items-start text-slate-200">
+                <MapPin className="h-5 w-5 mr-3 mt-1 text-yellow-400 shrink-0" />
+                <div>
+                  De Steiger 74/77<br />
+                  1317 AZ Almere<br />
+                  Nederland
+                </div>
               </div>
             </div>
           </div>
