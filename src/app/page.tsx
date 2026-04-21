@@ -1049,7 +1049,8 @@ export default function HomePage() {
 
           {/* Content Area with Sidebar */}
           <div className="flex flex-col lg:flex-row gap-6">
-              {/* Desktop Filter Sidebar - Hidden on mobile */}
+              {/* Desktop Filter Sidebar */}
+              {viewMode !== 'map' && (
               <div className="hidden lg:block w-80 bg-white rounded-2xl shadow-lg border border-gray-100 p-6 space-y-6 shrink-0 h-fit">
                 <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
 
@@ -1207,6 +1208,7 @@ export default function HomePage() {
                   Reset Filters
                 </button>
               </div>
+              )}
 
               {/* Main Content */}
               <div className="flex-1 min-w-0 w-full lg:w-auto">

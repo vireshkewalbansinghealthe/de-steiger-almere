@@ -497,9 +497,10 @@ export default function BedrijfsunitsPage() {
           </div>
           
           {/* Content Area with Sidebar */}
-          <div className="flex gap-6">
-              {/* Filter Sidebar - Always visible */}
-              <div className="w-80 bg-white rounded-lg shadow-sm border p-6 space-y-6 shrink-0">
+          <div className="flex flex-col lg:flex-row gap-6">
+              {/* Filter Sidebar */}
+              {viewMode !== 'map' && (
+              <div className="w-full lg:w-80 bg-white rounded-lg shadow-sm border p-6 space-y-6 shrink-0">
                 <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
 
                 {/* Status Filter */}
@@ -656,6 +657,7 @@ export default function BedrijfsunitsPage() {
                   Reset Filters
                 </button>
               </div>
+              )}
 
               {/* Main Content */}
               <div className="flex-1 min-w-0">
