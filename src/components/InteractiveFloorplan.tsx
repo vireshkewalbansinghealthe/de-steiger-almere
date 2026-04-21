@@ -18,6 +18,7 @@ interface Unit {
 
 interface UnitPolygon {
   unit_number: string;
+  type?: 'bedrijfsunit' | 'opslagbox';
   points: string; // SVG polygon points (in percentages, e.g., "10,10 20,10 20,20 10,20")
 }
 
@@ -26,10 +27,12 @@ const INITIAL_POLYGONS: UnitPolygon[] = [];
 
 export default function InteractiveFloorplan({ 
   onUnitClick,
-  highlightUnits = []
+  highlightUnits = [],
+  highlightType
 }: { 
   onUnitClick?: (unit: Unit) => void,
-  highlightUnits?: string[]
+  highlightUnits?: string[],
+  highlightType?: 'bedrijfsunit' | 'opslagbox'
 } = {}) {
   const transformComponentRef = useRef<ReactZoomPanPinchRef | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -42,6 +45,7 @@ export default function InteractiveFloorplan({
   const [isDevMode, setIsDevMode] = useState(false);
   const [currentPoints, setCurrentPoints] = useState<{x: number, y: number}[]>([]);
   const [editingUnitNumber, setEditingUnitNumber] = useState("1");
+  const [editingUnitType, setEditingUnitType] = useState<'bedrijfsunit' | 'opslagbox'>('bedrijfsunit');
 
   useEffect(() => {
     const fetchAllUnits = async () => {
@@ -100,15 +104,19 @@ export default function InteractiveFloorplan({
   useEffect(() => {
     if (highlightUnits.length > 0 && polygons.length > 0 && transformComponentRef.current) {
       const firstUnit = highlightUnits[0];
-      const hasPolygon = polygons.some(p => p.unit_number === firstUnit);
-      if (hasPolygon) {
+      const targetPolygon = polygons.find(p => 
+        p.unit_number === firstUnit && 
+        (highlightType ? (p.type || 'bedrijfsunit') === highlightType : true)
+      );
+      if (targetPolygon) {
+        const polyType = targetPolygon.type || 'bedrijfsunit';
         // Add a small delay to let the TransformComponent initialize and render SVG properly
         setTimeout(() => {
-          transformComponentRef.current?.zoomToElement(`unit-${firstUnit}`, 3, 800);
+          transformComponentRef.current?.zoomToElement(`unit-${polyType}-${firstUnit}`, 3, 800);
         }, 500);
       }
     }
-  }, [highlightUnits, polygons]);
+  }, [highlightUnits, highlightType, polygons]);
 
   const saveCurrentPolygon = () => {
     if (currentPoints.length < 3) {
@@ -118,7 +126,7 @@ export default function InteractiveFloorplan({
     const pointsStr = currentPoints.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
     
     // Add to our list
-    const newPolygons = [...polygons, { unit_number: editingUnitNumber, points: pointsStr }];
+    const newPolygons = [...polygons, { unit_number: editingUnitNumber, type: editingUnitType, points: pointsStr }];
     setPolygons(newPolygons);
     
     // Save to local storage so they aren't lost on refresh
@@ -151,7 +159,18 @@ export default function InteractiveFloorplan({
         {isDevMode && (
           <div className="flex items-center gap-4 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm">Unit Nr om te tekenen:</span>
+              <span className="text-sm">Type:</span>
+              <select 
+                value={editingUnitType}
+                onChange={(e) => setEditingUnitType(e.target.value as any)}
+                className="border p-2 rounded text-sm"
+              >
+                <option value="bedrijfsunit">Bedrijfsunit</option>
+                <option value="opslagbox">Opslagbox</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm">Unit Nr:</span>
               <input 
                 type="text" 
                 value={editingUnitNumber}
@@ -247,13 +266,14 @@ export default function InteractiveFloorplan({
                     >
                     {/* Drawn Polygons */}
                     {polygons.map((poly, idx) => {
-                      const unitData = units.find(u => u.unit_number === poly.unit_number);
+                      const polyType = poly.type || 'bedrijfsunit'; // Default for old drawn polygons
+                      const unitData = units.find(u => u.unit_number === poly.unit_number && u.type === polyType);
                       const status = unitData?.status || 'available'; // Default available if not in db yet for testing
                       
                       return (
                         <polygon
                           key={idx}
-                          id={`unit-${poly.unit_number}`}
+                          id={`unit-${polyType}-${poly.unit_number}`}
                           points={poly.points}
                           fill={getStatusColor(status)}
                           stroke={getStatusBorderColor(status)}

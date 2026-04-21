@@ -715,6 +715,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
                     <InteractiveFloorplan 
                       onUnitClick={(unit) => setSelectedUnit(unit.unit_number)}
+                      highlightType="bedrijfsunit"
                       highlightUnits={getFilteredAndSortedUnits().map(u => String(u.unitNumber))}
                     />
                   </div>
