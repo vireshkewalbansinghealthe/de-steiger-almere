@@ -42,6 +42,19 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+
+  // Automatically select unit if provided in URL (e.g. ?unit=11)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const unitParam = params.get('unit');
+      if (unitParam) {
+        setSelectedUnit(unitParam);
+        // We also need to set the selected property ID so the lock works
+        // This will be handled by the next useEffect that watches units and selectedUnit
+      }
+    }
+  }, []);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
@@ -128,6 +141,16 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
 
     fetchUnits();
   }, [resolvedParams.slug]);
+
+  // Synchronize selectedPropertyId when selectedUnit is set from URL
+  useEffect(() => {
+    if (selectedUnit && !selectedPropertyId && units.length > 0) {
+      const foundUnit = units.find(u => u.unit_number === selectedUnit);
+      if (foundUnit) {
+        setSelectedPropertyId(foundUnit.id);
+      }
+    }
+  }, [selectedUnit, units, selectedPropertyId]);
 
   // Create a "project" object from units for compatibility with existing UI
   console.log('🏗️ Creating project from', units.length, 'units');
