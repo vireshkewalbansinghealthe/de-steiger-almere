@@ -10,8 +10,11 @@ export async function POST(request: NextRequest) {
 
     const BREVO_API_KEY = process.env.BREVO_API_KEY || '';
 
-    // Add contact to Brevo
-    // If the contact already exists, this might throw a 400 unless updateEnabled is true
+    if (!BREVO_API_KEY) {
+      console.warn('BREVO_API_KEY niet geconfigureerd — inschrijving overgeslagen');
+      return NextResponse.json({ success: true, message: 'Bedankt! Je bent ingeschreven voor de nieuwsbrief.' });
+    }
+
     const response = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function NewsletterForm({ 
   locationName,
@@ -28,9 +29,7 @@ export default function NewsletterForm({
     try {
       const response = await fetch('/api/newsletter', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, locationName }),
       });
 
@@ -38,17 +37,29 @@ export default function NewsletterForm({
 
       if (response.ok) {
         setStatus('success');
-        setMessage('Bedankt voor je inschrijving!');
+        setMessage(data.message || 'Bedankt voor je inschrijving!');
         setEmail('');
       } else {
         setStatus('error');
         setMessage(data.error || 'Er is iets misgegaan. Probeer het later opnieuw.');
       }
-    } catch (error) {
+    } catch {
       setStatus('error');
-      setMessage('Er is een netwerkfout opgetreden.');
+      setMessage('Er is een verbindingsfout opgetreden. Probeer het later opnieuw.');
     }
   };
+
+  if (status === 'success') {
+    return (
+      <div className={successMessageClassName || "flex items-start gap-3 bg-green-500/20 border border-green-400/40 rounded-xl px-4 py-4 text-green-100 max-w-md mx-auto"}>
+        <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-green-300" />
+        <div>
+          <p className="font-semibold text-sm">Inschrijving gelukt!</p>
+          <p className="text-sm opacity-80">{message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto">
@@ -59,23 +70,28 @@ export default function NewsletterForm({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Je e-mailadres"
           required
-          disabled={status === 'loading' || status === 'success'}
-          className={inputClassName || "flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-300 focus:outline-none disabled:opacity-50"}
+          disabled={status === 'loading'}
+          className={inputClassName || "flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-yellow-400 focus:outline-none disabled:opacity-50"}
         />
         <button 
           type="submit" 
-          disabled={status === 'loading' || status === 'success'}
-          className={buttonClassName || "unity-btn-secondary disabled:opacity-50 whitespace-nowrap"}
+          disabled={status === 'loading'}
+          className={buttonClassName || "unity-btn-secondary disabled:opacity-60 whitespace-nowrap flex items-center gap-2"}
         >
-          {status === 'loading' ? 'Laden...' : 'Inschrijven'}
+          {status === 'loading' ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Laden...
+            </>
+          ) : 'Inschrijven'}
         </button>
       </div>
-      
-      {status === 'success' && (
-        <p className={successMessageClassName || "mt-3 text-green-200 text-sm"}>{message}</p>
-      )}
+
       {status === 'error' && (
-        <p className={errorMessageClassName || "mt-3 text-red-200 text-sm"}>{message}</p>
+        <div className={errorMessageClassName || "flex items-start gap-2 mt-3 bg-red-500/20 border border-red-400/30 rounded-lg px-3 py-2 text-red-200"}>
+          <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+          <p className="text-sm">{message}</p>
+        </div>
       )}
     </form>
   );
