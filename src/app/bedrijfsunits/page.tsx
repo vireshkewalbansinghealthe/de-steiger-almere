@@ -152,8 +152,8 @@ export default function BedrijfsunitsPage() {
         (statusFilter === 'gereserveerd' && unit.status === 'reserved') ||
         (statusFilter === 'verkocht' && unit.status === 'sold');
 
-      // Type filter
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(unit.name);
+      // Type filter — always include all types in grid (grey-out handled in render)
+      const matchesType = true;
 
       // Area range filter
       const area = unit.net_area || unit.gross_area || 0;
@@ -697,7 +697,7 @@ export default function BedrijfsunitsPage() {
                 </div>
 
                 <div className="mb-4 text-sm text-gray-600">
-                  {filteredProjects.length} van {businessUnits.length} bedrijfsunit types gevonden
+                  {selectedTypes.length > 0 ? selectedTypes.length : filteredProjects.length} van {businessUnits.length} bedrijfsunit types geselecteerd
           </div>
 
                 {/* Loading State */}
@@ -722,8 +722,10 @@ export default function BedrijfsunitsPage() {
                 {/* Units Grid/Table */}
                 {viewMode === 'grid' ? (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredProjects.map((unit) => (
-                          <div key={unit.id} className="relative">
+                        {filteredProjects.map((unit) => {
+                          const isGreyedOut = selectedTypes.length > 0 && !selectedTypes.includes(unit.name);
+                          return (
+                          <div key={unit.id} className={`relative transition-all duration-300 ${isGreyedOut ? 'opacity-30 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
                             {/* Unit Card - Clickable Link to TYPE detail page */}
                             <Link 
                               href={`/bedrijfsunit/bedrijfsunit-type-${unit.type_number}`}
@@ -770,7 +772,8 @@ export default function BedrijfsunitsPage() {
                               </div>
                             </Link>
                       </div>
-                    ))}
+                          );
+                        })}
                   </div>
                 ) : viewMode === 'map' ? (
                   <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
