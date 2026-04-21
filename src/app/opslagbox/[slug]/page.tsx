@@ -419,7 +419,9 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
 
   const getUnitDetails = (unitNumber: string) => {
     // Find the real unit data from project details
-    const unitData = project.details?.unitDetails?.find(unit => unit.unitNumber.toString() === unitNumber);
+    const unitData = project.details?.unitDetails?.find(unit =>
+      unit.unitNumber === parseInt(unitNumber) || unit.unitNumber.toString() === unitNumber
+    );
     
     if (!unitData) {
       return null;
