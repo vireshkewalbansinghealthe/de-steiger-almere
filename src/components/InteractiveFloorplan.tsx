@@ -174,6 +174,35 @@ export default function InteractiveFloorplan({
           />
           Admin / Teken Modus Activeren
         </label>
+
+        <button
+          onClick={async () => {
+            const saved = localStorage.getItem('drawnPolygons');
+            if (!saved) {
+              alert('Geen polygons gevonden in localStorage.');
+              return;
+            }
+            try {
+              const localPolygons = JSON.parse(saved);
+              const res = await fetch('/api/polygons', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ polygons: localPolygons }),
+              });
+              if (res.ok) {
+                setPolygons(localPolygons);
+                alert(`✅ ${localPolygons.length} polygons gemigreerd naar de database!`);
+              } else {
+                alert('❌ Fout bij migreren naar database.');
+              }
+            } catch (e) {
+              alert('❌ Fout: ' + e);
+            }
+          }}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-semibold"
+        >
+          📦 Migreer naar DB
+        </button>
         
         {isDevMode && (
           <div className="flex items-center gap-4 flex-1">
