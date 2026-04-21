@@ -8,7 +8,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'E-mailadres is verplicht' }, { status: 400 });
     }
 
-    // API Key from environment or hardcoded fallback as provided by user
     const BREVO_API_KEY = process.env.BREVO_API_KEY || '';
 
     // Add contact to Brevo
