@@ -1,6 +1,20 @@
 import { useState } from 'react';
 
-export default function NewsletterForm({ locationName }: { locationName?: string }) {
+export default function NewsletterForm({ 
+  locationName,
+  containerClassName,
+  inputClassName,
+  buttonClassName,
+  successMessageClassName,
+  errorMessageClassName
+}: { 
+  locationName?: string;
+  containerClassName?: string;
+  inputClassName?: string;
+  buttonClassName?: string;
+  successMessageClassName?: string;
+  errorMessageClassName?: string;
+}) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -38,7 +52,7 @@ export default function NewsletterForm({ locationName }: { locationName?: string
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto">
-      <div className="flex gap-2">
+      <div className={containerClassName || "flex gap-2"}>
         <input
           type="email"
           value={email}
@@ -46,22 +60,22 @@ export default function NewsletterForm({ locationName }: { locationName?: string
           placeholder="Je e-mailadres"
           required
           disabled={status === 'loading' || status === 'success'}
-          className="flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-300 focus:outline-none disabled:opacity-50"
+          className={inputClassName || "flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-300 focus:outline-none disabled:opacity-50"}
         />
         <button 
           type="submit" 
           disabled={status === 'loading' || status === 'success'}
-          className="unity-btn-secondary disabled:opacity-50 whitespace-nowrap"
+          className={buttonClassName || "unity-btn-secondary disabled:opacity-50 whitespace-nowrap"}
         >
           {status === 'loading' ? 'Laden...' : 'Inschrijven'}
         </button>
       </div>
       
       {status === 'success' && (
-        <p className="mt-3 text-green-200 text-sm">{message}</p>
+        <p className={successMessageClassName || "mt-3 text-green-200 text-sm"}>{message}</p>
       )}
       {status === 'error' && (
-        <p className="mt-3 text-red-200 text-sm">{message}</p>
+        <p className={errorMessageClassName || "mt-3 text-red-200 text-sm"}>{message}</p>
       )}
     </form>
   );
