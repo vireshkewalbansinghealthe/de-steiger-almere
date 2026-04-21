@@ -69,7 +69,7 @@ const matchesSearchTerm = (unit: Unit, searchTerm: string): boolean => {
 };
 
 export default function BedrijfsunitsPage() {
-  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('map');
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location' | 'unit_number'>('unit_number');
@@ -688,6 +688,13 @@ export default function BedrijfsunitsPage() {
         </div>
 
                   <button
+                    onClick={() => setViewMode('map')}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors"
+                  >
+                    <Map className="w-4 h-4" />
+                    Bekijk virtuele map
+                  </button>
+                  <button
                     onClick={handleShare}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
@@ -790,220 +797,59 @@ export default function BedrijfsunitsPage() {
       </section>
 
       {/* Why Invest Section */}
-      <section id="investeren" className="py-20 bg-slate-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Waarom Investeren in Bedrijfsunits?
-            </h2>
-            <p className="text-xl text-slate-100 max-w-3xl mx-auto">
-              Stabiel rendement, groeiende vraag, professioneel beheer
+      {/* Compact Contact Card */}
+      <section id="investeren" className="py-16 bg-gray-50">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-slate-900 rounded-2xl p-8 text-white shadow-2xl">
+            <h2 className="text-2xl font-bold mb-2">Interesse in een unit?</h2>
+            <p className="text-slate-300 mb-6">
+              Maak een afspraak voor een bezichtiging of ontvang meer informatie over beschikbare units.
             </p>
-          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-white/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Users className="h-8 w-8" />
+            {submitStatus === 'success' && (
+              <div className="mb-5 p-4 bg-green-500/20 border border-green-400/30 rounded-xl text-green-200 text-sm">
+                ✓ {submitMessage}
               </div>
-              <h3 className="text-xl font-bold mb-4">Groeiende Vraag</h3>
-              <p className="text-slate-100">
-                Steeds meer ondernemers zoeken flexibele werkruimte. De vraag naar bedrijfsunits groeit jaar op jaar.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="bg-white/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8" />
+            )}
+            {submitStatus === 'error' && (
+              <div className="mb-5 p-4 bg-red-500/20 border border-red-400/30 rounded-xl text-red-200 text-sm">
+                {submitMessage}
               </div>
-              <h3 className="text-xl font-bold mb-4">Stabiel Rendement</h3>
-              <p className="text-slate-100">
-                Verwacht rendement van 6,5% - 8,2% per jaar. Minimaal onderhoudsrisico door professioneel beheer.
-              </p>
-            </div>
+            )}
 
-            <div className="text-center">
-              <div className="bg-white/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Zap className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-4">Duurzaam & Modern</h3>
-              <p className="text-slate-100">
-                Energielabel A+, optionele zonnepanelen en laadpalen, slimme systemen. Klaar voor de toekomst en aantrekkelijk voor kopers en gebruikers.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="bg-white/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <MapPin className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-4">Toplocaties</h3>
-              <p className="text-slate-100">
-                Strategisch gelegen nabij Amsterdam, Rotterdam en andere economische centra met uitstekende bereikbaarheid.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="bg-white/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Building2 className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-4">Volledig Beheer</h3>
-              <p className="text-slate-100">
-                 De Steiger zorgt voor verkoop, onderhoud en administratie. Passief investeren zonder zorgen.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="bg-white/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <ArrowRight className="h-8 w-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-4">Easy Exit</h3>
-              <p className="text-slate-100">
-                Liquide investering met goede doorverkoopbaarheid. Flexibel in- en uitstappen mogelijk.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center mt-12">
-            <a
-              href="#contact"
-              className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-slate-50 transition-colors duration-200"
-            >
-              Start je investering
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Interesse in Bedrijfsunits?
-            </h2>
-            <p className="text-xl text-gray-600">
-              Neem contact met ons op voor een persoonlijk adviesgesprek
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Contact informatie</h3>
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <Phone className="h-5 w-5 mr-3 text-slate-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">Telefoon</div>
-                    <div className="text-gray-600">0578-769056</div>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Mail className="h-5 w-5 mr-3 text-slate-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">E-mail</div>
-                    <div className="text-gray-600">info@desteigeralmere.nl</div>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="h-5 w-5 mr-3 text-slate-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">Kantooruren</div>
-                    <div className="text-gray-600">Ma-vr: 09:00 - 17:00</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-lg p-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Vraag informatie aan</h3>
-              
-              {/* Success/Error Messages */}
-              {submitStatus === 'success' && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 text-sm">{submitMessage}</p>
-                </div>
-              )}
-              
-              {submitStatus === 'error' && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-800 text-sm">{submitMessage}</p>
-                </div>
-              )}
-              
-              <form onSubmit={handleFormSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Naam *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleFormChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    placeholder="Je volledige naam"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    E-mail *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleFormChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    placeholder="je@email.nl"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Interesse in
-                  </label>
-                  <select 
-                    name="interest"
-                    value={formData.interest}
-                    onChange={handleFormChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                  >
-                    <option>Kopen voor eigen gebruik</option>
-                    <option>Investeren</option>
-                    <option>Algemene informatie</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bericht
-                  </label>
-                  <textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleFormChange}
-                    rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    placeholder="Vertel ons meer over je interesse..."
-                  />
-                </div>
-                
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-slate-800 text-white py-4 px-8 rounded-lg font-semibold text-lg hover:bg-slate-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Verzenden...
-                    </>
-                  ) : (
-                    'Verstuur aanvraag'
-                  )}
-                </button>
-              </form>
-            </div>
+            <form onSubmit={handleFormSubmit} className="space-y-3">
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleFormChange}
+                required
+                placeholder="Uw naam"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
+              />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleFormChange}
+                required
+                placeholder="uw@email.nl"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-900 font-bold py-3 px-6 rounded-xl transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-900"></div>
+                    Verzenden...
+                  </>
+                ) : 'Plan Bezichtiging'}
+              </button>
+            </form>
+            <p className="text-slate-500 text-xs mt-4 text-center">We nemen binnen 24 uur contact met u op.</p>
           </div>
         </div>
       </section>
