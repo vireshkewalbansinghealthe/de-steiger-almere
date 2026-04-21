@@ -8,6 +8,7 @@ import ProjectCard from '@/components/ProjectCard';
 import ProjectModal from '@/components/ProjectModal';
 import { MapPin, ArrowLeft, Building } from 'lucide-react';
 import Link from 'next/link';
+import NewsletterForm from '@/components/NewsletterForm';
 
 interface PageProps {
   params: Promise<{
@@ -114,16 +115,7 @@ export default function LocationPage({ params }: PageProps) {
             Schrijf je in voor onze nieuwsbrief en blijf op de hoogte van nieuwe ontwikkelingen!
           </p>
           
-          <div className="max-w-md mx-auto flex gap-2">
-            <input
-              type="email"
-              placeholder="Je e-mailadres"
-              className="flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-            />
-            <button className="unity-btn-secondary">
-              Inschrijven
-            </button>
-          </div>
+          <NewsletterForm locationName={location.name} />
         </div>
       </div>
 
