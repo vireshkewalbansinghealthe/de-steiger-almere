@@ -22,7 +22,7 @@ interface UnitPolygon {
   points: string; // SVG polygon points (in percentages, e.g., "10,10 20,10 20,20 10,20")
 }
 
-// Hier komen de getekende polygons in
+// Polygons worden geladen vanuit de database
 const INITIAL_POLYGONS: UnitPolygon[] = [];
 
 export default function InteractiveFloorplan({ 
@@ -88,16 +88,32 @@ export default function InteractiveFloorplan({
     setCurrentPoints([...currentPoints, { x, y }]);
   };
 
-  // Load from local storage on mount
+  // Load polygons from database on mount (with localStorage fallback)
   useEffect(() => {
-    const saved = localStorage.getItem('drawnPolygons');
-    if (saved) {
+    const fetchPolygons = async () => {
       try {
-        setPolygons(JSON.parse(saved));
+        const res = await fetch('/api/polygons');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setPolygons(data);
+            return;
+          }
+        }
       } catch (e) {
-        console.error('Failed to parse saved polygons', e);
+        console.error('Failed to fetch polygons from DB', e);
       }
-    }
+      // Fallback: localStorage (voor migratie van oude data)
+      const saved = localStorage.getItem('drawnPolygons');
+      if (saved) {
+        try {
+          setPolygons(JSON.parse(saved));
+        } catch (e) {
+          console.error('Failed to parse saved polygons from localStorage', e);
+        }
+      }
+    };
+    fetchPolygons();
   }, []);
 
   // Zoom to highlighted units when polygons are loaded
@@ -118,24 +134,27 @@ export default function InteractiveFloorplan({
     }
   }, [highlightUnits, highlightType, polygons]);
 
-  const saveCurrentPolygon = () => {
+  const saveCurrentPolygon = async () => {
     if (currentPoints.length < 3) {
       alert("Een polygon heeft minimaal 3 punten nodig!");
       return;
     }
     const pointsStr = currentPoints.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
-    
-    // Add to our list
-    const newPolygons = [...polygons, { unit_number: editingUnitNumber, type: editingUnitType, points: pointsStr }];
+    const newPolygon = { unit_number: editingUnitNumber, type: editingUnitType, points: pointsStr };
+    const newPolygons = [...polygons, newPolygon];
     setPolygons(newPolygons);
-    
-    // Save to local storage so they aren't lost on refresh
-    localStorage.setItem('drawnPolygons', JSON.stringify(newPolygons));
-    
-    // Log to console so developer can copy-paste to source code!
-    console.log("NIEUWE POLYGONS LIJST VOOR IN DE CODE:");
-    console.log(JSON.stringify(newPolygons, null, 2));
-    
+
+    // Save to database
+    try {
+      await fetch('/api/polygons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ polygons: newPolygons }),
+      });
+    } catch (e) {
+      console.error('Failed to save polygons to DB', e);
+    }
+
     setCurrentPoints([]);
     setEditingUnitNumber(String(parseInt(editingUnitNumber) + 1));
   };
@@ -191,10 +210,15 @@ export default function InteractiveFloorplan({
               Wissen
             </button>
             <button 
-              onClick={() => {
+              onClick={async () => {
                 if (confirm('Weet je zeker dat je alles wilt wissen?')) {
                   setPolygons([]);
                   localStorage.removeItem('drawnPolygons');
+                  await fetch('/api/polygons', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ polygons: [] }),
+                  });
                 }
               }}
               className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm"
@@ -202,7 +226,7 @@ export default function InteractiveFloorplan({
               Reset Alles
             </button>
             <div className="text-xs text-slate-500 ml-auto max-w-xs">
-              Klik op de hoeken van de unit op de kaart. Klik dan op opslaan. Open je browser console (F12) om de code te kopiëren als je klaar bent!
+              Klik op de hoeken van de unit op de kaart. Klik dan op opslaan. Polygons worden automatisch opgeslagen in de database.
             </div>
           </div>
         )}
