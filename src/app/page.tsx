@@ -6,6 +6,7 @@ import ProjectCard from '../components/ProjectCard';
 import ProjectModal from '../components/ProjectModal';
 import VideoModal from '../components/VideoModal';
 import NewsletterForm from '../components/NewsletterForm';
+import BezichtigingForm from '../components/BezichtigingForm';
 import { Project } from '../types';
 import { Filter, Search, ArrowDown, Play, Grid, List, Share2, Link as LinkIcon, Copy, Facebook, Twitter, X } from 'lucide-react';
 
@@ -1347,21 +1348,7 @@ export default function HomePage() {
                 <p className="text-slate-200 mb-5 leading-relaxed text-sm">
                   Maak een afspraak voor een bezichtiging of ontvang meer informatie over beschikbare units.
                 </p>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Uw naam"
-                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-slate-300 transition-all duration-300 text-sm"
-                  />
-                  <input
-                    type="email"
-                    placeholder="uw@email.nl"
-                    className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-slate-300 transition-all duration-300 text-sm"
-                  />
-                  <button className="w-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-200 text-slate-900 px-6 py-3 rounded-xl font-semibold hover:from-yellow-300 hover:to-yellow-100 transform hover:scale-105 transition-all duration-300 shadow-lg text-sm">
-                    Plan Bezichtiging
-                  </button>
-                </div>
+                <BezichtigingForm />
                 <p className="text-slate-400 text-xs mt-3">
                   We nemen binnen 24 uur contact met u op.
                 </p>
