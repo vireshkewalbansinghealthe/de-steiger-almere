@@ -47,6 +47,19 @@ export default function InteractiveFloorplan({
   const [editingUnitNumber, setEditingUnitNumber] = useState("1");
   const [editingUnitType, setEditingUnitType] = useState<'bedrijfsunit' | 'opslagbox'>('bedrijfsunit');
 
+  // Floorplan image switcher
+  const [activeFloorplan, setActiveFloorplan] = useState<'bedrijfsunits' | 'opslagboxen'>('bedrijfsunits');
+  const [viewTypeFilter, setViewTypeFilter] = useState<'all' | 'bedrijfsunit' | 'opslagbox'>('all');
+
+  const [customOpslagboxImage, setCustomOpslagboxImage] = useState<string>(
+    '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png'
+  );
+
+  const FLOORPLAN_IMAGES: Record<string, string> = {
+    bedrijfsunits: '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png',
+    opslagboxen: customOpslagboxImage,
+  };
+
   useEffect(() => {
     const fetchAllUnits = async () => {
       try {
@@ -163,6 +176,28 @@ export default function InteractiveFloorplan({
 
   return (
     <div className="w-full relative">
+      {/* Floorplan Type Tabs */}
+      <div className="mb-3 flex gap-2">
+        <button
+          onClick={() => { setActiveFloorplan('bedrijfsunits'); setViewTypeFilter('bedrijfsunit'); setEditingUnitType('bedrijfsunit'); }}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${activeFloorplan === 'bedrijfsunits' ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+        >
+          🏭 Bedrijfsunits
+        </button>
+        <button
+          onClick={() => { setActiveFloorplan('opslagboxen'); setViewTypeFilter('opslagbox'); setEditingUnitType('opslagbox'); }}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${activeFloorplan === 'opslagboxen' ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+        >
+          📦 Opslagboxen
+        </button>
+        <button
+          onClick={() => { setViewTypeFilter('all'); }}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${viewTypeFilter === 'all' ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+        >
+          Alles
+        </button>
+      </div>
+
       {/* Dev Mode Tools */}
       <div className="mb-4 flex gap-4 items-center bg-slate-100 p-4 rounded-xl border border-slate-200">
         <label className="flex items-center gap-2 font-bold text-slate-800 cursor-pointer">
@@ -254,6 +289,18 @@ export default function InteractiveFloorplan({
             >
               Reset Alles
             </button>
+            {activeFloorplan === 'opslagboxen' && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm whitespace-nowrap">Afbeelding pad:</span>
+                <input
+                  type="text"
+                  value={customOpslagboxImage}
+                  onChange={(e) => setCustomOpslagboxImage(e.target.value)}
+                  className="border p-1 rounded text-xs w-72"
+                  placeholder="/images/floorplans/..."
+                />
+              </div>
+            )}
             <div className="text-xs text-slate-500 ml-auto max-w-xs">
               Klik op de hoeken van de unit op de kaart. Klik dan op opslaan. Polygons worden automatisch opgeslagen in de database.
             </div>
@@ -303,7 +350,7 @@ export default function InteractiveFloorplan({
                   <div className="relative w-full max-w-none">
                     {/* Background Image */}
                     <img 
-                      src="/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png" 
+                      src={FLOORPLAN_IMAGES[activeFloorplan]}
                       alt="Plattegrond De Steiger" 
                       className="w-full h-auto object-contain"
                       draggable="false"
@@ -318,7 +365,7 @@ export default function InteractiveFloorplan({
                       style={{ zIndex: 5 }}
                     >
                     {/* Drawn Polygons */}
-                    {polygons.map((poly, idx) => {
+                    {polygons.filter(poly => viewTypeFilter === 'all' || (poly.type || 'bedrijfsunit') === viewTypeFilter).map((poly, idx) => {
                       const polyType = poly.type || 'bedrijfsunit'; // Default for old drawn polygons
                       const unitData = units.find(u => u.unit_number === poly.unit_number && u.type === polyType);
                       const status = unitData?.status || 'available'; // Default available if not in db yet for testing
