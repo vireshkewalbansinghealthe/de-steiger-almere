@@ -715,8 +715,16 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                 </div>
                 {viewMode === 'map' ? (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-                    <InteractiveFloorplan 
-                      onUnitClick={(unit) => setSelectedUnit(unit.unit_number)}
+                    <InteractiveFloorplan
+                      onUnitClick={(unit) => {
+                        const currentTypeNumber = units[0]?.type_number;
+                        if (unit.type_number && currentTypeNumber && unit.type_number !== currentTypeNumber) {
+                          // Unit belongs to a different type — navigate there
+                          window.location.href = `/${unit.type}/${unit.type}-type-${unit.type_number}?unit=${unit.unit_number}`;
+                        } else {
+                          setSelectedUnit(unit.unit_number);
+                        }
+                      }}
                       highlightType="bedrijfsunit"
                       highlightUnits={getFilteredAndSortedUnits().map(u => String(u.unitNumber))}
                     />
