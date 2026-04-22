@@ -81,7 +81,7 @@ export default function OpslagboxenPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('map');
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [sortBy, setSortBy] = useState<'type_number'>('type_number');
   const [showShareModal, setShowShareModal] = useState(false);
@@ -651,13 +651,32 @@ export default function OpslagboxenPage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleShare}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Delen
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setViewMode(viewMode === 'map' ? 'grid' : 'map')}
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors"
+                    >
+                      {viewMode === 'map' ? (
+                        <>
+                          <Grid className="w-4 h-4" />
+                          Bekijk Types
+                        </>
+                      ) : (
+                        <>
+                          <Map className="w-4 h-4" />
+                          Bekijk plattegrond
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleShare}
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Delen
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mb-4 text-sm text-gray-600">
