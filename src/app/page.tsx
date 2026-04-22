@@ -499,7 +499,16 @@ export default function HomePage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredProjects.map((project) => (
+            {filteredProjects.map((project) => {
+              const typeMatch = project.slug.match(/type-(\d+)/);
+              const typeNum = typeMatch ? parseInt(typeMatch[1]) : 0;
+              const avail = typeAvailability[typeNum];
+              const livePrice = avail?.minPrice
+                ? `€ ${avail.minPrice.toLocaleString('nl-NL')}`
+                : project.startPrice || 'Op aanvraag';
+              const liveArea = avail?.minGrossArea ? `${avail.minGrossArea} m²` : null;
+              const liveUnits = avail ? avail.available : (project.units || project.garageBoxes || 0);
+              return (
               <tr 
                 key={project.id} 
                 className="hover:bg-gray-50 cursor-pointer transition-colors"
@@ -518,9 +527,11 @@ export default function HomePage() {
                       <div className="text-sm font-medium text-gray-900">
                         {project.name}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {project.description.substring(0, 50)}...
-                      </div>
+                      {liveArea && (
+                        <div className="text-sm text-gray-500">
+                          Vanaf {liveArea} bruto
+                        </div>
+                      )}
                     </div>
                   </div>
                 </td>
@@ -528,10 +539,10 @@ export default function HomePage() {
                   {project.location}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.units || project.garageBoxes || 0}
+                  {liveUnits} beschikbaar
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.startPrice || 'Op aanvraag'}
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-yellow-600">
+                  {livePrice}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -556,7 +567,8 @@ export default function HomePage() {
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
