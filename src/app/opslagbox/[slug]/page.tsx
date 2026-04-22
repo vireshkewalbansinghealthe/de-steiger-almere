@@ -690,7 +690,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                       onUnitClick={(unit) => {
                         const currentTypeNumber = units[0]?.type_number;
                         if (unit.type_number && currentTypeNumber && unit.type_number !== currentTypeNumber) {
-                          window.location.href = `/${unit.type}/${unit.type}-type-${unit.type_number}?unit=${unit.unit_number}`;
+                          window.location.href = `/${unit.type}/${unit.type}-type-${unit.type_number}?unit=${unit.unit_number}#plattegrond`;
                         } else {
                           setSelectedUnit(unit.unit_number);
                         }
