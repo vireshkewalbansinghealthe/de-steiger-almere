@@ -98,11 +98,11 @@ function ReservationContent() {
           checkAvailability(unitNumber);
         }
       } else {
-        // No unit pre-selected — if user is logged in, advance to step 1 (user details)
+        // No unit pre-selected — if user is logged in, advance to step 2 (user details)
         // otherwise checkUser already set step to 1.5 (auth)
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser) {
-          setCurrentStep(1);
+          setCurrentStep(2);
         }
       }
     };
