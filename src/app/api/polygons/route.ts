@@ -9,7 +9,7 @@ const supabase = createClient(
 export async function GET() {
   const { data, error } = await supabase
     .from('polygons')
-    .select('unit_number, type, points')
+    .select('unit_number, type, points, floor')
     .order('unit_number');
 
   if (error) {
@@ -21,18 +21,23 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { polygons } = body as { polygons: { unit_number: string; type: string; points: string }[] };
+  const { polygons } = body as { polygons: { unit_number: string; type: string; points: string; floor?: string }[] };
 
   if (!Array.isArray(polygons)) {
     return NextResponse.json({ error: 'polygons array required' }, { status: 400 });
   }
 
-  // Upsert all polygons (insert or update based on unit_number + type)
+  // Upsert all polygons (insert or update based on unit_number + type + floor)
   const { error } = await supabase
     .from('polygons')
     .upsert(
-      polygons.map(p => ({ unit_number: p.unit_number, type: p.type || 'bedrijfsunit', points: p.points })),
-      { onConflict: 'unit_number,type' }
+      polygons.map(p => ({
+        unit_number: p.unit_number,
+        type: p.type || 'bedrijfsunit',
+        points: p.points,
+        floor: p.floor || 'main',
+      })),
+      { onConflict: 'unit_number,type,floor' }
     );
 
   if (error) {

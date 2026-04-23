@@ -20,6 +20,7 @@ interface UnitPolygon {
   unit_number: string;
   type?: 'bedrijfsunit' | 'opslagbox';
   points: string; // SVG polygon points (in percentages, e.g., "10,10 20,10 20,20 10,20")
+  floor?: string; // 'main' | 'bg' | '1e' | '2e'
 }
 
 // Polygons worden geladen vanuit de database
@@ -50,15 +51,17 @@ export default function InteractiveFloorplan({
   // Floorplan image switcher
   const [activeFloorplan, setActiveFloorplan] = useState<'bedrijfsunits' | 'opslagboxen'>('bedrijfsunits');
   const [viewTypeFilter, setViewTypeFilter] = useState<'all' | 'bedrijfsunit' | 'opslagbox'>('all');
+  const [opslagboxFloor, setOpslagboxFloor] = useState<'bg' | '1e' | '2e'>('bg');
 
-  const [customOpslagboxImage, setCustomOpslagboxImage] = useState<string>(
-    '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png'
-  );
+  const OPSLAGBOX_FLOORS = [
+    { id: 'bg' as const, label: 'Begane Grond', image: '/images/floorplans/opslagbox0.png' },
+    { id: '1e' as const, label: '1e Verdieping', image: '/images/floorplans/opslagbox1.png' },
+    { id: '2e' as const, label: '2e Verdieping', image: '/images/floorplans/opslagbox2.png' },
+  ];
 
-  const FLOORPLAN_IMAGES: Record<string, string> = {
-    bedrijfsunits: '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png',
-    opslagboxen: customOpslagboxImage,
-  };
+  const currentImage = activeFloorplan === 'bedrijfsunits'
+    ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png'
+    : OPSLAGBOX_FLOORS.find(f => f.id === opslagboxFloor)?.image || OPSLAGBOX_FLOORS[0].image;
 
   useEffect(() => {
     const fetchAllUnits = async () => {
@@ -153,7 +156,8 @@ export default function InteractiveFloorplan({
       return;
     }
     const pointsStr = currentPoints.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
-    const newPolygon = { unit_number: editingUnitNumber, type: editingUnitType, points: pointsStr };
+    const floor = editingUnitType === 'opslagbox' ? opslagboxFloor : 'main';
+    const newPolygon = { unit_number: editingUnitNumber, type: editingUnitType, points: pointsStr, floor };
     const newPolygons = [...polygons, newPolygon];
     setPolygons(newPolygons);
 
@@ -197,6 +201,21 @@ export default function InteractiveFloorplan({
           Alles
         </button>
       </div>
+
+      {/* Opslagboxen floor sub-tabs */}
+      {activeFloorplan === 'opslagboxen' && (
+        <div className="mb-3 flex gap-2">
+          {OPSLAGBOX_FLOORS.map(floor => (
+            <button
+              key={floor.id}
+              onClick={() => setOpslagboxFloor(floor.id)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${opslagboxFloor === floor.id ? 'bg-gray-700 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+            >
+              {floor.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Dev Mode Tools — hidden from public, uncomment to enable
       <div className="mb-4 flex gap-4 items-center bg-slate-100 p-4 rounded-xl border border-slate-200">
@@ -351,7 +370,7 @@ export default function InteractiveFloorplan({
                   <div className="relative w-full max-w-none">
                     {/* Background Image */}
                     <img 
-                      src={FLOORPLAN_IMAGES[activeFloorplan]}
+                      src={currentImage}
                       alt="Plattegrond De Steiger" 
                       className="w-full h-auto object-contain"
                       draggable="false"
@@ -366,7 +385,15 @@ export default function InteractiveFloorplan({
                       style={{ zIndex: 5 }}
                     >
                     {/* Drawn Polygons */}
-                    {polygons.filter(poly => viewTypeFilter === 'all' || (poly.type || 'bedrijfsunit') === viewTypeFilter).map((poly, idx) => {
+                    {polygons.filter(poly => {
+                      const typeMatch = viewTypeFilter === 'all' || (poly.type || 'bedrijfsunit') === viewTypeFilter;
+                      if (!typeMatch) return false;
+                      // For opslagboxen, only show polygons matching the current floor
+                      if (activeFloorplan === 'opslagboxen' && poly.type === 'opslagbox') {
+                        return (poly.floor || 'bg') === opslagboxFloor;
+                      }
+                      return true;
+                    }).map((poly, idx) => {
                       const polyType = poly.type || 'bedrijfsunit'; // Default for old drawn polygons
                       const unitData = units.find(u => u.unit_number === poly.unit_number && u.type === polyType);
                       const status = unitData?.status || 'available'; // Default available if not in db yet for testing
