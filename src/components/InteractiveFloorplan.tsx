@@ -329,12 +329,13 @@ export default function InteractiveFloorplan({
       */}
 
       <div 
-        className="relative w-full h-[60vh] min-h-[500px] border border-gray-200 rounded-xl overflow-hidden bg-white shadow-lg bg-gray-50"
+        className={`relative w-full border border-gray-200 rounded-xl overflow-hidden bg-white shadow-lg bg-gray-50 ${activeFloorplan === 'opslagboxen' ? 'h-[85vh] min-h-[600px]' : 'h-[60vh] min-h-[500px]'}`}
       >
         <TransformWrapper
+          key={`${activeFloorplan}-${opslagboxFloor}`}
           ref={transformComponentRef}
-          initialScale={1}
-          minScale={0.5}
+          initialScale={activeFloorplan === 'opslagboxen' ? 0.55 : 1}
+          minScale={0.15}
           maxScale={8}
           centerZoomedOut={true}
           wheel={{ step: 0.1 }}
