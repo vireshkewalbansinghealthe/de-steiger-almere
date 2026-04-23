@@ -388,11 +388,11 @@ export default function InteractiveFloorplan({
                     >
                     {/* Drawn Polygons */}
                     {polygons.filter(poly => {
-                      const typeMatch = viewTypeFilter === 'all' || (poly.type || 'bedrijfsunit') === viewTypeFilter;
-                      if (!typeMatch) return false;
-                      // For opslagboxen, only show polygons matching the current floor
-                      if (activeFloorplan === 'opslagboxen' && poly.type === 'opslagbox') {
-                        return (poly.floor || 'bg') === opslagboxFloor;
+                      const polyType = poly.type || 'bedrijfsunit';
+                      // Always match the active floorplan tab
+                      if (activeFloorplan === 'bedrijfsunits') return polyType === 'bedrijfsunit';
+                      if (activeFloorplan === 'opslagboxen') {
+                        return polyType === 'opslagbox' && (poly.floor || 'bg') === opslagboxFloor;
                       }
                       return true;
                     }).map((poly, idx) => {
