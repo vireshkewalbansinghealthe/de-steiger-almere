@@ -338,7 +338,7 @@ export default function InteractiveFloorplan({
         <TransformWrapper
           key={`${activeFloorplan}-${opslagboxFloor}`}
           ref={transformComponentRef}
-          initialScale={activeFloorplan === 'opslagboxen' ? 0.55 : 1}
+          initialScale={activeFloorplan === 'opslagboxen' ? 0.42 : 1}
           minScale={0.15}
           maxScale={8}
           centerZoomedOut={true}
