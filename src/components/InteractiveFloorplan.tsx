@@ -338,9 +338,10 @@ export default function InteractiveFloorplan({
         <TransformWrapper
           key={`${activeFloorplan}-${opslagboxFloor}`}
           ref={transformComponentRef}
-          initialScale={activeFloorplan === 'opslagboxen' ? 0.42 : 1}
-          minScale={0.15}
+          initialScale={activeFloorplan === 'opslagboxen' ? 0.35 : 1}
+          minScale={0.1}
           maxScale={8}
+          centerOnInit={true}
           centerZoomedOut={true}
           wheel={{ step: 0.1 }}
           doubleClick={{ disabled: isDevMode }} // Disable double click zoom while drawing
