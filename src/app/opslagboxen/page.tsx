@@ -686,7 +686,7 @@ export default function OpslagboxenPage() {
                 {/* Opslagboxen Grid/Table */}
                 {viewMode === 'map' ? (
                   <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                    <InteractiveFloorplan />
+                    <InteractiveFloorplan defaultFloorplan="opslagboxen" />
                   </div>
                 ) : viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">

@@ -29,11 +29,13 @@ const INITIAL_POLYGONS: UnitPolygon[] = [];
 export default function InteractiveFloorplan({ 
   onUnitClick,
   highlightUnits = [],
-  highlightType
+  highlightType,
+  defaultFloorplan = 'bedrijfsunits',
 }: { 
   onUnitClick?: (unit: Unit) => void,
   highlightUnits?: string[],
-  highlightType?: 'bedrijfsunit' | 'opslagbox'
+  highlightType?: 'bedrijfsunit' | 'opslagbox',
+  defaultFloorplan?: 'bedrijfsunits' | 'opslagboxen',
 } = {}) {
   const transformComponentRef = useRef<ReactZoomPanPinchRef | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -49,8 +51,10 @@ export default function InteractiveFloorplan({
   const [editingUnitType, setEditingUnitType] = useState<'bedrijfsunit' | 'opslagbox'>('bedrijfsunit');
 
   // Floorplan image switcher
-  const [activeFloorplan, setActiveFloorplan] = useState<'bedrijfsunits' | 'opslagboxen'>('bedrijfsunits');
-  const [viewTypeFilter, setViewTypeFilter] = useState<'all' | 'bedrijfsunit' | 'opslagbox'>('all');
+  const [activeFloorplan, setActiveFloorplan] = useState<'bedrijfsunits' | 'opslagboxen'>(defaultFloorplan);
+  const [viewTypeFilter, setViewTypeFilter] = useState<'all' | 'bedrijfsunit' | 'opslagbox'>(
+    defaultFloorplan === 'opslagboxen' ? 'opslagbox' : 'all'
+  );
   const [opslagboxFloor, setOpslagboxFloor] = useState<'bg' | '1e' | '2e'>('bg');
 
   const OPSLAGBOX_FLOORS = [
