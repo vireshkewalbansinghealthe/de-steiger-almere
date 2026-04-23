@@ -77,6 +77,7 @@ export default function HomePage() {
 
   // Real availability per type (typeNumber -> stats)
   const [typeAvailability, setTypeAvailability] = useState<Record<number, { available: number; reserved: number; sold: number; total: number; minPrice?: number; minGrossArea?: number }>>({});
+  const [isLoadingUnits, setIsLoadingUnits] = useState(true);
 
   // Countdown timer for December 15, 2025
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -274,6 +275,7 @@ export default function HomePage() {
 
   // Fetch real availability per type from database
   useEffect(() => {
+    setIsLoadingUnits(true);
     const fetchAvailability = async () => {
       try {
         const unitType = category === 'opslagboxen' ? 'opslagbox' : 'bedrijfsunit';
@@ -289,7 +291,6 @@ export default function HomePage() {
           if (u.status === 'available') map[t].available++;
           else if (u.status === 'reserved') map[t].reserved++;
           else if (u.status === 'sold') map[t].sold++;
-          // Track cheapest available price and gross area
           const price = parseFloat(u.sale_price);
           const area = parseFloat(u.gross_area);
           if (!isNaN(price) && (map[t].minPrice === undefined || price < map[t].minPrice!)) {
@@ -302,6 +303,8 @@ export default function HomePage() {
         setTypeAvailability(map);
       } catch (e) {
         console.error('Failed to fetch availability:', e);
+      } finally {
+        setIsLoadingUnits(false);
       }
     };
     fetchAvailability();
@@ -1282,10 +1285,26 @@ export default function HomePage() {
                   <div className="mb-8 lg:mb-16 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
                     <InteractiveFloorplan />
                   </div>
+                ) : isLoadingUnits ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 lg:mb-16">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
+                <div className="h-48 bg-gray-200" />
+                <div className="p-5 space-y-3">
+                  <div className="h-5 bg-gray-200 rounded w-3/4" />
+                  <div className="h-4 bg-gray-100 rounded w-1/2" />
+                  <div className="h-4 bg-gray-100 rounded w-2/3" />
+                  <div className="flex justify-between mt-4">
+                    <div className="h-6 bg-gray-200 rounded w-1/3" />
+                    <div className="h-6 bg-gray-100 rounded w-1/4" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
                 ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 lg:mb-16">
             {filteredProjects.map((project, index) => {
-              // Extract type number from slug (e.g. "bedrijfsunit-type-11" → 11)
               const typeMatch = project.slug.match(/type-(\d+)/);
               const typeNum = typeMatch ? parseInt(typeMatch[1]) : 0;
               const avail = typeAvailability[typeNum];
@@ -1305,7 +1324,7 @@ export default function HomePage() {
                   </div>
                 )}
 
-          {filteredProjects.length === 0 && (
+          {!isLoadingUnits && filteredProjects.length === 0 && (
             <div className="text-center py-16">
               <div className="text-gray-400 mb-4">
                 <Search className="h-16 w-16 mx-auto" />
