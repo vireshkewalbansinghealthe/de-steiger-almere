@@ -221,7 +221,7 @@ export default function InteractiveFloorplan({
         </div>
       )}
 
-      {/* Dev Mode Tools */}
+      {/* Dev Mode Tools — hidden from public, uncomment to enable
       <div className="mb-4 flex gap-4 items-center bg-slate-100 p-4 rounded-xl border border-slate-200">
         <label className="flex items-center gap-2 font-bold text-slate-800 cursor-pointer">
           <input 
@@ -327,6 +327,7 @@ export default function InteractiveFloorplan({
           </div>
         )}
       </div>
+      */}
 
       <div 
         className={`relative w-full border border-gray-200 rounded-xl overflow-hidden bg-white shadow-lg bg-gray-50 ${activeFloorplan === 'opslagboxen' ? 'h-[85vh] min-h-[600px]' : 'h-[60vh] min-h-[500px]'}`}
