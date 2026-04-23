@@ -221,7 +221,7 @@ export default function InteractiveFloorplan({
         </div>
       )}
 
-      {/* Dev Mode Tools — hidden from public, uncomment to enable
+      {/* Dev Mode Tools */}
       <div className="mb-4 flex gap-4 items-center bg-slate-100 p-4 rounded-xl border border-slate-200">
         <label className="flex items-center gap-2 font-bold text-slate-800 cursor-pointer">
           <input 
@@ -314,14 +314,11 @@ export default function InteractiveFloorplan({
             </button>
             {activeFloorplan === 'opslagboxen' && (
               <div className="flex items-center gap-2">
-                <span className="text-sm whitespace-nowrap">Afbeelding pad:</span>
-                <input
-                  type="text"
-                  value={customOpslagboxImage}
-                  onChange={(e) => setCustomOpslagboxImage(e.target.value)}
-                  className="border p-1 rounded text-xs w-72"
-                  placeholder="/images/floorplans/..."
-                />
+                <span className="text-sm whitespace-nowrap">Verdieping:</span>
+                <span className="text-sm font-semibold text-blue-700">
+                  {OPSLAGBOX_FLOORS.find(f => f.id === opslagboxFloor)?.label}
+                </span>
+                <span className="text-xs text-slate-400">(wissel via tabblad hierboven)</span>
               </div>
             )}
             <div className="text-xs text-slate-500 ml-auto max-w-xs">
@@ -330,7 +327,6 @@ export default function InteractiveFloorplan({
           </div>
         )}
       </div>
-      */}
 
       <div 
         className={`relative w-full border border-gray-200 rounded-xl overflow-hidden bg-white shadow-lg bg-gray-50 ${activeFloorplan === 'opslagboxen' ? 'h-[85vh] min-h-[600px]' : 'h-[60vh] min-h-[500px]'}`}
