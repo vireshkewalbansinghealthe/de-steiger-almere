@@ -177,10 +177,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
         price: `€ ${(unit.sale_price || 0).toLocaleString('nl-NL')}`,
         brutoPrice: `€ ${((unit.sale_price || 0) * 1.1).toLocaleString('nl-NL')}`,
         status: unit.status === 'available' ? 'beschikbaar' : unit.status === 'reserved' ? 'gereserveerd' : 'verkocht',
-        industrieNetto: unit.industrie_net_area || Math.floor((unit.net_area || 0) * 0.7),
-        industrieBruto: unit.industrie_gross_area || Math.floor((unit.gross_area || 0) * 0.7),
-        kantoorNetto: unit.kantoor_net_area || Math.floor((unit.net_area || 0) * 0.3),
-        kantoorBruto: unit.kantoor_gross_area || Math.floor((unit.gross_area || 0) * 0.3),
+        industrieNetto: unit.industrie_net_area ?? null,
+        industrieBruto: unit.industrie_gross_area ?? null,
+        kantoorNetto: unit.kantoor_net_area ?? null,
+        kantoorBruto: unit.kantoor_gross_area ?? null,
       })),
       specifications: {
         ceiling: '3.70 meter vrije hoogte',
@@ -447,10 +447,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
       brutoPrice: unitData.brutoPrice,
       available: unitData.status === 'beschikbaar',
       status: unitData.status,
-      industrieNetto: unitData.industrieNetto || 0,
-      industrieBruto: unitData.industrieBruto || 0,
-      kantoorNetto: unitData.kantoorNetto || 0,
-      kantoorBruto: unitData.kantoorBruto || 0,
+      industrieNetto: unitData.industrieNetto,
+      industrieBruto: unitData.industrieBruto,
+      kantoorNetto: unitData.kantoorNetto,
+      kantoorBruto: unitData.kantoorBruto,
       features: [
         project.details?.specifications?.ceiling || '3.70 meter vrije hoogte',
         project.details?.specifications?.floors || 'Vloeropbouw Monolitische afwerking',
@@ -1486,27 +1486,34 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                                 </div>
                               </div>
                               
-                              {/* Industrie Areas - bruto only */}
-                              <div className="pb-2 border-b border-gray-200">
-                                <h5 className="font-medium text-gray-900 mb-1">Industrie Functie</h5>
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">Bruto:</span>
-                                  <span className="font-semibold">{unitDetails.industrieBruto}m²</span>
+                              {/* Industrie Areas - only show if data exists */}
+                              {unitDetails.industrieBruto != null && unitDetails.industrieBruto > 0 && (
+                                <div className="pb-2 border-b border-gray-200">
+                                  <h5 className="font-medium text-gray-900 mb-1">Industrie Functie</h5>
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Bruto:</span>
+                                    <span className="font-semibold">{unitDetails.industrieBruto}m²</span>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
                               
-                              {/* Kantoor Areas - bruto only */}
-                              <div className={(unitDetails.industrieBruto + unitDetails.kantoorBruto < parseFloat(unitDetails.grossSize)) ? 'pb-2 border-b border-gray-200' : ''}>
-                                <h5 className="font-medium text-gray-900 mb-1">Kantoor Functie</h5>
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">Bruto:</span>
-                                  <span className="font-semibold">{unitDetails.kantoorBruto}m²</span>
+                              {/* Kantoor Areas - only show if data exists */}
+                              {unitDetails.kantoorBruto != null && unitDetails.kantoorBruto > 0 && (
+                                <div className="pb-2 border-b border-gray-200">
+                                  <h5 className="font-medium text-gray-900 mb-1">Kantoor Functie</h5>
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Bruto:</span>
+                                    <span className="font-semibold">{unitDetails.kantoorBruto}m²</span>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
                               
-                              {/* 2e Verdieping - shown when total > industrie + kantoor */}
+                              {/* 2e Verdieping - only when industrie+kantoor don't cover total */}
                               {(() => {
-                                const verdieping2 = Math.round((parseFloat(unitDetails.grossSize) - unitDetails.industrieBruto - unitDetails.kantoorBruto) * 10) / 10;
+                                const industrie = unitDetails.industrieBruto ?? 0;
+                                const kantoor = unitDetails.kantoorBruto ?? 0;
+                                const total = parseFloat(unitDetails.grossSize);
+                                const verdieping2 = Math.round((total - industrie - kantoor) * 10) / 10;
                                 return verdieping2 > 0.5 ? (
                                   <div>
                                     <h5 className="font-medium text-gray-900 mb-1">2e Verdieping</h5>
