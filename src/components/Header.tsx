@@ -119,7 +119,7 @@ export default function Header() {
                       ? 'text-transparent bg-clip-text bg-gradient-to-r from-slate-800 via-slate-700 to-slate-900 group-hover:from-slate-900 group-hover:to-slate-700' 
                       : 'text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-50 to-white group-hover:from-yellow-100 group-hover:to-white'
                   }`}>
-                    A6 Garagepark Almere
+                    A6 Bedrijfsunits en Opslagboxen
                   </div>
                   <div className={`text-sm font-semibold tracking-tight leading-none transition-colors duration-200 ${
                     isScrolled 
@@ -133,7 +133,7 @@ export default function Header() {
                       ? 'text-yellow-600 group-hover:text-yellow-700' 
                       : 'text-yellow-300 group-hover:text-yellow-200'
                   }`}>
-                    Bedrijfsunits & opslagboxen
+                    Almere
                   </div>
                 </div>
               </div>
@@ -403,8 +403,8 @@ export default function Header() {
                   />
                 </div>
                 <div>
-                  <div className="text-base font-extrabold text-slate-800 leading-none">A6 Garagepark Almere</div>
-                  <div className="text-sm font-semibold text-slate-600 leading-none">De Steiger</div>
+                  <div className="text-base font-extrabold text-slate-800 leading-none">A6 Bedrijfsunits en Opslagboxen</div>
+                  <div className="text-sm font-semibold text-slate-600 leading-none">De Steiger — Almere</div>
                   <div className="text-xs text-yellow-600 uppercase tracking-wide">Menu</div>
                 </div>
               </div>
