@@ -136,9 +136,9 @@ export default function InteractiveFloorplan({
     fetchPolygons();
   }, []);
 
-  // Zoom to highlighted units when polygons are loaded
+  // Zoom to highlighted units when polygons are loaded — only for a single specific unit
   useEffect(() => {
-    if (highlightUnits.length > 0 && polygons.length > 0 && transformComponentRef.current) {
+    if (highlightUnits.length === 1 && polygons.length > 0 && transformComponentRef.current) {
       const firstUnit = highlightUnits[0];
       const targetPolygon = polygons.find(p => 
         p.unit_number === firstUnit && 
@@ -146,7 +146,6 @@ export default function InteractiveFloorplan({
       );
       if (targetPolygon) {
         const polyType = targetPolygon.type || 'bedrijfsunit';
-        // Add a small delay to let the TransformComponent initialize and render SVG properly
         setTimeout(() => {
           transformComponentRef.current?.zoomToElement(`unit-${polyType}-${firstUnit}`, 3, 800);
         }, 500);

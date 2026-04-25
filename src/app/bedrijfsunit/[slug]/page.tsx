@@ -726,7 +726,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                         }
                       }}
                       highlightType="bedrijfsunit"
-                      highlightUnits={getFilteredAndSortedUnits().map(u => String(u.unitNumber))}
+                      highlightUnits={selectedUnit ? [selectedUnit] : []}
                     />
                   </div>
                 ) : viewMode === 'grid' ? renderGridView() : renderTableView()}

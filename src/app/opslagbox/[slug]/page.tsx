@@ -696,7 +696,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                         }
                       }}
                       highlightType="opslagbox"
-                      highlightUnits={getFilteredAndSortedUnits().map(u => String(u.unitNumber))}
+                      highlightUnits={selectedUnit ? [selectedUnit] : []}
                     />
                   </div>
                 ) : viewMode === 'grid' ? renderGridView() : renderTableView()}
