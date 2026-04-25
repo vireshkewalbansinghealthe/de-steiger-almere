@@ -262,7 +262,7 @@ export default function OpslagboxenPage() {
               <tr 
                 key={unit.id} 
                 className="hover:bg-gray-50 cursor-pointer" 
-                onClick={() => router.push(`/opslagbox/${unit.slug}`)}
+                onClick={() => router.push(`/opslagbox/${unit.slug}#plattegrond`)}
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
@@ -695,7 +695,7 @@ export default function OpslagboxenPage() {
                 ) : viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {filteredProjects.map((unit) => (
-                      <Link href={`/opslagbox/${unit.slug}`} key={unit.id}>
+                      <Link href={`/opslagbox/${unit.slug}#plattegrond`} key={unit.id}>
                         <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow cursor-pointer">
                           <div className="relative">
                             <img

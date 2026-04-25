@@ -53,7 +53,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
       }
     }
   }, []);
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('map');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
   const [sortBy, setSortBy] = useState<'unitNumber' | 'price' | 'area'>('unitNumber');
@@ -142,6 +142,18 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
 
     fetchUnits();
   }, [resolvedParams.slug]);
+
+  // Auto-scroll to plattegrond section after units load
+  useEffect(() => {
+    if (!isLoading && units.length > 0) {
+      setTimeout(() => {
+        const el = document.getElementById('plattegrond');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+    }
+  }, [isLoading]);
 
   // Synchronize selectedPropertyId when selectedUnit is set from URL
   useEffect(() => {
@@ -242,7 +254,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const headerOffset = 80; // Height of fixed header
+      const headerOffset = 80;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
