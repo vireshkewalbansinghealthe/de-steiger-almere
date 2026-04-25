@@ -83,7 +83,7 @@ export default function OpslagboxenPage() {
 
   const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
-  const [sortBy, setSortBy] = useState<'type_number'>('type_number');
+  const [sortBy, setSortBy] = useState<'type_number' | 'price'>('price');
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -141,14 +141,14 @@ export default function OpslagboxenPage() {
     // Sort units
     filtered.sort((a, b) => {
       switch (sortBy) {
+        case 'price':
+          return parseFloat(a.sale_price.toString()) - parseFloat(b.sale_price.toString());
         case 'type_number':
           const typeA = a.type_number || 0;
           const typeB = b.type_number || 0;
           return typeA - typeB;
         default:
-          const defaultTypeA = a.type_number || 0;
-          const defaultTypeB = b.type_number || 0;
-          return defaultTypeA - defaultTypeB;
+          return parseFloat(a.sale_price.toString()) - parseFloat(b.sale_price.toString());
       }
     });
 

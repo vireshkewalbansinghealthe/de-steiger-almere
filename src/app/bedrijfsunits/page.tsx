@@ -72,7 +72,7 @@ export default function BedrijfsunitsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location' | 'unit_number'>('unit_number');
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location' | 'unit_number'>('price');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareUrl, setShareUrl] = useState('');

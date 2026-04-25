@@ -62,7 +62,7 @@ export default function HomePage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
   const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location'>('name');
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location'>('price');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
   const [showShareModal, setShowShareModal] = useState(false);
