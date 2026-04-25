@@ -451,7 +451,11 @@ export default function BedrijfsunitsPage() {
                   <Users className="h-8 w-8 mx-auto text-white" />
                 </div>
                 <div className="text-white/80">Vanaf</div>
-                <div className="text-2xl font-bold text-white">€ 212,520</div>
+                <div className="text-2xl font-bold text-white">
+                  {businessUnits.length > 0
+                    ? `€ ${Math.min(...businessUnits.map(u => Number(u.sale_price))).toLocaleString('nl-NL')}`
+                    : '—'}
+                </div>
                 <div className="text-sm text-white/60">v.o.n. ex. BTW</div>
               </div>
             </div>

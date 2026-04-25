@@ -386,7 +386,11 @@ export default function OpslagboxenPage() {
                   <Car className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-white" />
                 </div>
                 <div className="text-white/80 text-xs sm:text-base">Vanaf</div>
-                <div className="text-base sm:text-xl font-bold text-white">€ 31.240</div>
+                <div className="text-base sm:text-xl font-bold text-white">
+                  {storageUnits.length > 0
+                    ? `€ ${Math.min(...storageUnits.map(u => Number(u.sale_price))).toLocaleString('nl-NL')}`
+                    : '—'}
+                </div>
                 <div className="text-white/60 text-xs mt-1">v.o.n. ex. BTW</div>
               </div>
             </div>
