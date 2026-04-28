@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 interface Unit {
   id: string;
@@ -49,6 +50,8 @@ export default function InteractiveFloorplan({
   const [currentPoints, setCurrentPoints] = useState<{x: number, y: number}[]>([]);
   const [editingUnitNumber, setEditingUnitNumber] = useState("1");
   const [editingUnitType, setEditingUnitType] = useState<'bedrijfsunit' | 'opslagbox'>('bedrijfsunit');
+
+  const { trackFloorplanUnitClicked, trackFloorplanTabChanged } = useAnalytics();
 
   // Floorplan image switcher
   const [activeFloorplan, setActiveFloorplan] = useState<'bedrijfsunits' | 'opslagboxen'>(defaultFloorplan);
@@ -186,13 +189,13 @@ export default function InteractiveFloorplan({
       {/* Floorplan Type Tabs */}
       <div className="mb-3 flex gap-2">
         <button
-          onClick={() => { setActiveFloorplan('bedrijfsunits'); setViewTypeFilter('bedrijfsunit'); setEditingUnitType('bedrijfsunit'); }}
+          onClick={() => { setActiveFloorplan('bedrijfsunits'); setViewTypeFilter('bedrijfsunit'); setEditingUnitType('bedrijfsunit'); trackFloorplanTabChanged('bedrijfsunits'); }}
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${activeFloorplan === 'bedrijfsunits' ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
         >
           🏭 Bedrijfsunits
         </button>
         <button
-          onClick={() => { setActiveFloorplan('opslagboxen'); setViewTypeFilter('opslagbox'); setEditingUnitType('opslagbox'); }}
+          onClick={() => { setActiveFloorplan('opslagboxen'); setViewTypeFilter('opslagbox'); setEditingUnitType('opslagbox'); trackFloorplanTabChanged('opslagboxen'); }}
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${activeFloorplan === 'opslagboxen' ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
         >
           📦 Opslagboxen
@@ -418,6 +421,7 @@ export default function InteractiveFloorplan({
                           }}
                           onClick={(e) => {
                             if (!isDevMode && unitData) {
+                              trackFloorplanUnitClicked(Number(unitData.unit_number), unitData.type);
                               if (onUnitClick) {
                                 onUnitClick(unitData);
                               } else {

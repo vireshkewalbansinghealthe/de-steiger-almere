@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import PostHogProvider from '@/components/PostHogProvider';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'De Steiger - Duurzame bedrijfsruimtes voor ondernemers en beleggers',
@@ -17,11 +21,17 @@ export default function RootLayout({
   return (
     <html lang="nl">
       <body className="min-h-screen flex flex-col bg-white">
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <PostHogProvider>
+          <Suspense>
+            <Header />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </Suspense>
+        </PostHogProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

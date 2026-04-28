@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 export default function BezichtigingForm() {
+  const { trackContactFormSubmitted } = useAnalytics();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -27,6 +29,7 @@ export default function BezichtigingForm() {
       if (response.ok) {
         setStatus('success');
         setMessage('Bedankt! We nemen binnen 24 uur contact met u op.');
+        trackContactFormSubmitted('bezichtiging');
         setName('');
         setEmail('');
         setPhone('');
