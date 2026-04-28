@@ -1093,6 +1093,19 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                   </div>
                   </div>
                   <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                    Telefoonnummer
+                  </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                      placeholder="+31 6 12345678"
+                    />
+                  </div>
+                  <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                     Bericht
                   </label>

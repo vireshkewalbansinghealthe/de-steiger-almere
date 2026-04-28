@@ -3,6 +3,7 @@ import { useState } from 'react';
 export default function BezichtigingForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
@@ -18,7 +19,7 @@ export default function BezichtigingForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, phone }),
       });
 
       const data = await response.json();
@@ -28,6 +29,7 @@ export default function BezichtigingForm() {
         setMessage('Bedankt! We nemen binnen 24 uur contact met u op.');
         setName('');
         setEmail('');
+        setPhone('');
       } else {
         setStatus('error');
         setMessage(data.error || 'Er is iets misgegaan. Probeer het later opnieuw.');
@@ -69,6 +71,14 @@ export default function BezichtigingForm() {
         onChange={(e) => setEmail(e.target.value)}
         placeholder="uw@email.nl"
         required
+        disabled={status === 'loading'}
+        className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-slate-300 transition-all duration-300 text-sm disabled:opacity-50"
+      />
+      <input
+        type="tel"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        placeholder="+31 6 12345678"
         disabled={status === 'loading'}
         className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-slate-300 transition-all duration-300 text-sm disabled:opacity-50"
       />
