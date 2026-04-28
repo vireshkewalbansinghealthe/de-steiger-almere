@@ -9,7 +9,7 @@ export default function BezichtigingForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email) return;
+    if (!name || !email || !phone) return;
 
     setStatus('loading');
 
@@ -79,6 +79,7 @@ export default function BezichtigingForm() {
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
         placeholder="+31 6 12345678"
+        required
         disabled={status === 'loading'}
         className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 text-white placeholder-slate-300 transition-all duration-300 text-sm disabled:opacity-50"
       />

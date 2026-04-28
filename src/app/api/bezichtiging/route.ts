@@ -8,7 +8,7 @@ const getResendClient = () => {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email } = await request.json();
+    const { name, email, phone, unitInfo } = await request.json();
 
     if (!name || !email) {
       return NextResponse.json({ error: 'Naam en e-mailadres zijn verplicht.' }, { status: 400 });
@@ -26,10 +26,12 @@ export async function POST(request: NextRequest) {
         <ul>
           <li><strong>Naam:</strong> ${name}</li>
           <li><strong>E-mailadres:</strong> ${email}</li>
+          ${phone ? `<li><strong>Telefoonnummer:</strong> ${phone}</li>` : ''}
+          ${unitInfo ? `<li><strong>Unit:</strong> ${unitInfo}</li>` : ''}
         </ul>
         <p>Neem zo snel mogelijk contact op met deze persoon.</p>
       `,
-      replyTo: email, // This allows replying directly to the person who filled out the form
+      replyTo: email,
     });
 
     if (error) {

@@ -459,13 +459,21 @@ export default function InteractiveFloorplan({
             top: mousePos.y - 20 
           }}
         >
-          {hoveredUnit.images?.[0] && (
-            <img 
-              src={hoveredUnit.images[0]} 
-              alt={hoveredUnit.name} 
-              className="w-full h-32 object-cover rounded-lg mb-3"
-            />
-          )}
+          <img
+            src={`/images/floorplans/${hoveredUnit.name.replace(/\s+/g, '_')}.png`}
+            alt={hoveredUnit.name}
+            className="w-full h-32 object-contain bg-white rounded-lg mb-3"
+            onError={(e) => {
+              const fallback = hoveredUnit.images?.[0];
+              if (fallback) {
+                e.currentTarget.src = fallback;
+                e.currentTarget.className = 'w-full h-32 object-cover rounded-lg mb-3';
+              } else {
+                e.currentTarget.style.display = 'none';
+              }
+              e.currentTarget.onerror = null;
+            }}
+          />
           <h4 className="font-bold text-lg mb-1">{hoveredUnit.name}</h4>
           <p className="text-gray-600 mb-2">Unit Nummer: {hoveredUnit.unit_number}</p>
           <div className="flex items-center gap-2 mb-2">

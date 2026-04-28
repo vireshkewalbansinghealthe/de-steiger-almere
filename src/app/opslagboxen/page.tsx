@@ -267,9 +267,10 @@ export default function OpslagboxenPage() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <img
-                      src={unit.images[0] || '/images/placeholder.png'}
+                      src={`/images/floorplans/${unit.name.replace(/\s+/g, '_')}.png`}
                       alt={unit.name}
                       className="w-12 h-12 rounded-lg object-cover mr-4"
+                      onError={(e) => { e.currentTarget.src = unit.images[0] || '/images/placeholder.png'; e.currentTarget.onerror = null; }}
                     />
                     <div>
                       <div className="text-sm font-medium text-gray-900">
@@ -699,13 +700,11 @@ export default function OpslagboxenPage() {
                         <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow cursor-pointer">
                           <div className="relative">
                             <img
-                              src={unit.images[0] || '/images/placeholder.png'}
+                              src={`/images/floorplans/${unit.name.replace(/\s+/g, '_')}.png`}
                               alt={unit.name}
-                              className="w-full h-64 object-cover"
+                              className="w-full h-64 object-contain bg-white p-4"
+                              onError={(e) => { e.currentTarget.src = unit.images[0] || '/images/placeholder.png'; e.currentTarget.onerror = null; e.currentTarget.className = 'w-full h-64 object-cover'; }}
                             />
-                            <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(unit.status)}`}>
-                              {getStatusText(unit.status)}
-                            </span>
                           </div>
                           <div className="p-5">
                             <h3 className="text-xl font-bold text-gray-900 mb-2">{unit.name}</h3>

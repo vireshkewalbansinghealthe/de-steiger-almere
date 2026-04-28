@@ -350,9 +350,10 @@ export default function BedrijfsunitsPage() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <img
-                      src={unit.images?.[0] || '/images/placeholder.jpg'}
+                      src={`/images/floorplans/${unit.name.replace(/\s+/g, '_')}.png`}
                       alt={unit.name}
                       className="w-12 h-12 rounded-lg object-cover mr-4"
+                      onError={(e) => { e.currentTarget.src = unit.images?.[0] || '/images/placeholder.jpg'; e.currentTarget.onerror = null; }}
                     />
                     <div>
                       <div className="text-sm font-medium text-gray-900">
@@ -742,24 +743,13 @@ export default function BedrijfsunitsPage() {
                               href={`/bedrijfsunit/bedrijfsunit-type-${unit.type_number}`}
                               className="block bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow cursor-pointer"
                           >
-                              {/* Status Badge */}
-                              <div className="absolute top-4 right-4 z-10">
-                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                                  unit.status === 'available' 
-                                    ? 'bg-green-500 text-white' 
-                                    : unit.status === 'reserved' 
-                                    ? 'bg-red-500 text-white' 
-                                    : 'bg-gray-500 text-white'
-                                }`}>
-                                  {unit.status === 'available' ? 'Beschikbaar' : unit.status === 'reserved' ? 'Gereserveerd' : 'Verkocht'}
-                                </span>
-                        </div>
                               
                               {/* Image */}
                               <img 
-                                src={unit.images?.[0] || '/images/placeholder.jpg'} 
+                                src={`/images/floorplans/${unit.name.replace(/\s+/g, '_')}.png`}
                                 alt={unit.name}
-                                className="w-full h-48 object-cover"
+                                className="w-full h-48 object-contain bg-white p-4"
+                                onError={(e) => { e.currentTarget.src = unit.images?.[0] || '/images/placeholder.jpg'; e.currentTarget.onerror = null; e.currentTarget.className = 'w-full h-48 object-cover'; }}
                               />
                               
                               {/* Content */}

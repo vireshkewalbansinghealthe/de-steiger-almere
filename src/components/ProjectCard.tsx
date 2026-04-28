@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Project } from '../types';
 
@@ -63,23 +63,29 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, availability }) => {
     return null;
   })();
 
-  const image = project.images?.[0];
+  // Derive per-type floorplan image path from project name, e.g. "Opslagbox Type 13" → "/images/floorplans/Opslagbox_Type_13.png"
+  const floorplanImage = `/images/floorplans/${project.name.replace(/\s+/g, '_')}.png`;
+  const fallbackImage = project.images?.[0] || null;
+  const [imgSrc, setImgSrc] = useState<string>(floorplanImage);
+  const [imgError, setImgError] = useState(false);
+
+  const handleImgError = () => {
+    if (!imgError && fallbackImage) {
+      setImgError(true);
+      setImgSrc(fallbackImage);
+    }
+  };
 
   return (
     <Link href={routePath} className="block bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition-shadow cursor-pointer relative">
-      {/* Status Badge */}
-      <div className="absolute top-4 right-4 z-10">
-        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${badge.color}`}>
-          {badge.label}
-        </span>
-      </div>
 
       {/* Image */}
-      {image ? (
+      {imgSrc ? (
         <img
-          src={image}
+          src={imgSrc}
           alt={project.name}
-          className="w-full h-48 object-cover"
+          className={!imgError && isOpslagbox ? 'w-full h-48 object-contain bg-white p-4' : 'w-full h-48 object-cover'}
+          onError={handleImgError}
         />
       ) : (
         <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200" />

@@ -58,6 +58,10 @@ export default function HomePage() {
 
   const [filter, setFilter] = useState<'all' | 'nu-in-verkoop' | 'coming-soon' | 'uitverkocht'>('all');
   const [category, setCategory] = useState<'bedrijfsunits' | 'opslagboxen'>('bedrijfsunits');
+
+  useEffect(() => {
+    setCategory(Math.random() < 0.5 ? 'bedrijfsunits' : 'opslagboxen');
+  }, []);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
@@ -79,31 +83,12 @@ export default function HomePage() {
   const [typeAvailability, setTypeAvailability] = useState<Record<number, { available: number; reserved: number; sold: number; total: number; minPrice?: number; minGrossArea?: number }>>({});
   const [isLoadingUnits, setIsLoadingUnits] = useState(true);
 
-  // Countdown timer for December 15, 2025
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [scrollY, setScrollY] = useState(0);
-  
-  useEffect(() => {
-    const targetDate = new Date('2026-04-08T00:00:00').getTime();
-    
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-      
-      if (distance > 0) {
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        
-        setTimeLeft({ days, hours, minutes, seconds });
-      } else {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
-    }, 1000);
+  // Live unit counts for map popup
+  const [totalBedrijfsunitsCount, setTotalBedrijfsunitsCount] = useState<number | null>(null);
+  const [totalOpslagboxenCount, setTotalOpslagboxenCount] = useState<number | null>(null);
+  const [totalOpslagboxenTypes, setTotalOpslagboxenTypes] = useState<number | null>(null);
 
-    return () => clearInterval(timer);
-  }, []);
+  const [scrollY, setScrollY] = useState(0);
 
   // Smooth scroll tracking with Apple-style rubber band effect
   const [isScrolling, setIsScrolling] = useState(false);
@@ -273,6 +258,32 @@ export default function HomePage() {
     setSearchTerm('');
   }, [category]);
 
+  // Fetch total counts for map popup (once on mount)
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [buRes, obRes] = await Promise.all([
+          fetch('/api/units?type=bedrijfsunit'),
+          fetch('/api/units?type=opslagbox'),
+        ]);
+        if (buRes.ok) {
+          const buData = await buRes.json();
+          setTotalBedrijfsunitsCount((buData.units || []).length);
+        }
+        if (obRes.ok) {
+          const obData = await obRes.json();
+          const obUnits: any[] = obData.units || [];
+          setTotalOpslagboxenCount(obUnits.length);
+          const types = new Set(obUnits.map((u: any) => u.type_number));
+          setTotalOpslagboxenTypes(types.size);
+        }
+      } catch (e) {
+        console.error('Failed to fetch unit counts:', e);
+      }
+    };
+    fetchCounts();
+  }, []);
+
   // Fetch real availability per type from database
   useEffect(() => {
     setIsLoadingUnits(true);
@@ -387,8 +398,11 @@ export default function HomePage() {
           const typeB = getTypeNumber(b.name);
           return typeA - typeB;
         case 'price':
-          const priceA = parseFloat(a.startPrice?.replace(/[€,.\s]/g, '') || '0');
-          const priceB = parseFloat(b.startPrice?.replace(/[€,.\s]/g, '') || '0');
+          const getTypeNum = (name: string) => { const m = name.match(/Type (\d+)/); return m ? parseInt(m[1]) : 0; };
+          const livePriceA = typeAvailability[getTypeNum(a.name)]?.minPrice;
+          const livePriceB = typeAvailability[getTypeNum(b.name)]?.minPrice;
+          const priceA = livePriceA ?? parseFloat(a.startPrice?.replace(/[€,.\s]/g, '') || '0');
+          const priceB = livePriceB ?? parseFloat(b.startPrice?.replace(/[€,.\s]/g, '') || '0');
           return priceA - priceB;
         case 'area':
           return (b.units || 0) - (a.units || 0);
@@ -848,42 +862,6 @@ export default function HomePage() {
           </div>
         </div>
         
-        {/* Countdown Timer - Bottom Right (Rechtonder) with Parallax */}
-        <div 
-          className="absolute bottom-20 right-12 z-30 animate-fade-in delay-500 hidden lg:block parallax-slow"
-          style={{ transform: `translateY(${scrollY * -0.15}px)` }}
-        >
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-yellow-400/30 shadow-2xl min-w-[450px] rubber-band-hover hover:shadow-3xl transition-all duration-700 ease-out">
-            <div className="text-center mb-6">
-              <div className="text-white font-bold text-xl mb-2">Eerste Fase Verkoop</div>
-              <div className="text-yellow-400 font-semibold text-base">8 April 2026</div>
-            </div>
-            
-            {/* Timer Display - Bigger with Smooth Animations */}
-            <div className="grid grid-cols-4 gap-4">
-              <div className="text-center bg-white/10 rounded-xl py-5 px-3 border border-yellow-400/20 smooth-scroll hover:bg-white/20 transition-all duration-500">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-yellow-300 mb-2 smooth-scroll">{timeLeft.days}</div>
-                <div className="text-white/80 text-sm uppercase font-semibold tracking-wide">Dagen</div>
-              </div>
-              <div className="text-center bg-white/10 rounded-xl py-5 px-3 border border-yellow-400/20 smooth-scroll hover:bg-white/20 transition-all duration-500">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-yellow-300 mb-2 smooth-scroll">{timeLeft.hours}</div>
-                <div className="text-white/80 text-sm uppercase font-semibold tracking-wide">Uren</div>
-              </div>
-              <div className="text-center bg-white/10 rounded-xl py-5 px-3 border border-yellow-400/20 smooth-scroll hover:bg-white/20 transition-all duration-500">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-yellow-300 mb-2 smooth-scroll">{timeLeft.minutes}</div>
-                <div className="text-white/80 text-sm uppercase font-semibold tracking-wide">Min</div>
-              </div>
-              <div className="text-center bg-white/10 rounded-xl py-5 px-3 border border-yellow-400/20 smooth-scroll hover:bg-white/20 transition-all duration-500">
-                <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-yellow-300 mb-2 smooth-scroll">{timeLeft.seconds}</div>
-                <div className="text-white/80 text-sm uppercase font-semibold tracking-wide">Sec</div>
-              </div>
-            </div>
-            
-            <div className="text-center mt-5">
-              <p className="text-white/70 text-sm">Tot de lancering</p>
-            </div>
-          </div>
-        </div>
         
 
         
@@ -1383,8 +1361,8 @@ export default function HomePage() {
                             <h3 className="font-bold text-gray-900 text-sm">De Steiger 74 t/m 77, Almere</h3>
                             <p className="text-gray-600 text-xs mb-2">Hoofdlocatie</p>
                             <div className="space-y-1 text-xs text-gray-500">
-                              <p>🏢 28 Bedrijfsunits</p>
-                              <p>📦 16 Opslagboxen types</p>
+                              <p>🏢 {totalBedrijfsunitsCount !== null ? totalBedrijfsunitsCount : '...'} Bedrijfsunits</p>
+                              <p>📦 {totalOpslagboxenCount !== null ? `${totalOpslagboxenCount} Opslagboxen` : '...'}</p>
                             </div>
                           </div>
                         </div>
