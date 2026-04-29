@@ -315,7 +315,7 @@ export default function HomePage() {
 
               {category === 'opslagboxen' ? (
                 /* All 3 floors stacked side-by-side */
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 gap-4">
                   {OPSLAGBOX_FLOORS.map(fl => (
                     <div key={fl.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                       <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
