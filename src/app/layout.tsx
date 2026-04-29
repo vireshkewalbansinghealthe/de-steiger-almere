@@ -7,9 +7,9 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import PostHogProvider from '@/components/PostHogProvider';
 
 export const metadata: Metadata = {
-  title: 'De Steiger - Duurzame bedrijfsruimtes voor ondernemers en beleggers',
-  description: 'Ontdek de duurzame oplossingen van De Steiger. Moderne, toekomstbestendige bedrijfspanden op toplocaties in Nederland.',
-  keywords: 'bedrijfsruimte, bedrijfspand, kantoor, de steiger, duurzaam, nederland, amsterdam, rotterdam, utrecht',
+  title: 'A6 Bedrijfsunits en Opslagboxen - Steiger 74-77 Almere',
+  description: 'Koop uw eigen bedrijfsunit of opslagbox op De Steiger, Almere. Bekijk het aanbod en reserveer direct online.',
+  keywords: 'bedrijfsunit, opslagbox, bedrijfsruimte, almere, de steiger, a6, kopen, reserveren',
 };
 
 export default function RootLayout({

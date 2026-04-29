@@ -120,10 +120,15 @@ export default function Header() {
                 
                 {/* Logo Text */}
                 <div className="flex flex-col">
-                  <div className={`text-lg font-extrabold tracking-tight leading-none transition-colors duration-200 ${
+                  <div className={`text-sm font-extrabold tracking-tight leading-tight transition-colors duration-200 ${
                     isScrolled ? 'text-slate-900' : 'text-white'
                   }`}>
-                    De Steiger
+                    A6 Bedrijfsunits
+                  </div>
+                  <div className={`text-sm font-extrabold tracking-tight leading-tight transition-colors duration-200 ${
+                    isScrolled ? 'text-slate-900' : 'text-white'
+                  }`}>
+                    en Opslagboxen
                   </div>
                   <div className={`text-xs font-semibold tracking-widest uppercase transition-colors duration-200 ${
                     isScrolled ? 'text-yellow-600' : 'text-yellow-400'
@@ -388,8 +393,8 @@ export default function Header() {
                   />
                 </div>
                 <div>
-                  <div className="text-base font-extrabold text-slate-800 leading-none">A6 Bedrijfsunits en Opslagboxen</div>
-                  <div className="text-sm font-semibold text-slate-600 leading-none">De Steiger — Almere</div>
+                  <div className="text-sm font-extrabold text-slate-800 leading-snug">A6 Bedrijfsunits en Opslagboxen</div>
+                  <div className="text-xs font-semibold text-yellow-600 uppercase tracking-wide">Steiger 74–77, Almere</div>
                   <div className="text-xs text-yellow-600 uppercase tracking-wide">Menu</div>
                 </div>
               </div>
