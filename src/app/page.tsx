@@ -250,16 +250,16 @@ export default function HomePage() {
   const isLoading = loadingUnits || loadingPolygons;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-24 pb-16 px-4 text-center">
+      <section className="relative overflow-hidden pt-24 pb-12 px-4 text-center">
         {/* Background photo */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/images/beide2.png')" }}
         />
-        {/* Solid dark overlay — no gradient weirdness at the bottom */}
-        <div className="absolute inset-0 bg-black/70" />
+        {/* Solid dark overlay */}
+        <div className="absolute inset-0 bg-slate-900/80" />
 
         {/* Content */}
         <div className="relative z-10 max-w-3xl mx-auto">
@@ -305,11 +305,12 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Bottom fade into page bg */}
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none" />
       </section>
 
-      {/* ── Main section — lifts over the hero with rounded top ─────────── */}
-      <main className="relative z-10 bg-gray-50 rounded-t-3xl -mt-8 shadow-[0_-4px_24px_rgba(0,0,0,0.12)] max-w-none px-3 sm:px-4 lg:px-6 pt-8 pb-8">
-        <div className="max-w-screen-xl mx-auto">
+      {/* ── Main section ─────────────────────────────────────────────────── */}
+      <main className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-8">
 
         {/* Status filter + stats bar */}
         <div className="flex items-center justify-between mb-5">
@@ -450,7 +451,6 @@ export default function HomePage() {
             </div>
           </div>
         )}
-        </div>
       </main>
 
       {/* ── Contact section ──────────────────────────────────────────────── */}
