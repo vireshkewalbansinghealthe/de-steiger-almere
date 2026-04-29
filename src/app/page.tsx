@@ -165,12 +165,14 @@ function TypeDetail({
   group,
   category,
   units,
+  highlightedUnitNumber,
   onBack,
   onUnitClick,
 }: {
   group: TypeGroup;
   category: Category;
   units: FloorplanUnit[];
+  highlightedUnitNumber: string | null;
   onBack: () => void;
   onUnitClick: (unit: FloorplanUnit) => void;
 }) {
@@ -260,11 +262,16 @@ function TypeDetail({
           </p>
           {typeUnits.map(unit => {
             const { label, cls } = statusLabel(unit.status);
+            const isActive = highlightedUnitNumber === unit.unit_number;
             return (
               <div
                 key={unit.unit_number}
                 onClick={() => onUnitClick(unit)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-100 bg-white hover:border-yellow-200 hover:bg-yellow-50/40 cursor-pointer transition-all duration-150 group"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-all duration-150 group ${
+                  isActive
+                    ? 'border-yellow-400 bg-yellow-50 ring-1 ring-yellow-300'
+                    : 'border-gray-100 bg-white hover:border-yellow-200 hover:bg-yellow-50/40'
+                }`}
               >
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-gray-900">
@@ -306,6 +313,7 @@ export default function HomePage() {
   const [selectedTypes, dispatchTypes] = useReducer(typesReducer, []);
   const [selectedUnit, setSelectedUnit] = useState<FloorplanUnit | null>(null);
   const [selectedTypeDetail, setSelectedTypeDetail] = useState<number | null>(null);
+  const [highlightedUnitNumber, setHighlightedUnitNumber] = useState<string | null>(null);
 
   // Contact form
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', message: '' });
@@ -363,6 +371,7 @@ export default function HomePage() {
   useEffect(() => {
     dispatchTypes({ type: 'clear' });
     setSelectedTypeDetail(null);
+    setHighlightedUnitNumber(null);
   }, [category]);
 
   const currentUnits = units.filter(u =>
@@ -508,9 +517,13 @@ export default function HomePage() {
                         image={fl.image}
                         floorFilter={fl.id}
                         unitType="opslagbox"
-                        highlightTypeNumbers={selectedTypeDetail !== null ? [selectedTypeDetail] : selectedTypes.length > 0 ? selectedTypes : undefined}
+                        highlightTypeNumbers={highlightedUnitNumber ? undefined : selectedTypeDetail !== null ? [selectedTypeDetail] : selectedTypes.length > 0 ? selectedTypes : undefined}
+                        highlightUnitNumber={highlightedUnitNumber ?? undefined}
                         statusFilter={statusFilter}
-                        onUnitClick={setSelectedUnit}
+                        onUnitClick={unit => {
+                          setHighlightedUnitNumber(unit.unit_number);
+                          setSelectedUnit(unit);
+                        }}
                       />
                     </div>
                   ))}
@@ -523,9 +536,13 @@ export default function HomePage() {
                     polygons={polygons}
                     image={floorImage}
                     unitType="bedrijfsunit"
-                    highlightTypeNumbers={selectedTypeDetail !== null ? [selectedTypeDetail] : selectedTypes.length > 0 ? selectedTypes : undefined}
+                    highlightTypeNumbers={highlightedUnitNumber ? undefined : selectedTypeDetail !== null ? [selectedTypeDetail] : selectedTypes.length > 0 ? selectedTypes : undefined}
+                    highlightUnitNumber={highlightedUnitNumber ?? undefined}
                     statusFilter={statusFilter}
-                    onUnitClick={setSelectedUnit}
+                    onUnitClick={unit => {
+                      setHighlightedUnitNumber(unit.unit_number);
+                      setSelectedUnit(unit);
+                    }}
                   />
                 </div>
               )}
@@ -551,11 +568,14 @@ export default function HomePage() {
                         group={group}
                         category={category}
                         units={currentUnits}
+                        highlightedUnitNumber={highlightedUnitNumber}
                         onBack={() => {
                           setSelectedTypeDetail(null);
+                          setHighlightedUnitNumber(null);
                           dispatchTypes({ type: 'clear' });
                         }}
                         onUnitClick={unit => {
+                          setHighlightedUnitNumber(unit.unit_number);
                           setSelectedUnit(unit);
                         }}
                       />

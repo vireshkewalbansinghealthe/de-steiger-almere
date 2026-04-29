@@ -29,6 +29,7 @@ interface SimpleFloorplanProps {
   floorFilter?: string; // for opslagboxen: 'bg' | '1e' | '2e'
   unitType: 'bedrijfsunit' | 'opslagbox';
   highlightTypeNumbers?: number[]; // highlight units of specific types
+  highlightUnitNumber?: string;    // highlight a single specific unit
   statusFilter?: 'all' | 'available';
   onUnitClick: (unit: FloorplanUnit) => void;
 }
@@ -54,6 +55,7 @@ export default function SimpleFloorplan({
   floorFilter,
   unitType,
   highlightTypeNumbers,
+  highlightUnitNumber,
   statusFilter = 'all',
   onUnitClick,
 }: SimpleFloorplanProps) {
@@ -106,8 +108,10 @@ export default function SimpleFloorplan({
     units.find(u => u.unit_number === unitNumber && u.type === unitType);
 
   const isHighlighted = (unit: FloorplanUnit | undefined) => {
+    if (!unit) return false;
+    if (highlightUnitNumber) return unit.unit_number === highlightUnitNumber;
     if (!highlightTypeNumbers || highlightTypeNumbers.length === 0) return false;
-    return unit?.type_number !== undefined && highlightTypeNumbers.includes(unit.type_number);
+    return unit.type_number !== undefined && highlightTypeNumbers.includes(unit.type_number);
   };
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
