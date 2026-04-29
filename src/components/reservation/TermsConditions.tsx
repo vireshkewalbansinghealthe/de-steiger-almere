@@ -124,12 +124,12 @@ export default function TermsConditions({ reservationData, updateData, onNext, o
             <div className="flex-1 min-w-0">
               <label className="text-sm text-gray-700 cursor-pointer leading-relaxed">
                 Ik ga akkoord met de{' '}
-                <button
-                  onClick={() => setShowContractModal(true)}
-                  className="text-yellow-600 hover:text-yellow-700 underline"
-                >
-                  reserveringsovereenkomst
-                </button>
+            <button
+              onClick={() => { setShowContractModal(true); }}
+              className="text-yellow-600 hover:text-yellow-700 underline font-medium"
+            >
+              reserveringsovereenkomst
+            </button>
                 {' '}van De Steiger B.V. en bevestig dat ik deze volledig heb gelezen en begrepen.
               </label>
               {!hasReadContract && (
@@ -205,13 +205,17 @@ export default function TermsConditions({ reservationData, updateData, onNext, o
       </div>
 
       {/* Contract Modal */}
-      {showContractModal && propertyData && (
+      {showContractModal && (
         <ContractView
           reservationData={reservationData}
-          propertyData={propertyData}
+          propertyData={propertyData || {
+            type: reservationData.unitType || 'bedrijfsunit',
+            unit_number: reservationData.unitNumber,
+            sale_price: reservationData.salePrice || reservationData.price,
+          }}
           onClose={() => {
             setShowContractModal(false);
-            setHasReadContract(true); // Mark as read when they close the contract
+            setHasReadContract(true);
           }}
         />
       )}
