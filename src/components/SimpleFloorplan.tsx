@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 export interface FloorplanUnit {
   id: string;
@@ -58,7 +58,8 @@ export default function SimpleFloorplan({
   onUnitClick,
 }: SimpleFloorplanProps) {
   const [hoveredUnit, setHoveredUnit] = useState<string | null>(null);
-  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  // Track viewport-level cursor position for fixed tooltip
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   const relevantPolygons = polygons.filter(p => {
@@ -76,9 +77,7 @@ export default function SimpleFloorplan({
   };
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    setCursorPos({ x: e.clientX, y: e.clientY });
   };
 
   const hoveredUnitData = hoveredUnit ? getUnit(hoveredUnit) : null;
@@ -136,29 +135,60 @@ export default function SimpleFloorplan({
         })}
       </svg>
 
-      {/* Compact tooltip — fixed to top-right corner of this floorplan card */}
-      {hoveredUnitData && (
-        <div className="absolute top-2 right-2 z-20 pointer-events-none">
-          <div className={`flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg border text-xs font-medium whitespace-nowrap ${
-            hoveredUnitData.status === 'available'
-              ? 'bg-green-600 border-green-500 text-white'
-              : hoveredUnitData.status === 'reserved'
-              ? 'bg-red-600 border-red-500 text-white'
-              : 'bg-gray-600 border-gray-500 text-white'
-          }`}>
-            {/* Dot */}
-            <span className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0" />
-            {/* Type + unit */}
-            <span className="font-bold">
-              {typeLabel} {hoveredUnitData.type_number} · #{hoveredUnitData.unit_number}
-            </span>
-            <span className="opacity-80">·</span>
-            <span>{hoveredUnitData.gross_area}m²</span>
-            <span className="opacity-80">·</span>
-            <span>€ {hoveredUnitData.sale_price?.toLocaleString('nl-NL')}</span>
+      {/* Fixed viewport-level tooltip — rendered via portal logic with inline fixed style */}
+      {hoveredUnitData && typeof window !== 'undefined' && (() => {
+        const TW = 230;
+        const TH = 200; // approx
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const left = cursorPos.x + 16 + TW > vw ? cursorPos.x - TW - 16 : cursorPos.x + 16;
+        const top  = cursorPos.y - 20 + TH > vh ? cursorPos.y - TH - 8  : cursorPos.y - 20;
+        const imgSrc = hoveredUnitData.type_number
+          ? `/images/floorplans/${typeLabel}_Type_${hoveredUnitData.type_number}.png`
+          : null;
+        return (
+          <div
+            className="fixed z-[9999] pointer-events-none"
+            style={{ left, top, width: TW }}
+          >
+            <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+              {/* Floorplan image */}
+              {imgSrc && (
+                <div className="bg-gray-50 flex items-center justify-center h-32 border-b border-gray-100">
+                  <img
+                    src={imgSrc}
+                    alt={`Type ${hoveredUnitData.type_number}`}
+                    className="max-h-full max-w-full object-contain p-2"
+                    onError={e => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+                  />
+                </div>
+              )}
+              {/* Info */}
+              <div className="px-3 py-2.5">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm font-bold text-gray-900">
+                    {typeLabel} Type {hoveredUnitData.type_number}
+                  </span>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                    hoveredUnitData.status === 'available' ? 'bg-green-100 text-green-700' :
+                    hoveredUnitData.status === 'reserved'  ? 'bg-red-100 text-red-700' :
+                    'bg-gray-100 text-gray-500'
+                  }`}>
+                    {hoveredUnitData.status === 'available' ? 'Vrij' :
+                     hoveredUnitData.status === 'reserved'  ? 'Bezet' : 'Verkocht'}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 mb-2">Unit #{hoveredUnitData.unit_number}</div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-500">{hoveredUnitData.gross_area} m²</span>
+                  <span className="font-semibold text-gray-900">€ {hoveredUnitData.sale_price?.toLocaleString('nl-NL')}</span>
+                </div>
+                <div className="mt-2 text-xs text-yellow-600 font-medium">Klik voor meer info →</div>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
