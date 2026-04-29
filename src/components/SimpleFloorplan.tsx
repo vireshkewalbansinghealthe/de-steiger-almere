@@ -83,17 +83,6 @@ export default function SimpleFloorplan({
 
   const hoveredUnitData = hoveredUnit ? getUnit(hoveredUnit) : null;
   const typeLabel = unitType === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
-  const tooltipImgSrc = hoveredUnitData?.type_number
-    ? `/images/floorplans/${typeLabel}_Type_${hoveredUnitData.type_number}.png`
-    : null;
-
-  // Keep tooltip inside the container
-  const containerW = containerRef.current?.offsetWidth ?? 0;
-  const tooltipW = 220;
-  const tooltipLeft = tooltipPos.x + 14 + tooltipW > containerW
-    ? tooltipPos.x - tooltipW - 14
-    : tooltipPos.x + 14;
-  const tooltipTop = Math.max(8, tooltipPos.y - 20);
 
   return (
     <div ref={containerRef} className="relative w-full select-none">
@@ -147,57 +136,26 @@ export default function SimpleFloorplan({
         })}
       </svg>
 
-      {/* Rich hover tooltip */}
+      {/* Compact tooltip — fixed to top-right corner of this floorplan card */}
       {hoveredUnitData && (
-        <div
-          className="absolute z-20 pointer-events-none bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden"
-          style={{ left: tooltipLeft, top: tooltipTop, width: tooltipW }}
-        >
-          {/* Type floorplan image */}
-          {tooltipImgSrc && (
-            <div className="bg-gray-50 border-b border-gray-100 flex items-center justify-center h-28">
-              <img
-                src={tooltipImgSrc}
-                alt={`Type ${hoveredUnitData.type_number}`}
-                className="max-h-full max-w-full object-contain p-2"
-                onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
-              />
-            </div>
-          )}
-
-          {/* Details */}
-          <div className="p-3">
-            {/* Status badge */}
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold mb-2 ${
-              hoveredUnitData.status === 'available' ? 'bg-green-100 text-green-700' :
-              hoveredUnitData.status === 'reserved'  ? 'bg-red-100 text-red-700' :
-              'bg-gray-100 text-gray-500'
-            }`}>
-              {hoveredUnitData.status === 'available' ? 'Beschikbaar' :
-               hoveredUnitData.status === 'reserved'  ? 'Gereserveerd' : 'Verkocht'}
+        <div className="absolute top-2 right-2 z-20 pointer-events-none">
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg border text-xs font-medium whitespace-nowrap ${
+            hoveredUnitData.status === 'available'
+              ? 'bg-green-600 border-green-500 text-white'
+              : hoveredUnitData.status === 'reserved'
+              ? 'bg-red-600 border-red-500 text-white'
+              : 'bg-gray-600 border-gray-500 text-white'
+          }`}>
+            {/* Dot */}
+            <span className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0" />
+            {/* Type + unit */}
+            <span className="font-bold">
+              {typeLabel} {hoveredUnitData.type_number} · #{hoveredUnitData.unit_number}
             </span>
-
-            <div className="text-sm font-bold text-gray-900 leading-tight">
-              {typeLabel} Type {hoveredUnitData.type_number}
-            </div>
-            <div className="text-xs text-gray-500 mt-0.5">Unit {hoveredUnitData.unit_number}</div>
-
-            <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
-              <div>
-                <div className="text-gray-400">Oppervlak</div>
-                <div className="font-semibold text-gray-800">{hoveredUnitData.gross_area} m²</div>
-              </div>
-              <div>
-                <div className="text-gray-400">Prijs</div>
-                <div className="font-semibold text-gray-800">
-                  € {hoveredUnitData.sale_price?.toLocaleString('nl-NL')}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-2 text-xs text-yellow-600 font-medium">
-              Klik voor meer info →
-            </div>
+            <span className="opacity-80">·</span>
+            <span>{hoveredUnitData.gross_area}m²</span>
+            <span className="opacity-80">·</span>
+            <span>€ {hoveredUnitData.sale_price?.toLocaleString('nl-NL')}</span>
           </div>
         </div>
       )}
