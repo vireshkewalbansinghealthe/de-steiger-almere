@@ -278,7 +278,21 @@ export default function PaymentStep(props: PaymentStepProps) {
         };
 
         // First, get the property ID based on the project slug and unit number
-        const unitsResponse = await fetch(`/api/units?type=${props.project.slug.includes('opslagbox') ? 'opslagbox' : 'bedrijfsunit'}&unit_number=${props.reservationData.unitNumber}&status=`);
+        const unitType = props.project.slug.includes('opslagbox') ? 'opslagbox' : 'bedrijfsunit';
+        const typeNumberMatch = props.project.slug.match(/type-(\d+)/);
+        const typeNumber = typeNumberMatch ? typeNumberMatch[1] : null;
+
+        // Build URL — include unit_number only when it's actually set
+        const unitNumber = props.reservationData.unitNumber;
+        let unitUrl = `/api/units?type=${unitType}&status=available`;
+        if (unitNumber) {
+          unitUrl += `&unit_number=${unitNumber}`;
+        } else if (typeNumber) {
+          // No specific unit selected — pick first available unit of this type
+          unitUrl += `&type_number=${typeNumber}`;
+        }
+
+        const unitsResponse = await fetch(unitUrl);
         
         if (!unitsResponse.ok) {
           throw new Error('Failed to fetch unit details');
@@ -287,10 +301,11 @@ export default function PaymentStep(props: PaymentStepProps) {
         const unitsData = await unitsResponse.json();
         
         if (!unitsData.units || unitsData.units.length === 0) {
-          throw new Error('Unit niet gevonden');
+          throw new Error('Unit niet gevonden of niet meer beschikbaar');
         }
 
-        const property = unitsData.units[0];
+        // Pick first available unit
+        const property = unitsData.units.find((u: any) => u.status === 'available') || unitsData.units[0];
 
         console.log('Creating reservation for property:', property.id);
 
