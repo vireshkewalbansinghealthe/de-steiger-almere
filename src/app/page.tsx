@@ -252,14 +252,14 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-24 pb-12 px-4 text-center">
+      <section className="relative overflow-hidden pt-24 pb-0 px-4 text-center">
         {/* Background photo */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/images/beide2.png')" }}
         />
-        {/* Solid dark overlay */}
-        <div className="absolute inset-0 bg-slate-900/80" />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" />
 
         {/* Content */}
         <div className="relative z-10 max-w-3xl mx-auto">
@@ -306,7 +306,7 @@ export default function HomePage() {
         </div>
 
         {/* Bottom fade into page bg */}
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-50 via-gray-50/80 to-transparent pointer-events-none z-10" />
       </section>
 
       {/* ── Main section ─────────────────────────────────────────────────── */}
