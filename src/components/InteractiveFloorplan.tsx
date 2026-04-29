@@ -342,7 +342,7 @@ export default function InteractiveFloorplan({
           maxScale={8}
           centerOnInit={true}
           centerZoomedOut={true}
-          wheel={{ step: 0.1 }}
+          wheel={{ step: 0.04, smoothStep: 0.004 }}
           doubleClick={{ disabled: isDevMode }} // Disable double click zoom while drawing
           panning={{ disabled: isDevMode }} // Disable panning while drawing so you can click freely
         >
