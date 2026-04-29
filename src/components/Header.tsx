@@ -145,7 +145,7 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-1">
             {/* Bedrijfsunits */}
             <Link
-              href="/bedrijfsunits"
+              href="/#bedrijfsunits"
               className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isScrolled 
                   ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
@@ -157,7 +157,7 @@ export default function Header() {
 
             {/* Opslagboxen */}
             <Link
-              href="/opslagboxen"
+              href="/#opslagboxen"
               className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isScrolled 
                   ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
@@ -337,7 +337,7 @@ export default function Header() {
             {/* Back to Overview Button - Show on detail pages */}
             {pathname && (pathname.includes('/bedrijfsunit/') || pathname.includes('/opslagbox/')) && (
               <Link
-                href={pathname.includes('/bedrijfsunit/') ? '/bedrijfsunits' : '/opslagboxen'}
+                href="/"
                 className={`p-3 rounded-lg transition-all duration-200 ${
                   isScrolled 
                     ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
@@ -422,7 +422,7 @@ export default function Header() {
                 {/* Main Navigation */}
                 <div className="space-y-1">
                   <Link
-                    href="/bedrijfsunits"
+                    href="/#bedrijfsunits"
                     className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -431,7 +431,7 @@ export default function Header() {
                   </Link>
 
                   <Link
-                    href="/opslagboxen"
+                    href="/#opslagboxen"
                     className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
                     onClick={() => setIsMenuOpen(false)}
                   >

@@ -1,1623 +1,390 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { projects } from '../data/projects';
-import ProjectCard from '../components/ProjectCard';
-import ProjectModal from '../components/ProjectModal';
-import VideoModal from '../components/VideoModal';
-import BezichtigingForm from '../components/BezichtigingForm';
-import { Project } from '../types';
-import { Filter, Search, ArrowDown, Play, Grid, List, Map, Share2, Link as LinkIcon, Copy, Facebook, Twitter, X } from 'lucide-react';
-import InteractiveFloorplan from '../components/InteractiveFloorplan';
+import SimpleFloorplan, { FloorplanUnit } from '../components/SimpleFloorplan';
+import UnitDrawer from '../components/UnitDrawer';
 
-// Search aliases for better search matching
-const SEARCH_ALIASES: Record<string, string[]> = {
-  'bedrijfsunit': ['unit', 'kantoor', 'kantoorunit', 'bedrijfsruimte', 'werkruimte', 'werkplek', 'office'],
-  'opslagbox': ['opslag', 'box', 'garage', 'garagebox', 'berging', 'storage', 'loods', 'opslagruimte'],
-  'almere': ['de steiger', 'steiger', 'flevoland'],
-};
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-// Helper function for enhanced search matching on projects
-const matchesProjectSearch = (project: Project, searchTerm: string, category: string): boolean => {
-  if (!searchTerm) return true;
-  
-  const term = searchTerm.toLowerCase().trim();
-  const searchTerms = term.split(/\s+/); // Split on whitespace for multi-word search
-  
-  // Check each search term
-  return searchTerms.every(singleTerm => {
-    // Direct field matches
-    const directMatch = 
-      project.name?.toLowerCase().includes(singleTerm) ||
-      project.location?.toLowerCase().includes(singleTerm) ||
-      project.description?.toLowerCase().includes(singleTerm) ||
-      project.features?.some(f => f.toLowerCase().includes(singleTerm));
-    
-    if (directMatch) return true;
-    
-    // Check aliases
-    for (const [key, aliases] of Object.entries(SEARCH_ALIASES)) {
-      // If search term matches an alias, check if project relates to that category
-      if (aliases.some(alias => alias.includes(singleTerm) || singleTerm.includes(alias))) {
-        if (key === 'bedrijfsunit' && category === 'bedrijfsunits') return true;
-        if (key === 'opslagbox' && category === 'opslagboxen') return true;
-        if (key === 'almere' && project.location?.toLowerCase().includes('almere')) return true;
-      }
-      // If search term matches the key, check aliases in project fields
-      if (key.includes(singleTerm) || singleTerm.includes(key)) {
-        const projectText = `${project.name} ${project.location} ${project.description}`.toLowerCase();
-        if (aliases.some(alias => projectText.includes(alias))) return true;
-      }
-    }
-    
-    return false;
-  });
-};
+interface UnitPolygon {
+  unit_number: string;
+  type?: 'bedrijfsunit' | 'opslagbox';
+  points: string;
+  floor?: string;
+}
 
-export default function HomePage() {
+type Category = 'bedrijfsunits' | 'opslagboxen';
+type OpslagboxFloor = 'bg' | '1e' | '2e';
+type StatusFilter = 'all' | 'available';
 
-  const [filter, setFilter] = useState<'all' | 'nu-in-verkoop' | 'coming-soon' | 'uitverkocht'>('all');
-  const [category, setCategory] = useState<'bedrijfsunits' | 'opslagboxen'>('bedrijfsunits');
+interface TypeGroup {
+  typeNumber: number;
+  units: FloorplanUnit[];
+  minPrice: number;
+  maxPrice: number;
+  minArea: number;
+  maxArea: number;
+  available: number;
+  reserved: number;
+  sold: number;
+}
 
-  useEffect(() => {
-    setCategory(Math.random() < 0.5 ? 'bedrijfsunits' : 'opslagboxen');
-  }, []);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'table' | 'map'>('grid');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'beschikbaar' | 'gereserveerd' | 'verkocht'>('all');
-  const [areaFilter, setAreaFilter] = useState<'all' | 'small' | 'medium' | 'large'>('all');
-  const [sortBy, setSortBy] = useState<'name' | 'price' | 'area' | 'location'>('price');
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [shareUrl, setShareUrl] = useState('');
-  const [showVideoModal, setShowVideoModal] = useState(false);
+const OPSLAGBOX_FLOORS: { id: OpslagboxFloor; label: string; image: string }[] = [
+  { id: 'bg',  label: 'Begane grond', image: '/images/floorplans/opslagbox0.png' },
+  { id: '1e', label: '1e verdieping', image: '/images/floorplans/opslagbox1.png' },
+  { id: '2e', label: '2e verdieping', image: '/images/floorplans/opslagbox2.png' },
+];
 
-  const [priceMin, setPriceMin] = useState(0);
-  const [priceMax, setPriceMax] = useState(1000);
-  const [areaMin, setAreaMin] = useState(0);
-  const [areaMax, setAreaMax] = useState(500);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
+const BEDRIJFSUNITS_IMAGE = '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png';
 
-  // Real availability per type (typeNumber -> stats)
-  const [typeAvailability, setTypeAvailability] = useState<Record<number, { available: number; reserved: number; sold: number; total: number; minPrice?: number; minGrossArea?: number }>>({});
-  const [isLoadingUnits, setIsLoadingUnits] = useState(true);
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-  // Live unit counts for map popup
-  const [totalBedrijfsunitsCount, setTotalBedrijfsunitsCount] = useState<number | null>(null);
-  const [totalOpslagboxenCount, setTotalOpslagboxenCount] = useState<number | null>(null);
-  const [totalOpslagboxenTypes, setTotalOpslagboxenTypes] = useState<number | null>(null);
+function groupByType(units: FloorplanUnit[]): TypeGroup[] {
+  const map = new Map<number, FloorplanUnit[]>();
+  for (const u of units) {
+    const tn = u.type_number ?? 0;
+    if (!map.has(tn)) map.set(tn, []);
+    map.get(tn)!.push(u);
+  }
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([typeNumber, us]) => ({
+      typeNumber,
+      units: us,
+      minPrice: Math.min(...us.map(u => u.sale_price)),
+      maxPrice: Math.max(...us.map(u => u.sale_price)),
+      minArea: Math.min(...us.map(u => u.gross_area)),
+      maxArea: Math.max(...us.map(u => u.gross_area)),
+      available: us.filter(u => u.status === 'available').length,
+      reserved: us.filter(u => u.status === 'reserved').length,
+      sold: us.filter(u => u.status === 'sold').length,
+    }));
+}
 
-  const [scrollY, setScrollY] = useState(0);
+// ─── TypeLegend ───────────────────────────────────────────────────────────────
 
-  // Smooth scroll tracking with Apple-style rubber band effect
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
-  
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-    let scrollTimeout: NodeJS.Timeout;
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const direction = currentScrollY > lastScrollY ? 'down' : 'up';
-      
-      setScrollY(currentScrollY);
-      setScrollDirection(direction);
-      setIsScrolling(true);
-      
-      // Clear existing timeout
-      clearTimeout(scrollTimeout);
-      
-      // Set scrolling to false after scroll ends (rubber band effect)
-      scrollTimeout = setTimeout(() => {
-        setIsScrolling(false);
-        setScrollDirection(null);
-      }, 150);
-      
-      lastScrollY = currentScrollY;
-    };
-
-    // Smooth scrolling behavior with rubber band
-    document.documentElement.style.scrollBehavior = 'smooth';
-    document.body.style.overscrollBehavior = 'contain'; // Enable bounce effect
-    
-    // Throttled scroll listener for performance
-    let ticking = false;
-    const scrollListener = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', scrollListener, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', scrollListener);
-      clearTimeout(scrollTimeout);
-      document.documentElement.style.scrollBehavior = 'auto';
-    };
-  }, []);
-
-  // Intersection Observer for scroll-to-reveal animations (one-time only)
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.2,
-      rootMargin: '-10% 0px -20% 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          // Only animate if not already revealed
-          if (!entry.target.classList.contains('animate-reveal')) {
-            entry.target.classList.add('animate-reveal');
-            entry.target.classList.remove('animate-hide');
-            // Mark as revealed so it doesn't animate again
-            entry.target.setAttribute('data-revealed', 'true');
-          }
-        }
-        // Don't remove the reveal class when scrolling up - let it stay revealed
-      });
-    }, observerOptions);
-
-    // Observe only sections (not cards)
-    const sections = document.querySelectorAll('.scroll-reveal-section');
-    sections.forEach((section) => observer.observe(section));
-
-    return () => {
-      sections.forEach((section) => observer.unobserve(section));
-    };
-  }, []);
-
-  // Dynamic filter ranges based on category
-  const getFilterRanges = () => {
-    if (category === 'opslagboxen') {
-      return {
-        priceMin: 30,
-        priceMax: 110,
-        areaMin: 14,
-        areaMax: 49
-      };
-    }
-    return {
-      priceMin: 0,
-      priceMax: 1000,
-      areaMin: 0,
-      areaMax: 500
-    };
-  };
-
-  const currentRanges = getFilterRanges();
-  const currentLocation = 'Almere';
-  const businessUnitTypesCount = 12;
-  const storageBoxTypesCount = 16;
-
-  // Hero background images
-  const heroImages = [
-    '/images/up/Image1.png',
-    '/images/up/Image2.png',
-    '/images/up/beide1.png',
-    '/images/up/beide2.png'
-  ];
-  
-  // Current hero image index for slideshow effect
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  // Auto-rotate hero images every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [heroImages.length]);
-
-  // Parse URL parameters on mount to restore shared state
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      
-      if (params.get('category')) setCategory(params.get('category') as any);
-      if (params.get('filter')) setFilter(params.get('filter') as any);
-      if (params.get('status')) setStatusFilter(params.get('status') as any);
-      if (params.get('sort')) setSortBy(params.get('sort') as any);
-      if (params.get('search')) setSearchTerm(params.get('search') || '');
-      if (params.get('view')) setViewMode(params.get('view') as any);
-      
-      if (params.get('types')) {
-        setSelectedTypes(params.get('types')?.split(',') || []);
-      }
-      
-      if (params.get('area')) {
-        const [min, max] = params.get('area')?.split('-').map(Number) || [0, 500];
-        setAreaMin(min);
-        setAreaMax(max);
-      }
-      
-      if (params.get('price')) {
-        const [min, max] = params.get('price')?.split('-').map(Number) || [0, 1000];
-        setPriceMin(min);
-        setPriceMax(max);
-      }
-    }
-  }, []);
-
-  // Reset filters when category changes
-  useEffect(() => {
-    const ranges = getFilterRanges();
-    setPriceMin(ranges.priceMin);
-    setPriceMax(ranges.priceMax);
-    setAreaMin(ranges.areaMin);
-    setAreaMax(ranges.areaMax);
-    setSelectedTypes([]);
-    setStatusFilter('all');
-    setSearchTerm('');
-  }, [category]);
-
-  // Fetch total counts for map popup (once on mount)
-  useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        const [buRes, obRes] = await Promise.all([
-          fetch('/api/units?type=bedrijfsunit'),
-          fetch('/api/units?type=opslagbox'),
-        ]);
-        if (buRes.ok) {
-          const buData = await buRes.json();
-          setTotalBedrijfsunitsCount((buData.units || []).length);
-        }
-        if (obRes.ok) {
-          const obData = await obRes.json();
-          const obUnits: any[] = obData.units || [];
-          setTotalOpslagboxenCount(obUnits.length);
-          const types = new Set(obUnits.map((u: any) => u.type_number));
-          setTotalOpslagboxenTypes(types.size);
-        }
-      } catch (e) {
-        console.error('Failed to fetch unit counts:', e);
-      }
-    };
-    fetchCounts();
-  }, []);
-
-  // Fetch real availability per type from database
-  useEffect(() => {
-    setIsLoadingUnits(true);
-    const fetchAvailability = async () => {
-      try {
-        const unitType = category === 'opslagboxen' ? 'opslagbox' : 'bedrijfsunit';
-        const res = await fetch(`/api/units?type=${unitType}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const units: any[] = data.units || [];
-        const map: Record<number, { available: number; reserved: number; sold: number; total: number; minPrice?: number; minGrossArea?: number }> = {};
-        for (const u of units) {
-          const t = u.type_number;
-          if (!map[t]) map[t] = { available: 0, reserved: 0, sold: 0, total: 0 };
-          map[t].total++;
-          if (u.status === 'available') map[t].available++;
-          else if (u.status === 'reserved') map[t].reserved++;
-          else if (u.status === 'sold') map[t].sold++;
-          const price = parseFloat(u.sale_price);
-          const area = parseFloat(u.gross_area);
-          if (!isNaN(price) && (map[t].minPrice === undefined || price < map[t].minPrice!)) {
-            map[t].minPrice = price;
-          }
-          if (!isNaN(area) && (map[t].minGrossArea === undefined || area < map[t].minGrossArea!)) {
-            map[t].minGrossArea = area;
-          }
-        }
-        setTypeAvailability(map);
-      } catch (e) {
-        console.error('Failed to fetch availability:', e);
-      } finally {
-        setIsLoadingUnits(false);
-      }
-    };
-    fetchAvailability();
-  }, [category]);
-
-  const categoryProjects = projects.filter(project => {
-    if (category === 'bedrijfsunits') {
-      return (project.units || 0) > 0;
-    }
-    // For opslagboxen, check for garageBoxes property or opslagbox in name
-    return (project.garageBoxes || 0) > 0 || project.name.toLowerCase().includes('opslagbox');
-  }).filter(p => p.location === currentLocation);
-
-  const totalUnitsAtLocation = projects
-    .filter(p => p.location === currentLocation)
-    .reduce((sum, p) => sum + (p.units || 0), 0);
-  const totalBoxesAtLocation = projects
-    .filter(p => p.location === currentLocation)
-    .reduce((sum, p) => sum + (p.garageBoxes || 0), 0);
-
-  const getFilteredAndSortedProjects = () => {
-    let filtered = categoryProjects.filter(project => {
-    const matchesFilter = filter === 'all' || 
-      (filter === 'nu-in-verkoop' && project.status === 'NU IN DE VERKOOP') ||
-      (filter === 'coming-soon' && project.status === 'COMING SOON') ||
-      (filter === 'uitverkocht' && project.status === 'UITVERKOCHT');
-
-    // Enhanced search with aliases
-    const matchesSearch = matchesProjectSearch(project, searchTerm, category);
-
-      // Status filter - for projects, we'll use the project status
-      const matchesStatus = statusFilter === 'all' || 
-        (statusFilter === 'beschikbaar' && project.status === 'NU IN DE VERKOOP') ||
-        (statusFilter === 'verkocht' && project.status === 'UITVERKOCHT');
-
-      // Type filter
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(project.name);
-
-      // Area range filter - check if any unit in the project falls within the range
-      let matchesAreaRange = true;
-      if (project.details?.unitDetails && project.details.unitDetails.length > 0) {
-        matchesAreaRange = project.details.unitDetails.some(unit => {
-          const area = unit.netArea || unit.grossArea || 0;
-          return area >= currentRanges.areaMin && area <= currentRanges.areaMax;
-        });
-      }
-
-      // Price range filter - check if any unit in the project falls within the range
-      let matchesPriceRange = true;
-      if (project.details?.unitDetails && project.details.unitDetails.length > 0) {
-        matchesPriceRange = project.details.unitDetails.some(unit => {
-          const price = parseFloat(unit.price.replace(/[€,.\s]/g, '')) / 1000;
-          return price >= currentRanges.priceMin && price <= currentRanges.priceMax;
-        });
-      }
-
-      // Area filter - based on project units/garageBoxes count as proxy for size
-      let matchesArea = true;
-      if (areaFilter !== 'all') {
-        const unitCount = project.units || project.garageBoxes || 0;
-        if (areaFilter === 'small') matchesArea = unitCount < 5;
-        else if (areaFilter === 'medium') matchesArea = unitCount >= 5 && unitCount <= 10;
-        else if (areaFilter === 'large') matchesArea = unitCount > 10;
-      }
-
-      return matchesFilter && matchesSearch && matchesStatus && matchesType && 
-             matchesAreaRange && matchesPriceRange && matchesArea;
-    });
-
-    // Sort projects
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          // Extract type numbers for numerical sorting
-          const getTypeNumber = (name: string) => {
-            const match = name.match(/Type (\d+)/);
-            return match ? parseInt(match[1]) : 0;
-          };
-          const typeA = getTypeNumber(a.name);
-          const typeB = getTypeNumber(b.name);
-          return typeA - typeB;
-        case 'price':
-          const getTypeNum = (name: string) => { const m = name.match(/Type (\d+)/); return m ? parseInt(m[1]) : 0; };
-          const livePriceA = typeAvailability[getTypeNum(a.name)]?.minPrice;
-          const livePriceB = typeAvailability[getTypeNum(b.name)]?.minPrice;
-          const priceA = livePriceA ?? parseFloat(a.startPrice?.replace(/[€,.\s]/g, '') || '0');
-          const priceB = livePriceB ?? parseFloat(b.startPrice?.replace(/[€,.\s]/g, '') || '0');
-          return priceA - priceB;
-        case 'area':
-          return (b.units || 0) - (a.units || 0);
-        case 'location':
-          return a.location.localeCompare(b.location);
-        default:
-          return 0;
-      }
-    });
-
-    return filtered;
-  };
-
-  const filteredProjects = getFilteredAndSortedProjects();
-
-  const scrollToProjects = () => {
-    const projectsSection = document.getElementById('projects');
-    if (projectsSection) {
-      // Fast smooth scroll using native behavior
-      projectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const generateShareUrl = () => {
-    const params = new URLSearchParams();
-    if (category !== 'bedrijfsunits') params.set('category', category);
-    if (filter !== 'all') params.set('filter', filter);
-    if (statusFilter !== 'all') params.set('status', statusFilter);
-    if (sortBy !== 'name') params.set('sort', sortBy);
-    if (selectedTypes.length > 0) params.set('types', selectedTypes.join(','));
-    if (areaMin !== 0 || areaMax !== 500) params.set('area', `${areaMin}-${areaMax}`);
-    if (priceMin !== 0 || priceMax !== 1000) params.set('price', `${priceMin}-${priceMax}`);
-    if (searchTerm) params.set('search', searchTerm);
-    if (viewMode !== 'grid') params.set('view', viewMode);
-    
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
-    return baseUrl + (params.toString() ? '?' + params.toString() : '');
-  };
-
-  const handleShare = () => {
-    const url = generateShareUrl();
-    setShareUrl(url);
-    setShowShareModal(true);
-  };
-
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      alert('Link gekopieerd naar klembord!');
-    } catch (err) {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      alert('Link gekopieerd naar klembord!');
-    }
-  };
-
-  const shareToSocial = (platform: string) => {
-    const url = encodeURIComponent(shareUrl);
-    const text = encodeURIComponent(`Bekijk deze geweldige bedrijfsunits op De Steiger in Almere! ${filteredProjects.length} types gevonden.`);
-    
-    let shareLink = '';
-    switch (platform) {
-      case 'facebook':
-        shareLink = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-        break;
-      case 'twitter':
-        shareLink = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
-        break;
-      case 'linkedin':
-        shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
-        break;
-      case 'whatsapp':
-        shareLink = `https://wa.me/?text=${text}%20${url}`;
-        break;
-    }
-    
-    if (shareLink) {
-      window.open(shareLink, '_blank', 'width=600,height=400');
-    }
-  };
-
-  const renderTableView = () => (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Locatie
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Units
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Vanaf Prijs
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actie
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredProjects.map((project) => {
-              const typeMatch = project.slug.match(/type-(\d+)/);
-              const typeNum = typeMatch ? parseInt(typeMatch[1]) : 0;
-              const avail = typeAvailability[typeNum];
-              const livePrice = avail?.minPrice
-                ? `€ ${avail.minPrice.toLocaleString('nl-NL')}`
-                : project.startPrice || 'Op aanvraag';
-              const liveArea = avail?.minGrossArea ? `${avail.minGrossArea} m²` : null;
-              const liveUnits = avail ? avail.available : (project.units || project.garageBoxes || 0);
-              return (
-              <tr 
-                key={project.id} 
-                className="hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() => {
-                  window.location.href = category === 'bedrijfsunits' ? `/bedrijfsunit/${project.slug}` : `/opslagbox/${project.slug}`;
-                }}
-              >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <img
-                      src={project.images[0]}
-                      alt={project.name}
-                      className="w-12 h-12 rounded-lg object-cover mr-4"
-                    />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {project.name}
-                      </div>
-                      {liveArea && (
-                        <div className="text-sm text-gray-500">
-                          Vanaf {liveArea} bruto
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.location}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {liveUnits} beschikbaar
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-yellow-600">
-                  {livePrice}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    project.status === 'NU IN DE VERKOOP' 
-                      ? 'bg-green-100 text-green-800' 
-                      : project.status === 'UITVERKOCHT'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {project.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.location.href = category === 'bedrijfsunits' ? `/bedrijfsunit/${project.slug}` : `/opslagbox/${project.slug}`;
-                    }}
-                    className="text-slate-600 hover:text-slate-900 font-medium"
-                  >
-                    Details →
-                  </button>
-                </td>
-              </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+function TypeLegend({
+  groups,
+  category,
+  selectedTypes,
+  onToggleType,
+  statusFilter,
+}: {
+  groups: TypeGroup[];
+  category: Category;
+  selectedTypes: number[];
+  onToggleType: (tn: number) => void;
+  statusFilter: StatusFilter;
+}) {
+  const prefix = category === 'bedrijfsunits' ? 'Bedrijfsunit' : 'Opslagbox';
+  const visibleGroups = statusFilter === 'available'
+    ? groups.filter(g => g.available > 0)
+    : groups;
 
   return (
-    <>
-      <style jsx>{`
-        /* Apple-Style Rubber Band Scrolling */
-        html {
-          scroll-behavior: smooth;
-          overscroll-behavior: contain;
-          -webkit-overflow-scrolling: touch;
-        }
-        
-        body {
-          overscroll-behavior-y: contain;
-          -webkit-overflow-scrolling: touch;
-        }
-        
-        * {
-          scroll-behavior: smooth;
-        }
-        
-        @media (prefers-reduced-motion: no-preference) {
-          html {
-            scroll-behavior: smooth;
-          }
-        }
-        
-        /* Enhanced Smooth Scrolling with Rubber Band Effect */
-        .smooth-scroll {
-          transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .rubber-band-scroll {
-          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .parallax-slow {
-          transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* Scroll-to-Reveal Animations - Subtle fade-up effect for sections only */
-        .scroll-reveal-section {
-          opacity: 0;
-          transform: translateY(30px);
-          transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-          will-change: transform, opacity;
-        }
-        
-        .scroll-reveal-section.animate-reveal {
-          opacity: 1;
-          transform: translateY(0px);
-        }
-        
-        /* Once revealed, stay revealed */
-        .scroll-reveal-section[data-revealed="true"] {
-          opacity: 1;
-          transform: translateY(0px);
-        }
-        
-        .fade-in-scroll {
-          opacity: 0;
-          transform: translateY(30px);
-          animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        
-        @keyframes fadeInUp {
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .slide-in-left {
-          animation: slideInLeft 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        .slide-in-right {
-          animation: slideInRight 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
-        }
-        
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        .fade-in {
-          animation: fadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        /* YouTube Video Background Styles */
-        .video-background {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          min-width: 100%;
-          min-height: 100%;
-          width: auto;
-          height: auto;
-          transform: translate(-50%, -50%) scale(1.1);
-          z-index: 0;
-        }
-        
-        /* Enhanced Hover Effects with Rubber Band */
-        .rubber-band-hover {
-          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        /* Disable rubber-band on mobile to prevent click interference */
-        @media (hover: hover) and (pointer: fine) {
-          .rubber-band-hover:hover {
-            transform: scale(1.05);
-          }
-          
-          .rubber-band-hover:active {
-            transform: scale(0.95);
-            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          }
-        }
-        
-        /* Disable hover effects on touch devices for specific classes */
-        @media (hover: none) and (pointer: coarse) {
-          .hover\\:bg-blue-50:hover,
-          .hover\\:bg-white:hover,
-          .hover\\:text-slate-800:hover,
-          .hover\\:shadow-3xl:hover,
-          .group-hover\\:translate-y-1,
-          .group-hover\\:scale-110 {
-            background-color: inherit !important;
-            color: inherit !important;
-            box-shadow: inherit !important;
-            transform: none !important;
-          }
-        }
-        
-        .slider-thumb::-webkit-slider-thumb {
-          appearance: none;
-          height: 20px;
-          width: 20px;
-          border-radius: 50%;
-          background: #1e293b;
-          cursor: pointer;
-          border: 2px solid #ffffff;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .slider-thumb::-moz-range-thumb {
-          height: 20px;
-          width: 20px;
-          border-radius: 50%;
-          background: #1e293b;
-          cursor: pointer;
-          border: 2px solid #ffffff;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
+    <div className="space-y-2">
+      {visibleGroups.map(g => {
+        const isSelected = selectedTypes.includes(g.typeNumber);
+        const imgSrc = `/images/floorplans/${prefix}_Type_${g.typeNumber}.png`;
+        const availCount = g.available;
 
-        .slider-thumb::-webkit-slider-track {
-          background: #e5e7eb;
-          height: 8px;
-          border-radius: 4px;
-        }
-
-        .slider-thumb::-moz-range-track {
-          background: #e5e7eb;
-          height: 8px;
-          border-radius: 4px;
-        }
-      `}</style>
-      {/* Full-Screen Hero Section */}
-      <div className="relative h-screen overflow-hidden">
-        {/* Static Image Background with Slideshow */}
-        <div className="absolute inset-0 z-0">
-          {heroImages.map((image, index) => (
-            <div
-              key={image}
-              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
-                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-              }`}
-              style={{
-                backgroundImage: `url(${image})`,
-                transform: `translateY(${scrollY * 0.5}px) scale(1.1)`,
-                willChange: 'transform'
-              }}
-            />
-          ))}
-        </div>
-        
-        {/* Enhanced Gradient Overlays for Image Background */}
-        <div 
-          className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70 parallax-slow z-10" 
-          style={{ transform: `translateY(${scrollY * 0.3}px)` }}
-        />
-        <div 
-          className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/30 parallax-slow z-10"
-          style={{ transform: `translateY(${scrollY * 0.2}px)` }}
-        />
-        <div 
-          className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-to-tr from-black/60 via-black/20 to-transparent parallax-slow z-10"
-          style={{ transform: `translateY(${scrollY * 0.1}px)` }}
-        />
-        
-        {/* Mobile-Optimized Hero Content */}
-        <div className="relative z-20 h-full flex items-center sm:items-end justify-start">
-          <div className="max-w-4xl px-4 sm:px-8 lg:px-16 pb-4 sm:pb-16 text-left ml-0 w-full mt-16 sm:mt-0">
-            <div className="animate-fade-in-up">
-              {/* Mobile-Optimized Main Headline */}
-              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-light text-white mb-4 sm:mb-6 leading-tight tracking-wide">
-                <span className="block font-serif animate-slide-in-left">Welkom</span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-200 animate-slide-in-right font-serif">
-                  bij De Steiger
-                </span>
-              </h1>
-              
-              {/* Mobile-Optimized Subtitle */}
-              <p className="text-base sm:text-lg md:text-2xl lg:text-3xl text-slate-100 mb-8 sm:mb-12 max-w-3xl font-light leading-relaxed animate-fade-in delay-300 tracking-wide">
-                duurzame bedrijfsruimtes<br />
-                <span className="text-white font-normal">voor ondernemers en beleggers</span>
-              </p>
-              
-              {/* Mobile-Optimized CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-stretch sm:items-start animate-fade-in delay-700 max-w-lg sm:max-w-none">
-                <button
-                  onClick={scrollToProjects}
-                  className="group bg-white text-slate-800 px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg md:hover:bg-blue-50 shadow-2xl md:hover:shadow-3xl w-full sm:w-auto touch-manipulation"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                  <span className="flex items-center justify-center">
-                    <span className="truncate">Ontdek Onze Units</span>
-                    <ArrowDown className="ml-2 sm:ml-3 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-y-1 transition-transform duration-300 flex-shrink-0" />
-                  </span>
-                </button>
-                
-                <button 
-                  onClick={() => setShowVideoModal(true)}
-                  className="group bg-transparent border-2 border-white text-white px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg md:hover:bg-white md:hover:text-slate-800 w-full sm:w-auto touch-manipulation"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                  <span className="flex items-center justify-center">
-                    <Play className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform duration-300 flex-shrink-0" />
-                    <span className="truncate">Bekijk Video</span>
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        
-
-        
-        {/* Scroll Indicator with Enhanced Animation */}
-        <div 
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce parallax-slow z-20"
-          style={{ 
-            transform: `translateX(-50%) translateY(${scrollY * -0.1}px)`,
-            opacity: Math.max(0, 1 - scrollY * 0.002)
-          }}
-        >
-          <button 
-            onClick={scrollToProjects}
-            className="flex flex-col items-center text-white/70 hover:text-white rubber-band-hover"
+        return (
+          <button
+            key={g.typeNumber}
+            onClick={() => onToggleType(g.typeNumber)}
+            className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all duration-150 ${
+              isSelected
+                ? 'border-yellow-400 bg-yellow-50 ring-1 ring-yellow-300'
+                : 'border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50'
+            }`}
           >
-            <ArrowDown className="h-6 w-6 mb-2 transform hover:translate-y-1 transition-transform duration-300" />
-            <span className="text-sm font-medium tracking-wide">Scroll Down</span>
-          </button>
-        </div>
-      </div>
-
-
-
-            {/* About De Steiger Section */}
-      <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 py-12 scroll-reveal-section">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-5 gap-16 items-start">
-            {/* Left Column - Interesse contact card (desktop) */}
-            <div className="lg:col-span-2 hidden lg:block">
-              <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-8 shadow-xl">
-                <h3 className="text-xl font-bold text-white mb-3">
-                  Interesse in een unit?
-                </h3>
-                <p className="text-slate-200 mb-5 leading-relaxed text-sm">
-                  Maak een afspraak voor een bezichtiging of ontvang meer informatie over beschikbare units.
-                </p>
-                <BezichtigingForm />
-                <p className="text-slate-400 text-xs mt-3">We nemen binnen 24 uur contact met u op.</p>
-              </div>
-            </div>
-            
-            {/* Right Column - Wider - Full width on mobile */}
-            <div className="lg:col-span-3 col-span-full">
-              <div className="max-w-3xl">
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                  Een bedrijfsunit of opslagbox kopen?
-                </h2>
-                <h3 className="text-2xl md:text-3xl font-light text-gray-600 mb-8 leading-relaxed">
-                  Ontdek de duurzame oplossingen van De Steiger
-                </h3>
-                
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-xl text-gray-700 leading-relaxed mb-6">
-                    Op zoek naar een <strong>modern, toekomstbestendig bedrijfsunit</strong> of een <strong>flexibele opslagbox</strong>? De Steiger ontwikkelt duurzame, koppelbare en multifunctionele werkruimtes op toplocaties in Nederland.
-                  </p>
-                  
-                  <p className="text-xl text-gray-700 leading-relaxed mb-6">
-                    Onze bedrijfsunits staan voor <strong>duurzaamheid, kwaliteit en veelzijdigheid</strong>, en vormen daarmee de perfecte basis voor een inspirerende werkomgeving met alle ruimte voor lef, creativiteit en rendement.
-                  </p>
-                  
-                  <p className="text-xl text-gray-700 leading-relaxed">
-                    Of je nu een bedrijfsunit wilt kopen voor eigen gebruik of een bedrijfsunit als belegging, bij ons vind je <strong>zakelijke huisvesting die meegroeit met jouw ambities</strong>.
-                  </p>
-                </div>
-
-                <div className="mt-12 flex flex-col sm:flex-row gap-4">
-                  <button 
-                    onClick={scrollToProjects}
-                    className="bg-gray-900 text-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-800 transform hover:scale-105 transition-all duration-300 shadow-lg"
-                  >
-                    Bekijk Onze Units
-                  </button>
-                  <button className="bg-white text-gray-900 border-2 border-gray-900 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 transform hover:scale-105 transition-all duration-300">
-                    Meer Over De Steiger
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Projects Section */}
-      <div id="projects" className="bg-gray-50 py-12 pb-6 lg:pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-
-          {/* Category Tabs */}
-          <div className="flex justify-center mb-10">
-            <div className="inline-flex bg-white border border-gray-200 rounded-full shadow-sm overflow-hidden">
-              <button
-                onClick={() => setCategory('bedrijfsunits')}
-                className={`px-6 py-3 text-sm font-medium transition-colors ${
-                  category === 'bedrijfsunits'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                Bedrijfsunits (12 types)
-              </button>
-              <button
-                onClick={() => setCategory('opslagboxen')}
-                className={`px-6 py-3 text-sm font-medium transition-colors border-l border-gray-200 ${
-                  category === 'opslagboxen'
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                Opslagboxen (16 types)
-              </button>
-            </div>
-          </div>
-
-          {/* Enhanced Filter Tabs */}
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-8 py-3 rounded-full font-medium transition-all duration-300 ${
-                filter === 'all'
-                  ? 'bg-gray-900 text-white shadow-lg transform scale-105'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 border border-gray-200 shadow-sm'
-              }`}
-            >
-              <Filter className="inline h-4 w-4 mr-2" />
-              Alle types
-            </button>
-            <button
-              onClick={() => setFilter('nu-in-verkoop')}
-              className={`px-8 py-3 rounded-full font-medium transition-all duration-300 ${
-                filter === 'nu-in-verkoop'
-                  ? 'bg-gray-900 text-white shadow-lg transform scale-105'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 border border-gray-200 shadow-sm'
-              }`}
-            >
-              Nu in verkoop
-            </button>
-          </div>
-
-          {/* Enhanced Search */}
-          <div className="max-w-md mx-auto mb-8">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="text"
-                placeholder="Zoek op locatie, garage, kantoor, box, unit..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm text-lg"
+            {/* Thumbnail */}
+            <div className="flex-shrink-0 w-12 h-12 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+              <img
+                src={imgSrc}
+                alt={`Type ${g.typeNumber}`}
+                className="w-full h-full object-contain p-1"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
             </div>
-          </div>
-
-          {/* Mobile Filter Button */}
-          <div className="lg:hidden mb-6">
-            <button
-              onClick={() => setShowMobileFilters(true)}
-              className="w-full flex items-center justify-center px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <Filter className="h-5 w-5 mr-2" />
-              Filters & Sortering
-              {(statusFilter !== 'all' || selectedTypes.length > 0 || sortBy !== 'name') && (
-                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                  {[
-                    statusFilter !== 'all' ? 1 : 0,
-                    selectedTypes.length,
-                    sortBy !== 'name' ? 1 : 0
-                  ].reduce((a, b) => a + b)}
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-gray-900 truncate">
+                {prefix} Type {g.typeNumber}
+              </div>
+              <div className="text-xs text-gray-500 mt-0.5">
+                {g.minArea === g.maxArea ? `${g.minArea}m²` : `${g.minArea}–${g.maxArea}m²`}
+                {' · '}
+                {g.minPrice === g.maxPrice
+                  ? `€ ${g.minPrice.toLocaleString('nl-NL')}`
+                  : `v.a. € ${g.minPrice.toLocaleString('nl-NL')}`}
+              </div>
+            </div>
+            {/* Availability */}
+            <div className="flex-shrink-0 text-right">
+              {availCount > 0 ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  {availCount}
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                  vol
                 </span>
               )}
-            </button>
-          </div>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
-          {/* Content Area with Sidebar */}
-          <div className="flex flex-col lg:flex-row gap-6">
-              {/* Desktop Filter Sidebar */}
-              {viewMode !== 'map' && (
-              <div className="hidden lg:block w-80 bg-white rounded-2xl shadow-lg border border-gray-100 p-6 space-y-6 shrink-0 h-fit">
-                <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+// ─── HomePage ────────────────────────────────────────────────────────────────
 
-                {/* Status Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="all">Alle statussen</option>
-                    <option value="beschikbaar">Beschikbaar</option>
-                    <option value="gereserveerd">Gereserveerd</option>
-                    <option value="verkocht">Verkocht</option>
-                  </select>
-                </div>
+export default function HomePage() {
+  const [category, setCategory] = useState<Category>('opslagboxen');
+  const [opslagboxFloor, setOpslagboxFloor] = useState<OpslagboxFloor>('bg');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
+  const [selectedUnit, setSelectedUnit] = useState<FloorplanUnit | null>(null);
 
-                {/* Sort By */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sorteren</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="name">Op naam</option>
-                    <option value="price">Op prijs (laag → hoog)</option>
-                    <option value="area">Op oppervlakte (groot → klein)</option>
-                    <option value="location">Op locatie</option>
-                  </select>
-                </div>
+  const [units, setUnits] = useState<FloorplanUnit[]>([]);
+  const [polygons, setPolygons] = useState<UnitPolygon[]>([]);
+  const [loadingUnits, setLoadingUnits] = useState(true);
+  const [loadingPolygons, setLoadingPolygons] = useState(true);
 
-                {/* Type Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Types</label>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {Array.from(new Set(categoryProjects.map(p => p.name))).map(type => (
-                      <label key={type} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedTypes.includes(type)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedTypes([...selectedTypes, type]);
-                            } else {
-                              setSelectedTypes(selectedTypes.filter(t => t !== type));
-                            }
-                          }}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">{type}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+  // Fetch units
+  useEffect(() => {
+    setLoadingUnits(true);
+    fetch('/api/units')
+      .then(r => r.json())
+      .then(d => setUnits(d.units ?? []))
+      .catch(console.error)
+      .finally(() => setLoadingUnits(false));
+  }, []);
 
-                {/* Area Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Oppervlakte: {areaMin}m² - {areaMax}m²
-                  </label>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Minimum</label>
-                      <input
-                        type="range"
-                        min={currentRanges.areaMin}
-                        max={currentRanges.areaMax}
-                        step="5"
-                        value={areaMin}
-                        onChange={(e) => setAreaMin(parseInt(e.target.value))}
-                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>{currentRanges.areaMin}m²</span>
-                        <span>{currentRanges.areaMax}m²</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Maximum</label>
-                      <input
-                        type="range"
-                        min={currentRanges.areaMin}
-                        max={currentRanges.areaMax}
-                        step="5"
-                        value={areaMax}
-                        onChange={(e) => setAreaMax(parseInt(e.target.value))}
-                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>{currentRanges.areaMin}m²</span>
-                        <span>{currentRanges.areaMax}m²</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+  // Fetch polygons
+  useEffect(() => {
+    fetch('/api/polygons')
+      .then(r => r.json())
+      .then(d => setPolygons(Array.isArray(d) ? d : []))
+      .catch(console.error)
+      .finally(() => setLoadingPolygons(false));
+  }, []);
 
-                {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Prijs: €{priceMin}k - €{priceMax}k
-                  </label>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Minimum</label>
-                      <input
-                        type="range"
-                        min={currentRanges.priceMin}
-                        max={currentRanges.priceMax}
-                        step="10"
-                        value={priceMin}
-                        onChange={(e) => setPriceMin(parseInt(e.target.value))}
-                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>€{currentRanges.priceMin}k</span>
-                        <span>€{currentRanges.priceMax}k</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Maximum</label>
-                      <input
-                        type="range"
-                        min={currentRanges.priceMin}
-                        max={currentRanges.priceMax}
-                        step="10"
-                        value={priceMax}
-                        onChange={(e) => setPriceMax(parseInt(e.target.value))}
-                        className="w-full h-2 bg-black rounded-lg appearance-none cursor-pointer slider-thumb"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>€{currentRanges.priceMin}k</span>
-                        <span>€{currentRanges.priceMax}k</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+  // Reset selected types when category changes
+  useEffect(() => { setSelectedTypes([]); }, [category]);
 
-                {/* Reset Button */}
-                <button
-                  onClick={() => {
-                    const ranges = getFilterRanges();
-                    setStatusFilter('all');
-                    setSelectedTypes([]);
-                    setAreaMin(ranges.areaMin);
-                    setAreaMax(ranges.areaMax);
-                    setPriceMin(ranges.priceMin);
-                    setPriceMax(ranges.priceMax);
-                    setSortBy('name');
-                    setSearchTerm('');
-                  }}
-                  className="w-full px-4 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Reset Filters
-                </button>
-              </div>
-              )}
+  const currentUnits = units.filter(u =>
+    u.type === (category === 'bedrijfsunits' ? 'bedrijfsunit' : 'opslagbox')
+  );
 
-              {/* Main Content */}
-              <div className="flex-1 min-w-0 w-full lg:w-auto">
-                {/* Top Controls */}
-                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
-                    <span className="text-sm font-medium text-gray-700">Weergave:</span>
-                    <div className="flex bg-white rounded border">
-                      <button
-                        onClick={() => setViewMode('grid')}
-                        className={`px-3 py-1 text-sm rounded-l ${viewMode === 'grid' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-                      >
-                        <Grid className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setViewMode('table')}
-                        className={`px-3 py-1 text-sm border-l border-r border-gray-200 ${viewMode === 'table' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-                      >
-                        <List className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setViewMode('map')}
-                        className={`px-3 py-1 text-sm rounded-r ${viewMode === 'map' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-                      >
-                        <Map className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+  const typeGroups = groupByType(currentUnits);
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setViewMode(viewMode === 'map' ? 'grid' : 'map')}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-                    >
-                      {viewMode === 'map' ? (
-                        <>
-                          <Grid className="w-4 h-4" />
-                          Bekijk Types
-                        </>
-                      ) : (
-                        <>
-                          <Map className="w-4 h-4" />
-                          Bekijk plattegrond
-                        </>
-                      )}
-                    </button>
+  const floorImage = category === 'bedrijfsunits'
+    ? BEDRIJFSUNITS_IMAGE
+    : OPSLAGBOX_FLOORS.find(f => f.id === opslagboxFloor)?.image ?? OPSLAGBOX_FLOORS[0].image;
 
-                    <button
-                      onClick={handleShare}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-                    >
-                      <Share2 className="w-4 h-4" />
-                      Delen
-                    </button>
-                  </div>
-                </div>
+  const toggleType = (tn: number) => {
+    setSelectedTypes(prev =>
+      prev.includes(tn) ? prev.filter(t => t !== tn) : [...prev, tn]
+    );
+  };
 
-                {/* Results Count */}
-                <div className="mb-4 text-sm text-gray-600">
-                  <strong>{filteredProjects.length}</strong> van {categoryProjects.length} types gevonden
-                </div>
+  const totalAvailable = currentUnits.filter(u => u.status === 'available').length;
+  const totalUnits = currentUnits.length;
 
-                          {/* Projects Grid/Table */}
-                {viewMode === 'map' ? (
-                  <div className="mb-8 lg:mb-16 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                    <InteractiveFloorplan />
-                  </div>
-                ) : isLoadingUnits ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 lg:mb-16">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
-                <div className="h-48 bg-gray-200" />
-                <div className="p-5 space-y-3">
-                  <div className="h-5 bg-gray-200 rounded w-3/4" />
-                  <div className="h-4 bg-gray-100 rounded w-1/2" />
-                  <div className="h-4 bg-gray-100 rounded w-2/3" />
-                  <div className="flex justify-between mt-4">
-                    <div className="h-6 bg-gray-200 rounded w-1/3" />
-                    <div className="h-6 bg-gray-100 rounded w-1/4" />
-                  </div>
-                </div>
-              </div>
+  const isLoading = loadingUnits || loadingPolygons;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-28 pb-14 px-4 text-center">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-yellow-400 text-sm font-semibold uppercase tracking-widest mb-3">
+            Steiger 74–77, Almere
+          </p>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-4 leading-tight">
+            Vind uw ideale<br />
+            <span className="text-yellow-400">bedrijfsruimte</span>
+          </h1>
+          <p className="text-slate-400 text-base sm:text-lg max-w-lg mx-auto">
+            Kies direct vanuit de plattegrond — klik op een unit voor meer informatie of om te reserveren.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Main section ─────────────────────────────────────────────────── */}
+      <main className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
+
+        {/* Category tabs + status filter */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          {/* Tabs */}
+          <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1 w-fit shadow-sm">
+            {(['opslagboxen', 'bedrijfsunits'] as Category[]).map(cat => (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 ${
+                  category === cat
+                    ? 'bg-slate-900 text-white shadow'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                {cat === 'opslagboxen' ? 'Opslagboxen' : 'Bedrijfsunits'}
+              </button>
             ))}
           </div>
-                ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 lg:mb-16">
-            {filteredProjects.map((project, index) => {
-              const typeMatch = project.slug.match(/type-(\d+)/);
-              const typeNum = typeMatch ? parseInt(typeMatch[1]) : 0;
-              const avail = typeAvailability[typeNum];
-              return (
-                <div key={project.id} className="rubber-band-hover">
-                  <ProjectCard
-                    project={project}
-                    availability={avail}
-                  />
-                </div>
-              );
-            })}
+
+          {/* Status filter + stats */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500 hidden sm:inline">
+              <span className="font-semibold text-green-600">{totalAvailable}</span> beschikbaar van {totalUnits}
+            </span>
+            <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1 shadow-sm">
+              {([
+                { id: 'all', label: 'Alle' },
+                { id: 'available', label: 'Beschikbaar' },
+              ] as { id: StatusFilter; label: string }[]).map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setStatusFilter(f.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                    statusFilter === f.id
+                      ? 'bg-green-600 text-white shadow'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
           </div>
-                ) : (
-                  <div className="mb-8 lg:mb-16">
-                    {renderTableView()}
-                  </div>
+        </div>
+
+        {/* Floor selector (opslagboxen only) */}
+        {category === 'opslagboxen' && (
+          <div className="flex gap-2 mb-4">
+            {OPSLAGBOX_FLOORS.map(fl => (
+              <button
+                key={fl.id}
+                onClick={() => setOpslagboxFloor(fl.id)}
+                className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${
+                  opslagboxFloor === fl.id
+                    ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                }`}
+              >
+                {fl.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Mobile stats */}
+        <div className="sm:hidden text-sm text-gray-500 mb-4">
+          <span className="font-semibold text-green-600">{totalAvailable}</span> beschikbaar van {totalUnits} units
+        </div>
+
+        {/* Loading state */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm">Plattegrond laden...</p>
+            </div>
+          </div>
+        ) : (
+          /* Desktop: floorplan left + legend right | Mobile: legend below map */
+          <div className="flex flex-col lg:flex-row gap-4">
+
+            {/* ── Floorplan ──────────────────────────────────────────────── */}
+            <div className="flex-1 min-w-0 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              {/* Legend (color key) */}
+              <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 text-xs text-gray-600">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-sm bg-green-400 opacity-80 inline-block" />
+                  Beschikbaar
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-sm bg-red-400 opacity-80 inline-block" />
+                  Gereserveerd
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-sm bg-gray-400 opacity-80 inline-block" />
+                  Verkocht
+                </span>
+                {selectedTypes.length > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm bg-yellow-400 opacity-80 inline-block" />
+                    Geselecteerd type
+                  </span>
                 )}
-
-          {!isLoadingUnits && filteredProjects.length === 0 && (
-            <div className="text-center py-16">
-              <div className="text-gray-400 mb-4">
-                <Search className="h-16 w-16 mx-auto" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Geen projecten gevonden</h3>
-              <p className="text-gray-600 mb-6">Probeer je zoekopdracht aan te passen of kies een ander filter.</p>
-              <button
-                onClick={() => {
-                  setFilter('all');
-                  setSearchTerm('');
-                }}
-                className="bg-slate-800 text-white px-6 py-3 rounded-lg hover:bg-slate-900 transition-colors"
-              >
-                Toon alle projecten
-              </button>
-            </div>
-          )}
-              </div>
-            </div>
-        </div>
-      </div>
 
-      {/* Interactive Location Map Section */}
-      <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 py-10 scroll-reveal-section">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-              Vind De Steiger bij jou in de buurt
-            </h2>
-            <p className="text-xl text-gray-700">
-              Ontdek onze strategische locatie in Almere en plan je bezoek.
-            </p>
-          </div>
+              <SimpleFloorplan
+                units={currentUnits}
+                polygons={polygons}
+                image={floorImage}
+                floorFilter={category === 'opslagboxen' ? opslagboxFloor : undefined}
+                unitType={category === 'bedrijfsunits' ? 'bedrijfsunit' : 'opslagbox'}
+                highlightTypeNumbers={selectedTypes.length > 0 ? selectedTypes : undefined}
+                statusFilter={statusFilter}
+                onUnitClick={setSelectedUnit}
+              />
 
-          <div className="grid lg:grid-cols-5 gap-8 items-start">
-            {/* Left Column - Map */}
-            <div className="lg:col-span-3 order-2 lg:order-1">
-                <div className="relative">
-                  <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div className="h-80 md:h-96 relative bg-gray-100">
-                      <iframe
-                        src="https://maps.google.com/maps?q=De%20Steiger%2074-77%2C%20Almere&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0 }}
-                        allowFullScreen
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        className="absolute inset-0"
-                      />
-                      
-                      <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 max-w-xs">
-                        <div className="flex items-start space-x-2">
-                          <div className="w-3 h-3 bg-yellow-400 rounded-full mt-1 animate-pulse"></div>
-                          <div>
-                            <h3 className="font-bold text-gray-900 text-sm">De Steiger 74 t/m 77, Almere</h3>
-                            <p className="text-gray-600 text-xs mb-2">Hoofdlocatie</p>
-                            <div className="space-y-1 text-xs text-gray-500">
-                              <p>🏢 {totalBedrijfsunitsCount !== null ? totalBedrijfsunitsCount : '...'} Bedrijfsunits</p>
-                              <p>📦 {totalOpslagboxenCount !== null ? `${totalOpslagboxenCount} Opslagboxen` : '...'}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+              <p className="text-center text-xs text-gray-400 py-3">
+                Klik op een unit om details te bekijken
+              </p>
+            </div>
+
+            {/* ── Type Legend (sidebar) ────────────────────────────────── */}
+            <div className="lg:w-72 xl:w-80 flex-shrink-0">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-gray-900">
+                    Types
+                  </h2>
+                  {selectedTypes.length > 0 && (
+                    <button
+                      onClick={() => setSelectedTypes([])}
+                      className="text-xs text-gray-400 hover:text-gray-600 underline"
+                    >
+                      Wis filter
+                    </button>
+                  )}
+                </div>
+
+                <div className="p-3 max-h-[calc(100vh-280px)] overflow-y-auto">
+                  <TypeLegend
+                    groups={typeGroups}
+                    category={category}
+                    selectedTypes={selectedTypes}
+                    onToggleType={toggleType}
+                    statusFilter={statusFilter}
+                  />
+
+                  {typeGroups.length === 0 && (
+                    <div className="text-center py-8 text-gray-400 text-sm">
+                      Geen types gevonden
                     </div>
-
-
-                  </div>
+                  )}
                 </div>
-            </div>
-            
-            {/* Right Column - Contact Form */}
-            <div className="lg:col-span-2 order-1 lg:order-2">
-              <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 shadow-xl">
-                <h3 className="text-xl font-bold text-white mb-3">
-                  Interesse in een unit?
-                </h3>
-                <p className="text-slate-200 mb-5 leading-relaxed text-sm">
-                  Maak een afspraak voor een bezichtiging of ontvang meer informatie over beschikbare units.
-                </p>
-                <BezichtigingForm />
-                <p className="text-slate-400 text-xs mt-3">
-                  We nemen binnen 24 uur contact met u op.
-                </p>
               </div>
+
+              {/* Tip */}
+              <p className="text-xs text-gray-400 text-center mt-3 px-2">
+                Klik op een type om het te markeren op de plattegrond
+              </p>
             </div>
           </div>
-        </div>
-      </div>
+        )}
+      </main>
 
-      {/* Mobile Interesse Section - Only visible on mobile */}
-      <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 pt-2 pb-6 lg:hidden scroll-reveal-section">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 shadow-xl">
-            <h3 className="text-xl font-bold text-white mb-3">
-              Interesse in een unit?
-            </h3>
-            <p className="text-slate-200 mb-4 leading-relaxed text-sm">
-              Maak een afspraak voor een bezichtiging of ontvang meer informatie over beschikbare units.
-            </p>
-            <BezichtigingForm />
-            <p className="text-slate-400 text-xs mt-3">We nemen binnen 24 uur contact met u op.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Share Modal */}
-      {showShareModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Deel deze zoekresultaten</h3>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <p className="text-gray-600 mb-4">
-              Deel deze gefilterde weergave van {filteredProjects.length} {category} met anderen.
-            </p>
-
-            {/* URL Display and Copy */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Link</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={shareUrl}
-                  readOnly
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50"
-                />
-                <button
-                  onClick={() => copyToClipboard(shareUrl)}
-                  className="flex items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm"
-                >
-                  <Copy className="h-4 w-4" />
-                  Kopieer
-                </button>
-              </div>
-            </div>
-
-            {/* Social Sharing Buttons */}
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-gray-700">Delen via:</p>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => shareToSocial('whatsapp')}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                >
-                  <span className="text-lg">💬</span>
-                  WhatsApp
-                </button>
-                <button
-                  onClick={() => shareToSocial('facebook')}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  <Facebook className="h-4 w-4" />
-                  Facebook
-                </button>
-                <button
-                  onClick={() => shareToSocial('twitter')}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-sky-500 text-white rounded-md hover:bg-sky-600"
-                >
-                  <Twitter className="h-4 w-4" />
-                  Twitter
-                </button>
-                <button
-                  onClick={() => shareToSocial('linkedin')}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800"
-                >
-                  <LinkIcon className="h-4 w-4" />
-                  LinkedIn
-                </button>
-              </div>
-            </div>
-
-            {/* Native Share API (if available) */}
-            {typeof navigator !== 'undefined' && navigator.share && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => {
-                    navigator.share({
-                      title: 'De Steiger - Bedrijfsunits',
-                      text: `Bekijk deze ${filteredProjects.length} bedrijfsunits op De Steiger in Almere`,
-                      url: shareUrl,
-                    });
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-                >
-                  <Share2 className="h-4 w-4" />
-                  Meer opties...
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Filters Modal */}
-      {showMobileFilters && (
-        <div className="lg:hidden fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            {/* Backdrop */}
-            <div 
-              className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-              onClick={() => setShowMobileFilters(false)}
-            />
-            
-            {/* Modal Panel */}
-            <div className="relative transform overflow-hidden rounded-t-xl sm:rounded-xl bg-white text-left shadow-xl transition-all w-full max-w-lg">
-              {/* Header */}
-              <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Filters & Sortering</h3>
-                  <button
-                    onClick={() => setShowMobileFilters(false)}
-                    className="p-2 rounded-full hover:bg-gray-200 transition-colors"
-                  >
-                    <X className="h-5 w-5 text-gray-500" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="px-6 py-6 space-y-6 max-h-96 overflow-y-auto">
-                {/* Status Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="all">Alle statussen</option>
-                    <option value="beschikbaar">Beschikbaar</option>
-                    <option value="gereserveerd">Gereserveerd</option>
-                    <option value="verkocht">Verkocht</option>
-                  </select>
-                </div>
-
-                {/* Sort By */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sorteren</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="name">Op naam</option>
-                    <option value="price">Op prijs (laag → hoog)</option>
-                    <option value="area">Op oppervlakte (groot → klein)</option>
-                    <option value="location">Op locatie</option>
-                  </select>
-                </div>
-
-                {/* Type Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Types</label>
-                  <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {Array.from(new Set(categoryProjects.map(p => p.name))).map(type => (
-                      <label key={type} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedTypes.includes(type)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedTypes([...selectedTypes, type]);
-                            } else {
-                              setSelectedTypes(selectedTypes.filter(t => t !== type));
-                            }
-                          }}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700">{type}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex gap-3">
-                <button
-                  onClick={() => {
-                    setStatusFilter('all');
-                    setSelectedTypes([]);
-                    setSortBy('name');
-                  }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  Reset
-                </button>
-                <button
-                  onClick={() => setShowMobileFilters(false)}
-                  className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  Toepassen
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Video Modal */}
-      <VideoModal
-        isOpen={showVideoModal}
-        onClose={() => setShowVideoModal(false)}
-        videoId="kahhgYdyvuU"
-        title="De Steiger - Bedrijfsunits & Opslagboxen"
-      />
-
-    </>
+      {/* ── Unit Drawer ────────────────────────────────────────────────────── */}
+      <UnitDrawer unit={selectedUnit} onClose={() => setSelectedUnit(null)} />
+    </div>
   );
 }
