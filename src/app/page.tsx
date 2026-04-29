@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useReducer } from 'react';
+import { useState, useEffect, useReducer, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Calendar } from 'lucide-react';
@@ -308,7 +308,7 @@ function TypeDetail({
 
 // ─── HomePage ────────────────────────────────────────────────────────────────
 
-export default function HomePage() {
+function HomePageContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
   const initialCategory: Category =
@@ -709,5 +709,17 @@ export default function HomePage() {
       {/* ── Unit Drawer ────────────────────────────────────────────────────── */}
       <UnitDrawer unit={selectedUnit} onClose={() => setSelectedUnit(null)} />
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500" />
+      </div>
+    }>
+      <HomePageContent />
+    </Suspense>
   );
 }
