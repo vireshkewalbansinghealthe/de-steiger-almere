@@ -201,75 +201,90 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-28 pb-16 px-4 text-center">
+      <section className="relative overflow-hidden pt-24 pb-0 px-4 text-center">
         {/* Background photo */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/images/beide2.png')" }}
         />
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/90" />
+        {/* Dark overlay — fades out at bottom so it flows into the content */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-950/95" />
 
         {/* Content */}
-        <div className="relative z-10 max-w-2xl mx-auto">
-          <p className="text-yellow-400 text-xs font-bold uppercase tracking-[0.2em] mb-5">
+        <div className="relative z-10 max-w-3xl mx-auto">
+          <p className="text-yellow-400 text-xs font-bold uppercase tracking-[0.22em] mb-4">
             Steiger 74–77 &nbsp;·&nbsp; Almere
           </p>
-          <h1 className="text-4xl sm:text-6xl font-black text-white mb-5 leading-[1.08] tracking-tight">
+          <h1 className="text-4xl sm:text-6xl font-black text-white mb-4 leading-[1.06] tracking-tight">
             Vind uw ideale<br />
             <span className="text-yellow-400">bedrijfsruimte</span>
           </h1>
-          <p className="text-slate-300 text-base sm:text-lg max-w-md mx-auto leading-relaxed font-light">
-            Kies direct vanuit de plattegrond — klik op een unit voor informatie of reservering.
+          <p className="text-slate-400 text-sm sm:text-base max-w-sm mx-auto leading-relaxed mb-8">
+            Klik op een unit op de plattegrond voor details of reservering.
           </p>
-        </div>
-      </section>
 
-      {/* ── Main section ─────────────────────────────────────────────────── */}
-      <main className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
-
-        {/* Category tabs + status filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-          {/* Tabs */}
-          <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1 w-fit shadow-sm">
+          {/* ── Prominent category tabs inside hero ── */}
+          <div className="inline-flex bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-1.5 gap-1.5 shadow-2xl mb-8">
             {(['opslagboxen', 'bedrijfsunits'] as Category[]).map(cat => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
-                className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150 ${
+                className={`px-8 py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-200 ${
                   category === cat
-                    ? 'bg-slate-900 text-white shadow'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-white text-slate-900 shadow-lg'
+                    : 'text-white/80 hover:text-white hover:bg-white/15'
                 }`}
               >
                 {cat === 'opslagboxen' ? 'Opslagboxen' : 'Bedrijfsunits'}
+                {!isLoading && (
+                  <span className={`ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                    category === cat ? 'bg-slate-100 text-slate-500' : 'bg-white/20 text-white/70'
+                  }`}>
+                    {cat === category
+                      ? totalAvailable + ' vrij'
+                      : units.filter(u =>
+                          u.type === (cat === 'bedrijfsunits' ? 'bedrijfsunit' : 'opslagbox') &&
+                          u.status === 'available'
+                        ).length + ' vrij'
+                    }
+                  </span>
+                )}
               </button>
             ))}
           </div>
+        </div>
 
-          {/* Status filter + stats */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 hidden sm:inline">
-              <span className="font-semibold text-green-600">{totalAvailable}</span> beschikbaar van {totalUnits}
-            </span>
-            <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1 shadow-sm">
-              {([
-                { id: 'all', label: 'Alle' },
-                { id: 'available', label: 'Beschikbaar' },
-              ] as { id: StatusFilter; label: string }[]).map(f => (
-                <button
-                  key={f.id}
-                  onClick={() => setStatusFilter(f.id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
-                    statusFilter === f.id
-                      ? 'bg-green-600 text-white shadow'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
+        {/* Bottom fade into page bg */}
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none" />
+      </section>
+
+      {/* ── Main section ─────────────────────────────────────────────────── */}
+      <main className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-8">
+
+        {/* Status filter + stats bar */}
+        <div className="flex items-center justify-between mb-5">
+          <span className="text-sm text-gray-500">
+            <span className="font-semibold text-green-600">{totalAvailable}</span>
+            <span className="hidden sm:inline"> beschikbaar</span>
+            <span className="text-gray-400"> / {totalUnits} units</span>
+          </span>
+          <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1 shadow-sm">
+            {([
+              { id: 'all', label: 'Alle' },
+              { id: 'available', label: 'Beschikbaar' },
+            ] as { id: StatusFilter; label: string }[]).map(f => (
+              <button
+                key={f.id}
+                onClick={() => setStatusFilter(f.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  statusFilter === f.id
+                    ? 'bg-green-600 text-white shadow'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
         </div>
 
