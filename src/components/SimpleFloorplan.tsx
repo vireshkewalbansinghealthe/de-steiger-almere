@@ -58,14 +58,37 @@ export default function SimpleFloorplan({
   onUnitClick,
 }: SimpleFloorplanProps) {
   const [hoveredUnit, setHoveredUnit] = useState<string | null>(null);
-  const [showAltImage, setShowAltImage] = useState(false);
-  const swipeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 0 = type floorplan, 1+ = building photos
+  const [slideIndex, setSlideIndex] = useState(0);
+  const cycleIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Track viewport-level cursor position for fixed tooltip
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Cleanup timer on unmount
-  useEffect(() => () => { if (swipeTimerRef.current) clearTimeout(swipeTimerRef.current); }, []);
+  const BUILDING_PHOTOS = [
+    '/images/beide1.png',
+    '/images/beide2.png',
+    '/images/Image1.png',
+    '/images/Image2.png',
+    '/images/Image4.png',
+    '/images/Image6.png',
+    '/images/Image8.png',
+    '/images/Image9.png',
+    '/images/Image10.png',
+    '/images/Image11.png',
+    '/images/Image12.png',
+    '/images/Image13.png',
+    '/images/Image14.png',
+    '/images/Image15.png',
+    '/images/Image16.png',
+    '/images/Image17.png',
+    '/images/Image19.png',
+    '/images/Image20.png',
+  ];
+  const TOTAL_SLIDES = 1 + BUILDING_PHOTOS.length; // slide 0 = floorplan, rest = photos
+
+  // Cleanup interval on unmount
+  useEffect(() => () => { if (cycleIntervalRef.current) clearInterval(cycleIntervalRef.current); }, []);
 
   const relevantPolygons = polygons.filter(p => {
     const matchesType = p.type === unitType || (!p.type && unitType === 'bedrijfsunit');
@@ -134,14 +157,16 @@ export default function SimpleFloorplan({
               className="cursor-pointer transition-all duration-150"
               onMouseEnter={() => {
                 setHoveredUnit(poly.unit_number);
-                setShowAltImage(false);
-                if (swipeTimerRef.current) clearTimeout(swipeTimerRef.current);
-                swipeTimerRef.current = setTimeout(() => setShowAltImage(true), 2000);
+                setSlideIndex(0);
+                if (cycleIntervalRef.current) clearInterval(cycleIntervalRef.current);
+                cycleIntervalRef.current = setInterval(() => {
+                  setSlideIndex(i => (i + 1) % TOTAL_SLIDES);
+                }, 2000);
               }}
               onMouseLeave={() => {
                 setHoveredUnit(null);
-                setShowAltImage(false);
-                if (swipeTimerRef.current) clearTimeout(swipeTimerRef.current);
+                setSlideIndex(0);
+                if (cycleIntervalRef.current) clearInterval(cycleIntervalRef.current);
               }}
               onClick={() => unit && onUnitClick(unit)}
             />
@@ -166,11 +191,11 @@ export default function SimpleFloorplan({
             style={{ left, top, width: TW }}
           >
             <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-              {/* Image area — crossfades between type floorplan and building photo */}
+              {/* Image carousel — type floorplan first, then building photos */}
               {imgSrc && (
-                <div className="relative h-32 border-b border-gray-100 overflow-hidden">
-                  {/* Type floorplan (shown first) */}
-                  <div className={`absolute inset-0 bg-gray-50 flex items-center justify-center transition-opacity duration-500 ${showAltImage ? 'opacity-0' : 'opacity-100'}`}>
+                <div className="relative h-32 border-b border-gray-100 overflow-hidden bg-gray-50">
+                  {/* Slide 0: type floorplan */}
+                  <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${slideIndex === 0 ? 'opacity-100' : 'opacity-0'}`}>
                     <img
                       src={imgSrc}
                       alt={`Type ${hoveredUnitData.type_number}`}
@@ -178,18 +203,27 @@ export default function SimpleFloorplan({
                       onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
                   </div>
-                  {/* Building photo (fades in after 2s) */}
-                  <div className={`absolute inset-0 transition-opacity duration-500 ${showAltImage ? 'opacity-100' : 'opacity-0'}`}>
-                    <img
-                      src="/images/beide1.png"
-                      alt="De Steiger Almere"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {/* Tiny indicator dots */}
+                  {/* Slides 1+: building photos */}
+                  {BUILDING_PHOTOS.map((src, i) => (
+                    <div
+                      key={src}
+                      className={`absolute inset-0 transition-opacity duration-500 ${slideIndex === i + 1 ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                      <img src={src} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                  {/* Dot indicators */}
                   <div className="absolute bottom-1.5 left-0 right-0 flex justify-center gap-1 z-10">
-                    <span className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${!showAltImage ? 'bg-white' : 'bg-white/40'}`} />
-                    <span className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${showAltImage ? 'bg-white' : 'bg-white/40'}`} />
+                    {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`rounded-full transition-all duration-300 ${
+                          slideIndex === i
+                            ? 'w-3 h-1.5 bg-white'
+                            : 'w-1.5 h-1.5 bg-white/40'
+                        }`}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
