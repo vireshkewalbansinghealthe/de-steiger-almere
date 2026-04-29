@@ -14,7 +14,6 @@ interface UnitPolygon {
 }
 
 type Category = 'bedrijfsunits' | 'opslagboxen';
-type OpslagboxFloor = 'bg' | '1e' | '2e';
 type StatusFilter = 'all' | 'available';
 
 interface TypeGroup {
@@ -31,7 +30,7 @@ interface TypeGroup {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const OPSLAGBOX_FLOORS: { id: OpslagboxFloor; label: string; image: string }[] = [
+const OPSLAGBOX_FLOORS: { id: string; label: string; image: string }[] = [
   { id: 'bg',  label: 'Begane grond', image: '/images/floorplans/opslagbox0.png' },
   { id: '1e', label: '1e verdieping', image: '/images/floorplans/opslagbox1.png' },
   { id: '2e', label: '2e verdieping', image: '/images/floorplans/opslagbox2.png' },
@@ -145,7 +144,6 @@ function TypeLegend({
 
 export default function HomePage() {
   const [category, setCategory] = useState<Category>('opslagboxen');
-  const [opslagboxFloor, setOpslagboxFloor] = useState<OpslagboxFloor>('bg');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<FloorplanUnit | null>(null);
@@ -183,9 +181,7 @@ export default function HomePage() {
 
   const typeGroups = groupByType(currentUnits);
 
-  const floorImage = category === 'bedrijfsunits'
-    ? BEDRIJFSUNITS_IMAGE
-    : OPSLAGBOX_FLOORS.find(f => f.id === opslagboxFloor)?.image ?? OPSLAGBOX_FLOORS[0].image;
+  const floorImage = BEDRIJFSUNITS_IMAGE;
 
   const toggleType = (tn: number) => {
     setSelectedTypes(prev =>
@@ -288,28 +284,19 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Floor selector (opslagboxen only) */}
-        {category === 'opslagboxen' && (
-          <div className="flex gap-2 mb-4">
-            {OPSLAGBOX_FLOORS.map(fl => (
-              <button
-                key={fl.id}
-                onClick={() => setOpslagboxFloor(fl.id)}
-                className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${
-                  opslagboxFloor === fl.id
-                    ? 'bg-slate-900 text-white border-slate-900'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                }`}
-              >
-                {fl.label}
-              </button>
-            ))}
-          </div>
-        )}
-
         {/* Mobile stats */}
         <div className="sm:hidden text-sm text-gray-500 mb-4">
           <span className="font-semibold text-green-600">{totalAvailable}</span> beschikbaar van {totalUnits} units
+        </div>
+
+        {/* Color key */}
+        <div className="flex flex-wrap items-center gap-4 mb-4 text-xs text-gray-500">
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-green-400 opacity-80 inline-block" />Beschikbaar</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-400 opacity-80 inline-block" />Gereserveerd</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-gray-400 opacity-80 inline-block" />Verkocht</span>
+          {selectedTypes.length > 0 && (
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-yellow-400 opacity-80 inline-block" />Geselecteerd type</span>
+          )}
         </div>
 
         {/* Loading state */}
@@ -321,45 +308,48 @@ export default function HomePage() {
             </div>
           </div>
         ) : (
-          /* Desktop: floorplan left + legend right | Mobile: legend below map */
           <div className="flex flex-col lg:flex-row gap-4">
 
-            {/* ── Floorplan ──────────────────────────────────────────────── */}
-            <div className="flex-1 min-w-0 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              {/* Legend (color key) */}
-              <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 text-xs text-gray-600">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-green-400 opacity-80 inline-block" />
-                  Beschikbaar
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-red-400 opacity-80 inline-block" />
-                  Gereserveerd
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-sm bg-gray-400 opacity-80 inline-block" />
-                  Verkocht
-                </span>
-                {selectedTypes.length > 0 && (
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-sm bg-yellow-400 opacity-80 inline-block" />
-                    Geselecteerd type
-                  </span>
-                )}
-              </div>
+            {/* ── Floorplan(s) ───────────────────────────────────────────── */}
+            <div className="flex-1 min-w-0 space-y-4">
 
-              <SimpleFloorplan
-                units={currentUnits}
-                polygons={polygons}
-                image={floorImage}
-                floorFilter={category === 'opslagboxen' ? opslagboxFloor : undefined}
-                unitType={category === 'bedrijfsunits' ? 'bedrijfsunit' : 'opslagbox'}
-                highlightTypeNumbers={selectedTypes.length > 0 ? selectedTypes : undefined}
-                statusFilter={statusFilter}
-                onUnitClick={setSelectedUnit}
-              />
+              {category === 'opslagboxen' ? (
+                /* All 3 floors stacked side-by-side */
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {OPSLAGBOX_FLOORS.map(fl => (
+                    <div key={fl.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                      <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                        <span className="text-xs font-semibold text-gray-700">{fl.label}</span>
+                      </div>
+                      <SimpleFloorplan
+                        units={currentUnits}
+                        polygons={polygons}
+                        image={fl.image}
+                        floorFilter={fl.id}
+                        unitType="opslagbox"
+                        highlightTypeNumbers={selectedTypes.length > 0 ? selectedTypes : undefined}
+                        statusFilter={statusFilter}
+                        onUnitClick={setSelectedUnit}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* Single bedrijfsunits floorplan */
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <SimpleFloorplan
+                    units={currentUnits}
+                    polygons={polygons}
+                    image={floorImage}
+                    unitType="bedrijfsunit"
+                    highlightTypeNumbers={selectedTypes.length > 0 ? selectedTypes : undefined}
+                    statusFilter={statusFilter}
+                    onUnitClick={setSelectedUnit}
+                  />
+                </div>
+              )}
 
-              <p className="text-center text-xs text-gray-400 py-3">
+              <p className="text-center text-xs text-gray-400">
                 Klik op een unit om details te bekijken
               </p>
             </div>
