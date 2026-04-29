@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useReducer } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, Calendar } from 'lucide-react';
 import SimpleFloorplan, { FloorplanUnit } from '../components/SimpleFloorplan';
 import UnitDrawer from '../components/UnitDrawer';
 
@@ -82,14 +84,14 @@ function typesReducer(state: number[], action: TypesAction): number[] {
 function TypeLegend({
   groups,
   category,
-  selectedTypes,
-  onToggleType,
+  selectedTypeDetail,
+  onSelectType,
   statusFilter,
 }: {
   groups: TypeGroup[];
   category: Category;
-  selectedTypes: number[];
-  onToggleType: (tn: number) => void;
+  selectedTypeDetail: number | null;
+  onSelectType: (tn: number) => void;
   statusFilter: StatusFilter;
 }) {
   const prefix = category === 'bedrijfsunits' ? 'Bedrijfsunit' : 'Opslagbox';
@@ -100,36 +102,19 @@ function TypeLegend({
   return (
     <div className="space-y-2">
       {visibleGroups.map(g => {
-        const isSelected = selectedTypes.includes(g.typeNumber);
+        const isSelected = selectedTypeDetail === g.typeNumber;
         const imgSrc = `/images/floorplans/${prefix}_Type_${g.typeNumber}.png`;
-        const availCount = g.available;
 
         return (
-          <label
+          <button
             key={g.typeNumber}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-all duration-150 ${
+            onClick={() => onSelectType(g.typeNumber)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-all duration-150 text-left ${
               isSelected
                 ? 'border-yellow-400 bg-yellow-50 ring-1 ring-yellow-300'
                 : 'border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50'
             }`}
           >
-            {/* Native checkbox — hidden, but drives the state */}
-            <input
-              type="checkbox"
-              className="sr-only"
-              checked={isSelected}
-              onChange={() => onToggleType(g.typeNumber)}
-            />
-            {/* Visual checkbox */}
-            <div className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors pointer-events-none ${
-              isSelected ? 'bg-yellow-400 border-yellow-500' : 'border-gray-300 bg-white'
-            }`}>
-              {isSelected && (
-                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 10">
-                  <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              )}
-            </div>
             {/* Thumbnail */}
             <div className="flex-shrink-0 w-10 h-10 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
               <img
@@ -152,21 +137,163 @@ function TypeLegend({
                   : `v.a. € ${g.minPrice.toLocaleString('nl-NL')}`}
               </div>
             </div>
-            {/* Availability */}
-            <div className="flex-shrink-0 text-right">
-              {availCount > 0 ? (
+            {/* Availability badge */}
+            <div className="flex-shrink-0 flex items-center gap-1">
+              {g.available > 0 ? (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                  {availCount}
+                  {g.available} vrij
                 </span>
               ) : (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
                   vol
                 </span>
               )}
+              <svg className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </div>
-          </label>
+          </button>
         );
       })}
+    </div>
+  );
+}
+
+// ─── TypeDetail ───────────────────────────────────────────────────────────────
+
+function TypeDetail({
+  group,
+  category,
+  units,
+  onBack,
+  onUnitClick,
+}: {
+  group: TypeGroup;
+  category: Category;
+  units: FloorplanUnit[];
+  onBack: () => void;
+  onUnitClick: (unit: FloorplanUnit) => void;
+}) {
+  const prefix = category === 'bedrijfsunits' ? 'Bedrijfsunit' : 'Opslagbox';
+  const imgSrc = `/images/floorplans/${prefix}_Type_${group.typeNumber}.png`;
+  const typeUnits = units
+    .filter(u => u.type_number === group.typeNumber)
+    .sort((a, b) => parseInt(a.unit_number) - parseInt(b.unit_number));
+
+  const typeSlug = category === 'bedrijfsunits' ? 'bedrijfsunit' : 'opslagbox';
+
+  const statusLabel = (status: string) => {
+    if (status === 'available') return { label: 'Vrij', cls: 'bg-green-100 text-green-700' };
+    if (status === 'reserved')  return { label: 'Bezet', cls: 'bg-orange-100 text-orange-700' };
+    return { label: 'Verkocht', cls: 'bg-gray-100 text-gray-500' };
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+        <button
+          onClick={onBack}
+          className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-800 transition-colors flex-shrink-0"
+          title="Terug naar overzicht"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold text-gray-900">{prefix} Type {group.typeNumber}</div>
+          <div className="text-xs text-gray-400">{typeUnits.length} units totaal</div>
+        </div>
+      </div>
+
+      {/* Scrollable body */}
+      <div className="flex-1 overflow-y-auto">
+
+        {/* Floorplan image */}
+        <div className="bg-gray-50 border-b border-gray-100 p-4 flex items-center justify-center min-h-[120px]">
+          <img
+            src={imgSrc}
+            alt={`Type ${group.typeNumber} plattegrond`}
+            className="max-h-36 w-full object-contain"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        </div>
+
+        {/* Specs grid */}
+        <div className="p-3 grid grid-cols-2 gap-2 border-b border-gray-100">
+          <div className="bg-gray-50 rounded-xl p-2.5">
+            <div className="text-xs text-gray-400 mb-0.5">Oppervlakte</div>
+            <div className="text-sm font-bold text-gray-900">
+              {group.minArea === group.maxArea
+                ? `${group.minArea} m²`
+                : `${group.minArea}–${group.maxArea} m²`}
+            </div>
+          </div>
+          <div className="bg-yellow-50 rounded-xl p-2.5">
+            <div className="text-xs text-yellow-600 mb-0.5">v.a. koopprijs</div>
+            <div className="text-sm font-bold text-yellow-900">
+              € {group.minPrice.toLocaleString('nl-NL')}
+            </div>
+          </div>
+        </div>
+
+        {/* Availability summary */}
+        <div className="px-3 py-2.5 flex gap-1.5 flex-wrap border-b border-gray-100">
+          <span className="text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-medium">
+            {group.available} beschikbaar
+          </span>
+          {group.reserved > 0 && (
+            <span className="text-xs bg-orange-100 text-orange-700 px-2.5 py-0.5 rounded-full font-medium">
+              {group.reserved} gereserveerd
+            </span>
+          )}
+          {group.sold > 0 && (
+            <span className="text-xs bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-full font-medium">
+              {group.sold} verkocht
+            </span>
+          )}
+        </div>
+
+        {/* Unit list */}
+        <div className="p-3 space-y-1.5">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-1">
+            Alle units
+          </p>
+          {typeUnits.map(unit => {
+            const { label, cls } = statusLabel(unit.status);
+            return (
+              <div
+                key={unit.unit_number}
+                onClick={() => onUnitClick(unit)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-100 bg-white hover:border-yellow-200 hover:bg-yellow-50/40 cursor-pointer transition-all duration-150 group"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-gray-900">
+                    Unit {unit.unit_number}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {unit.gross_area} m² · € {unit.sale_price.toLocaleString('nl-NL')}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>
+                    {label}
+                  </span>
+                  {unit.status === 'available' && (
+                    <Link
+                      href={`/reserveren/${typeSlug}-${unit.unit_number}`}
+                      onClick={e => e.stopPropagation()}
+                      className="text-xs bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-semibold px-2 py-0.5 rounded-full transition-colors flex items-center gap-0.5"
+                    >
+                      <Calendar className="h-2.5 w-2.5" />
+                      <span>Reserveer</span>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -178,6 +305,7 @@ export default function HomePage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedTypes, dispatchTypes] = useReducer(typesReducer, []);
   const [selectedUnit, setSelectedUnit] = useState<FloorplanUnit | null>(null);
+  const [selectedTypeDetail, setSelectedTypeDetail] = useState<number | null>(null);
 
   // Contact form
   const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', message: '' });
@@ -231,8 +359,11 @@ export default function HomePage() {
       .finally(() => setLoadingPolygons(false));
   }, []);
 
-  // Reset selected types when category changes
-  useEffect(() => { dispatchTypes({ type: 'clear' }); }, [category]);
+  // Reset selected types and detail view when category changes
+  useEffect(() => {
+    dispatchTypes({ type: 'clear' });
+    setSelectedTypeDetail(null);
+  }, [category]);
 
   const currentUnits = units.filter(u =>
     u.type === (category === 'bedrijfsunits' ? 'bedrijfsunit' : 'opslagbox')
@@ -377,7 +508,7 @@ export default function HomePage() {
                         image={fl.image}
                         floorFilter={fl.id}
                         unitType="opslagbox"
-                        highlightTypeNumbers={selectedTypes.length > 0 ? selectedTypes : undefined}
+                        highlightTypeNumbers={selectedTypeDetail !== null ? [selectedTypeDetail] : selectedTypes.length > 0 ? selectedTypes : undefined}
                         statusFilter={statusFilter}
                         onUnitClick={setSelectedUnit}
                       />
@@ -392,7 +523,7 @@ export default function HomePage() {
                     polygons={polygons}
                     image={floorImage}
                     unitType="bedrijfsunit"
-                    highlightTypeNumbers={selectedTypes.length > 0 ? selectedTypes : undefined}
+                    highlightTypeNumbers={selectedTypeDetail !== null ? [selectedTypeDetail] : selectedTypes.length > 0 ? selectedTypes : undefined}
                     statusFilter={statusFilter}
                     onUnitClick={setSelectedUnit}
                   />
@@ -404,45 +535,66 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* ── Type Legend (sidebar) ────────────────────────────────── */}
+            {/* ── Type sidebar (legend or detail) ──────────────────── */}
             <div className="lg:w-72 xl:w-80 flex-shrink-0">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-sm font-semibold text-gray-900">Types</h2>
-                    <p className="text-xs text-gray-400 mt-0.5">Selecteer meerdere types</p>
-                  </div>
-                  {selectedTypes.length > 0 && (
-                    <button
-                      onClick={() => dispatchTypes({ type: 'clear' })}
-                      className="text-xs text-gray-400 hover:text-gray-600 underline"
-                    >
-                      Wis ({selectedTypes.length})
-                    </button>
-                  )}
-                </div>
-
-                <div className="p-3 max-h-[calc(100vh-280px)] overflow-y-auto">
-                  <TypeLegend
-                    groups={typeGroups}
-                    category={category}
-                    selectedTypes={selectedTypes}
-                    onToggleType={toggleType}
-                    statusFilter={statusFilter}
-                  />
-
-                  {typeGroups.length === 0 && (
-                    <div className="text-center py-8 text-gray-400 text-sm">
-                      Geen types gevonden
+              <div
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col"
+                style={{ maxHeight: 'calc(100vh - 200px)' }}
+              >
+                {selectedTypeDetail !== null ? (
+                  /* ── Detail view ── */
+                  (() => {
+                    const group = typeGroups.find(g => g.typeNumber === selectedTypeDetail);
+                    if (!group) return null;
+                    return (
+                      <TypeDetail
+                        group={group}
+                        category={category}
+                        units={currentUnits}
+                        onBack={() => {
+                          setSelectedTypeDetail(null);
+                          dispatchTypes({ type: 'clear' });
+                        }}
+                        onUnitClick={unit => {
+                          setSelectedUnit(unit);
+                        }}
+                      />
+                    );
+                  })()
+                ) : (
+                  /* ── Legend list ── */
+                  <>
+                    <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
+                      <h2 className="text-sm font-semibold text-gray-900">Types</h2>
+                      <p className="text-xs text-gray-400 mt-0.5">Klik voor details en beschikbaarheid</p>
                     </div>
-                  )}
-                </div>
+                    <div className="p-3 overflow-y-auto flex-1">
+                      <TypeLegend
+                        groups={typeGroups}
+                        category={category}
+                        selectedTypeDetail={selectedTypeDetail}
+                        onSelectType={tn => {
+                          setSelectedTypeDetail(tn);
+                          dispatchTypes({ type: 'clear' });
+                          dispatchTypes({ type: 'toggle', typeNumber: tn });
+                        }}
+                        statusFilter={statusFilter}
+                      />
+                      {typeGroups.length === 0 && (
+                        <div className="text-center py-8 text-gray-400 text-sm">
+                          Geen types gevonden
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
 
-              {/* Tip */}
-              <p className="text-xs text-gray-400 text-center mt-3 px-2">
-                Klik op een type om het te markeren op de plattegrond
-              </p>
+              {selectedTypeDetail === null && (
+                <p className="text-xs text-gray-400 text-center mt-3 px-2">
+                  Selecteer een type om de details te bekijken
+                </p>
+              )}
             </div>
           </div>
         )}
