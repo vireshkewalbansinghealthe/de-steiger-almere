@@ -132,6 +132,20 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
+            {/* Aanbod */}
+            <Link
+              href="/"
+              className={`px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                pathname === '/'
+                  ? isScrolled ? 'text-yellow-600 bg-yellow-50' : 'text-yellow-400'
+                  : isScrolled
+                  ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50'
+                  : 'text-white hover:text-slate-300 hover:bg-white/10'
+              }`}
+            >
+              Aanbod
+            </Link>
+
             {/* Financiering */}
             <a
               href="https://clarencefinance.nl/desteiger/"
@@ -386,6 +400,15 @@ export default function Header() {
               <div className="px-6 py-6 space-y-1">
                 {/* Main Navigation */}
                 <div className="space-y-1">
+
+                  <Link
+                    href="/"
+                    className="flex items-center px-4 py-3 text-base font-semibold text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                    Aanbod
+                  </Link>
 
                   <a
                     href="https://clarencefinance.nl/desteiger/"
