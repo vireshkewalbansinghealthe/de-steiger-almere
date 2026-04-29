@@ -201,17 +201,26 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-28 pb-14 px-4 text-center">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-yellow-400 text-sm font-semibold uppercase tracking-widest mb-3">
-            Steiger 74–77, Almere
+      <section className="relative overflow-hidden pt-28 pb-16 px-4 text-center">
+        {/* Background photo */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/images/beide2.png')" }}
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/70 to-slate-900/90" />
+
+        {/* Content */}
+        <div className="relative z-10 max-w-2xl mx-auto">
+          <p className="text-yellow-400 text-xs font-bold uppercase tracking-[0.2em] mb-5">
+            Steiger 74–77 &nbsp;·&nbsp; Almere
           </p>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-4 leading-tight">
+          <h1 className="text-4xl sm:text-6xl font-black text-white mb-5 leading-[1.08] tracking-tight">
             Vind uw ideale<br />
             <span className="text-yellow-400">bedrijfsruimte</span>
           </h1>
-          <p className="text-slate-400 text-base sm:text-lg max-w-lg mx-auto">
-            Kies direct vanuit de plattegrond — klik op een unit voor meer informatie of om te reserveren.
+          <p className="text-slate-300 text-base sm:text-lg max-w-md mx-auto leading-relaxed font-light">
+            Kies direct vanuit de plattegrond — klik op een unit voor informatie of reservering.
           </p>
         </div>
       </section>
