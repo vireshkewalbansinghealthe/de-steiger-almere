@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 /**
  * POST /api/reservations/create
- * Create a reservation with 15-minute payment lock
+ * Create a reservation
  * 
  * Body:
  * - property_id: UUID
@@ -91,82 +91,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 2: Clean up expired locks first (optional - requires service role key)
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (serviceRoleKey && serviceRoleKey.length > 50) {
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        serviceRoleKey
-    );
-    
-    await supabaseAdmin
-      .from('payment_locks')
-      .delete()
-      .lt('expires_at', new Date().toISOString());
-    } else {
-      // Try cleanup with user's client (may be limited by RLS)
-      await supabase
-        .from('payment_locks')
-        .delete()
-        .lt('expires_at', new Date().toISOString());
-    }
-
-    // Check for existing payment locks (not expired) from OTHER users
-    // We allow the SAME user to proceed (they already have the lock)
-    const { data: existingLocks, error: lockError } = await supabase
-      .from('payment_locks')
-      .select('*')
-      .eq('property_id', property_id)
-      .neq('customer_id', user.id) // Exclude locks from the current user
-      .gt('expires_at', new Date().toISOString());
-
-    if (lockError) {
-      console.error('Error checking payment locks:', lockError);
-      return NextResponse.json(
-        { error: 'Failed to check availability' },
-        { status: 500 }
-      );
-    }
-
-    if (existingLocks && existingLocks.length > 0) {
-      return NextResponse.json(
-        { 
-          error: 'Property is currently being reserved by another customer',
-          locked_until: existingLocks[0].expires_at
-        },
-        { status: 409 }
-      );
-    }
-    
-    // Delete user's existing lock for this property (we'll create a new one below)
-    await supabase
-      .from('payment_locks')
-      .delete()
-      .eq('property_id', property_id)
-      .eq('customer_id', user.id);
-
-    // Step 3: Create payment lock (10 minutes)
-    const sessionId = Math.random().toString(36).substring(7);
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-    const { error: lockCreateError } = await supabase
-      .from('payment_locks')
-      .insert({
-        property_id,
-        customer_id: user.id,
-        session_id: sessionId,
-        expires_at: expiresAt.toISOString(),
-      });
-
-    if (lockCreateError) {
-      console.error('Error creating payment lock:', lockCreateError);
-      return NextResponse.json(
-        { error: 'Failed to create reservation lock' },
-        { status: 500 }
-      );
-    }
-
-    // Step 4: Create Stripe customer if not exists
+    // Step 2: Create Stripe customer if not exists
     let stripeCustomerId: string | undefined;
     
     // Check if user already has a Stripe customer ID
@@ -215,7 +140,6 @@ export async function POST(request: NextRequest) {
       metadata: {
         property_id,
         user_id: user.id,
-        session_id: sessionId,
         unit_number: property.unit_number,
         type: property.type,
       },
@@ -262,12 +186,6 @@ export async function POST(request: NextRequest) {
     if (reservationError) {
       console.error('Error creating reservation:', reservationError);
       
-      // Clean up payment lock
-      await supabase
-        .from('payment_locks')
-        .delete()
-        .eq('session_id', sessionId);
-      
       // Cancel payment intent
       await stripe.paymentIntents.cancel(paymentIntent.id);
 
@@ -284,8 +202,6 @@ export async function POST(request: NextRequest) {
         id: paymentIntent.id,
         client_secret: paymentIntent.client_secret,
       },
-      session_id: sessionId,
-      expires_at: expiresAt.toISOString(),
     });
   } catch (error: any) {
     console.error('Unexpected error in /api/reservations/create:', error);

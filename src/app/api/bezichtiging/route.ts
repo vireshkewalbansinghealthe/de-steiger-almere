@@ -6,6 +6,9 @@ const getResendClient = () => {
   return new Resend(process.env.RESEND_API_KEY || 're_placeholder_build_only');
 };
 
+const escHtml = (s: string) =>
+  String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
 export async function POST(request: NextRequest) {
   try {
     const { name, email, phone, unitInfo } = await request.json();
@@ -24,10 +27,10 @@ export async function POST(request: NextRequest) {
         <h2>Nieuwe aanvraag voor bezichtiging / informatie</h2>
         <p>Er is een nieuw contactformulier ingevuld op de website:</p>
         <ul>
-          <li><strong>Naam:</strong> ${name}</li>
-          <li><strong>E-mailadres:</strong> ${email}</li>
-          ${phone ? `<li><strong>Telefoonnummer:</strong> ${phone}</li>` : ''}
-          ${unitInfo ? `<li><strong>Unit:</strong> ${unitInfo}</li>` : ''}
+          <li><strong>Naam:</strong> ${escHtml(name)}</li>
+          <li><strong>E-mailadres:</strong> ${escHtml(email)}</li>
+          ${phone ? `<li><strong>Telefoonnummer:</strong> ${escHtml(phone)}</li>` : ''}
+          ${unitInfo ? `<li><strong>Unit:</strong> ${escHtml(unitInfo)}</li>` : ''}
         </ul>
         <p>Neem zo snel mogelijk contact op met deze persoon.</p>
       `,

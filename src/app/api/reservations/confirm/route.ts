@@ -99,13 +99,6 @@ export async function POST(request: NextRequest) {
       console.error('Error updating property status:', propertyError);
     }
 
-    // Remove payment lock
-    await supabase
-      .from('payment_locks')
-      .delete()
-      .eq('property_id', reservation.property_id)
-      .eq('customer_id', session.user.id);
-
     // TODO: Send confirmation email (will be implemented in email notifications task)
 
     return NextResponse.json({

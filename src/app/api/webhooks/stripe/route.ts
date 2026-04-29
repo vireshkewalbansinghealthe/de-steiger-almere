@@ -82,12 +82,6 @@ export async function POST(request: NextRequest) {
           .update({ status: 'reserved' })
           .eq('id', reservation.property_id);
 
-        // Remove payment lock
-        await supabase
-          .from('payment_locks')
-          .delete()
-          .eq('property_id', reservation.property_id);
-
         console.log('✅ Payment succeeded for reservation:', reservation.reservation_number);
         
         // Fetch full property details for the email
@@ -131,12 +125,6 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', reservation.id);
 
-          // Remove payment lock
-          await supabase
-            .from('payment_locks')
-            .delete()
-            .eq('property_id', reservation.property_id);
-          
           console.log('❌ Payment failed for reservation:', reservation.reservation_number);
         }
         
@@ -163,12 +151,6 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', reservation.id);
 
-          // Remove payment lock
-          await supabase
-            .from('payment_locks')
-            .delete()
-            .eq('property_id', reservation.property_id);
-          
           console.log('⚠️ Payment canceled for reservation:', reservation.reservation_number);
         }
         

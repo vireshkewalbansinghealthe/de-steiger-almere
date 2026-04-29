@@ -5,7 +5,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, MapPin, Calendar, Car, Building2, CheckCircle, Home, ArrowRight, Shield, Zap, Users, Phone, Mail, Grid, List, Filter, ChevronLeft, ChevronRight, CreditCard, Download, Loader2, Lock, AlertCircle } from 'lucide-react';
 import ReservationModal from '../../../components/ReservationModal';
-import { useViewingLock } from '../../../hooks/useViewingLock';
 
 import InteractiveFloorplan from '../../../components/InteractiveFloorplan';
 
@@ -20,6 +19,7 @@ interface Unit {
   name: string;
   type: 'bedrijfsunit' | 'opslagbox';
   unit_number: string;
+  type_number?: number;
   gross_area: number;
   net_area: number;
   sale_price: number;
@@ -66,13 +66,9 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
   const [units, setUnits] = useState<Unit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+
   
   // Viewing lock for selected unit
-  const { isLocked, isOwner, message: lockMessage, isLoading: lockLoading, retry: retryLock } = useViewingLock({
-    propertyId: selectedPropertyId,
-    enabled: !!selectedPropertyId,
-  });
   
   console.log('🔄 Component render - units:', units.length, '| loading:', isLoading, '| error:', error);
 
@@ -155,16 +151,6 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
     }
   }, [isLoading]);
 
-  // Synchronize selectedPropertyId when selectedUnit is set from URL
-  useEffect(() => {
-    if (selectedUnit && !selectedPropertyId && units.length > 0) {
-      const foundUnit = units.find(u => u.unit_number === selectedUnit);
-      if (foundUnit) {
-        setSelectedPropertyId(foundUnit.id);
-      }
-    }
-  }, [selectedUnit, units, selectedPropertyId]);
-
   // Create a "project" object from units for compatibility with existing UI
   console.log('🏗️ Creating project from', units.length, 'units');
   const project = units.length > 0 ? {
@@ -245,10 +231,26 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      const res = await fetch('/api/bezichtiging', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          unitInfo: `${project.name} — ${formData.message || ''}`,
+        }),
+      });
+      if (!res.ok) throw new Error('API error');
+    } catch (err) {
+      console.error('Contact form error:', err);
+    }
     setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 3000);
+    setFormData({ name: '', email: '', phone: '', message: '' });
+    setTimeout(() => setIsSubmitted(false), 5000);
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -338,11 +340,6 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
               key={unit.unitNumber}
               onClick={() => {
                 setSelectedUnit(unit.unitNumber.toString());
-                // Find the unit's property_id
-                const foundUnit = units.find(u => parseInt(u.unit_number) === unit.unitNumber);
-                if (foundUnit) {
-                  setSelectedPropertyId(foundUnit.id);
-                }
               }}
               className={`h-16 sm:h-20 md:h-24 rounded border-2 flex flex-col items-center justify-center text-xs sm:text-sm font-semibold cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-md ${
                 isAvailable 
@@ -389,9 +386,6 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                     key={unit.unitNumber} 
                     onClick={() => {
                       setSelectedUnit(unit.unitNumber.toString());
-                      if (foundUnit) {
-                        setSelectedPropertyId(foundUnit.id);
-                      }
                     }}
                     className={`border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} hover:bg-slate-50`}
                   >
@@ -1135,44 +1129,13 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
       {selectedUnit && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-0 sm:p-4 z-50 animate-fade-in">
           <div className="bg-white rounded-none sm:rounded-xl max-w-5xl w-full h-full sm:h-auto max-h-full sm:max-h-[90vh] flex flex-col relative animate-zoom-in overflow-hidden">
-            {/* Lock Status Banner */}
-            {isLocked && !isOwner && lockMessage && (
-              <div className="bg-yellow-50 border-b border-yellow-200 p-4">
-                <div className="flex items-center">
-                  <Lock className="h-5 w-5 text-yellow-600 mr-3 flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-yellow-800">{lockMessage}</p>
-                    <p className="text-xs text-yellow-700 mt-1">
-                      U kunt deze unit niet reserveren totdat de andere klant de pagina verlaat.
-                    </p>
-                  </div>
-                  <button
-                    onClick={retryLock}
-                    disabled={lockLoading}
-                    className="ml-4 px-3 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700 disabled:opacity-50"
-                  >
-                    {lockLoading ? 'Bezig...' : 'Probeer opnieuw'}
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Fixed Header with Close Button */}
             <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-200 bg-white">
               <div className="flex items-center">
                 <h3 className="text-lg font-semibold text-gray-900">Unit {selectedUnit} Details</h3>
-                {isOwner && (
-                  <span className="ml-3 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <Lock className="h-3 w-3 mr-1" />
-                    Vergrendeld voor u
-                  </span>
-                )}
               </div>
               <button
-                onClick={() => {
-                  setSelectedUnit(null);
-                  setSelectedPropertyId(null);
-                  }}
+                onClick={() => setSelectedUnit(null)}
                 className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
                 >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1531,10 +1494,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                       Meer informatie
                     </button>
                     <button
-                      onClick={() => {
-                        setSelectedUnit(null);
-                        setSelectedPropertyId(null);
-                      }}
+                      onClick={() => setSelectedUnit(null)}
                       className="px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
                     >
                       Sluiten
