@@ -275,7 +275,7 @@ export default function HomePage() {
           </p>
 
           {/* ── Prominent category tabs inside hero ── */}
-          <div className="flex flex-col sm:flex-row bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-1.5 gap-1.5 shadow-2xl mb-8 w-full max-w-xs sm:max-w-none sm:w-auto mx-auto">
+          <div className="flex flex-col xs:flex-row sm:inline-flex bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-1.5 gap-1.5 shadow-2xl mb-8 w-full max-w-[280px] sm:w-auto mx-auto">
             {(['opslagboxen', 'bedrijfsunits'] as Category[]).map(cat => (
               <button
                 key={cat}
