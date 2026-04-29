@@ -258,8 +258,8 @@ export default function HomePage() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/images/beide2.png')" }}
         />
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-900/90" />
+        {/* Dark overlay — fades out at bottom so it flows into the content */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-950/95" />
 
         {/* Content */}
         <div className="relative z-10 max-w-3xl mx-auto">
@@ -275,7 +275,7 @@ export default function HomePage() {
           </p>
 
           {/* ── Prominent category tabs inside hero ── */}
-          <div className="inline-flex bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-1.5 gap-1.5 shadow-2xl mb-8">
+          <div className="flex flex-col sm:flex-row bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-1.5 gap-1.5 shadow-2xl mb-8 w-full max-w-xs sm:max-w-none sm:w-auto mx-auto">
             {(['opslagboxen', 'bedrijfsunits'] as Category[]).map(cat => (
               <button
                 key={cat}
@@ -306,7 +306,7 @@ export default function HomePage() {
         </div>
 
         {/* Bottom fade into page bg */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-50 via-gray-50/80 to-transparent pointer-events-none z-10" />
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none" />
       </section>
 
       {/* ── Main section ─────────────────────────────────────────────────── */}
