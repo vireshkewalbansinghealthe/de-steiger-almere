@@ -5,7 +5,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Check, User, Mail, Lock, Eye, EyeOff,
-  AlertCircle, CreditCard, ChevronDown, PenLine, Building2,
+  AlertCircle, CreditCard, PenLine, Building2,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import { loadStripe } from '@stripe/stripe-js';
@@ -210,6 +210,7 @@ function ReservationContent() {
   // Terms & signature
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [signatureData, setSignatureData] = useState('');
+  const [contractDrawerOpen, setContractDrawerOpen] = useState(false);
   const sigCanvas = useRef<SignatureCanvas>(null);
 
   // Submission
@@ -569,20 +570,21 @@ function ReservationContent() {
                 </div>
               </div>
               <div className="p-5">
-                {/* Inline contract — scrollable box */}
-                <div className="relative mb-1">
-                  <div
-                    className="h-64 overflow-y-auto border border-gray-200 rounded-xl bg-gray-50 p-4 text-xs font-mono leading-relaxed text-gray-700 whitespace-pre-wrap"
-                    id="contract-box"
-                  >
-                    {contractText}
+                {/* Contract preview + open button */}
+                <div className="mb-4 flex items-center justify-between gap-3 px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Reserveringsovereenkomst</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Lees de volledige overeenkomst voordat u akkoord gaat</p>
                   </div>
-                  {/* Scroll gradient hint */}
-                  <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-gray-50 to-transparent rounded-b-xl pointer-events-none" />
+                  <button
+                    type="button"
+                    onClick={() => setContractDrawerOpen(true)}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 bg-white border border-gray-300 hover:border-gray-400 rounded-lg text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors shadow-sm"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Bekijk
+                  </button>
                 </div>
-                <p className="text-xs text-gray-400 text-center mb-4 flex items-center justify-center gap-1">
-                  <ChevronDown className="h-3 w-3" /> scroll om volledig te lezen
-                </p>
 
                 {/* Akkoord checkbox — always visible */}
                 <label className="flex items-start gap-3 cursor-pointer mb-5 p-3.5 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 transition-colors">
@@ -696,6 +698,51 @@ function ReservationContent() {
         )}
 
       </div>
+
+      {/* ── Contract drawer ─────────────────────────────────────────────── */}
+      {contractDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setContractDrawerOpen(false)}
+          />
+          {/* Panel */}
+          <div className="relative ml-auto w-full max-w-lg h-full bg-white shadow-2xl flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">Reserveringsovereenkomst</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Lees de volledige overeenkomst</p>
+              </div>
+              <button
+                onClick={() => setContractDrawerOpen(false)}
+                className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {/* Contract text */}
+            <div className="flex-1 overflow-y-auto p-5">
+              <pre className="text-xs font-mono leading-relaxed text-gray-700 whitespace-pre-wrap">
+                {contractText}
+              </pre>
+            </div>
+            {/* Footer */}
+            <div className="flex-shrink-0 px-5 py-4 border-t border-gray-100 bg-gray-50">
+              <button
+                type="button"
+                onClick={() => setContractDrawerOpen(false)}
+                className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-sm font-semibold transition-colors"
+              >
+                Sluiten
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
