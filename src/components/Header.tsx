@@ -23,8 +23,14 @@ export default function Header() {
   useEffect(() => {
     if (typeof window === 'undefined') return; // Ensure this runs only on the client
     
-    // Force scrolled state on reservation pages (no hero section)
-    const isReservationPage = pathname?.startsWith('/reserveren') || false;
+    // Force scrolled state on pages without a hero section
+    const isReservationPage = pathname?.startsWith('/reserveren') ||
+      pathname?.startsWith('/reservering') ||
+      pathname?.startsWith('/betaling') ||
+      pathname?.startsWith('/profiel') ||
+      pathname?.startsWith('/login') ||
+      pathname?.startsWith('/downloads') ||
+      false;
     
     if (isReservationPage) {
       setIsScrolled(true);
@@ -114,24 +120,18 @@ export default function Header() {
                 
                 {/* Logo Text */}
                 <div className="flex flex-col">
-                  <div className={`text-xl font-extrabold transition-colors duration-200 tracking-tight leading-none ${
-                    isScrolled 
-                      ? 'text-transparent bg-clip-text bg-gradient-to-r from-slate-800 via-slate-700 to-slate-900 group-hover:from-slate-900 group-hover:to-slate-700' 
-                      : 'text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-50 to-white group-hover:from-yellow-100 group-hover:to-white'
+                  <div className={`text-sm font-extrabold tracking-tight leading-tight transition-colors duration-200 ${
+                    isScrolled ? 'text-slate-900' : 'text-white'
                   }`}>
-                    A6 Bedrijfsunits en Opslagboxen
+                    A6 Bedrijfsunits
                   </div>
-                  <div className={`text-sm font-semibold tracking-tight leading-none transition-colors duration-200 ${
-                    isScrolled 
-                      ? 'text-slate-600 group-hover:text-slate-700' 
-                      : 'text-slate-200 group-hover:text-white'
+                  <div className={`text-sm font-extrabold tracking-tight leading-tight transition-colors duration-200 ${
+                    isScrolled ? 'text-slate-900' : 'text-white'
                   }`}>
-                    De Steiger
+                    en Opslagboxen
                   </div>
-                  <div className={`text-xs font-medium tracking-wide uppercase transition-colors duration-200 ${
-                    isScrolled 
-                      ? 'text-yellow-600 group-hover:text-yellow-700' 
-                      : 'text-yellow-300 group-hover:text-yellow-200'
+                  <div className={`text-xs font-semibold tracking-widest uppercase transition-colors duration-200 ${
+                    isScrolled ? 'text-yellow-600' : 'text-yellow-400'
                   }`}>
                     Almere
                   </div>
@@ -143,28 +143,18 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
-            {/* Bedrijfsunits */}
+            {/* Aanbod */}
             <Link
-              href="/bedrijfsunits"
-              className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
+              href="/"
+              className={`px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                pathname === '/'
+                  ? isScrolled ? 'text-yellow-600 bg-yellow-50' : 'text-yellow-400'
+                  : isScrolled
+                  ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50'
                   : 'text-white hover:text-slate-300 hover:bg-white/10'
               }`}
             >
-              Bedrijfsunits
-            </Link>
-
-            {/* Opslagboxen */}
-            <Link
-              href="/opslagboxen"
-              className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isScrolled 
-                  ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
-                  : 'text-white hover:text-slate-300 hover:bg-white/10'
-              }`}
-            >
-              Opslagboxen
+              Aanbod
             </Link>
 
             {/* Financiering */}
@@ -337,7 +327,7 @@ export default function Header() {
             {/* Back to Overview Button - Show on detail pages */}
             {pathname && (pathname.includes('/bedrijfsunit/') || pathname.includes('/opslagbox/')) && (
               <Link
-                href={pathname.includes('/bedrijfsunit/') ? '/bedrijfsunits' : '/opslagboxen'}
+                href="/"
                 className={`p-3 rounded-lg transition-all duration-200 ${
                   isScrolled 
                     ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
@@ -403,8 +393,8 @@ export default function Header() {
                   />
                 </div>
                 <div>
-                  <div className="text-base font-extrabold text-slate-800 leading-none">A6 Bedrijfsunits en Opslagboxen</div>
-                  <div className="text-sm font-semibold text-slate-600 leading-none">De Steiger — Almere</div>
+                  <div className="text-sm font-extrabold text-slate-800 leading-snug">A6 Bedrijfsunits en Opslagboxen</div>
+                  <div className="text-xs font-semibold text-yellow-600 uppercase tracking-wide">Steiger 74–77, Almere</div>
                   <div className="text-xs text-yellow-600 uppercase tracking-wide">Menu</div>
                 </div>
               </div>
@@ -421,22 +411,14 @@ export default function Header() {
               <div className="px-6 py-6 space-y-1">
                 {/* Main Navigation */}
                 <div className="space-y-1">
-                  <Link
-                    href="/bedrijfsunits"
-                    className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 opacity-60"></div>
-                    Bedrijfsunits
-                  </Link>
 
                   <Link
-                    href="/opslagboxen"
-                    className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
+                    href="/"
+                    className="flex items-center px-4 py-3 text-base font-semibold text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 opacity-60"></div>
-                    Opslagboxen
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                    Aanbod
                   </Link>
 
                   <a
