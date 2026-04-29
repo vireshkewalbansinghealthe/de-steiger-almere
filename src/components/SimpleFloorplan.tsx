@@ -58,12 +58,18 @@ export default function SimpleFloorplan({
   onUnitClick,
 }: SimpleFloorplanProps) {
   const [hoveredUnit, setHoveredUnit] = useState<string | null>(null);
-  // 0 = type floorplan, 1+ = building photos
   const [slideIndex, setSlideIndex] = useState(0);
   const cycleIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Track viewport-level cursor position for fixed tooltip
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Mobile: tap first shows mini preview, second tap (via button) opens drawer
+  const [isTouch, setIsTouch] = useState(false);
+  const [mobileTapped, setMobileTapped] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsTouch(window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+  }, []);
 
   const BUILDING_PHOTOS = [
     '/images/beide1.png',
@@ -156,6 +162,7 @@ export default function SimpleFloorplan({
               strokeWidth="0.3"
               className="cursor-pointer transition-all duration-150"
               onMouseEnter={() => {
+                if (isTouch) return;
                 setHoveredUnit(poly.unit_number);
                 setSlideIndex(0);
                 if (cycleIntervalRef.current) clearInterval(cycleIntervalRef.current);
@@ -164,15 +171,77 @@ export default function SimpleFloorplan({
                 }, 2000);
               }}
               onMouseLeave={() => {
+                if (isTouch) return;
                 setHoveredUnit(null);
                 setSlideIndex(0);
                 if (cycleIntervalRef.current) clearInterval(cycleIntervalRef.current);
               }}
-              onClick={() => unit && onUnitClick(unit)}
+              onClick={() => {
+                if (!unit) return;
+                if (isTouch) {
+                  setMobileTapped(prev => prev === poly.unit_number ? null : poly.unit_number);
+                } else {
+                  onUnitClick(unit);
+                }
+              }}
             />
           );
         })}
       </svg>
+
+      {/* Mobile tap preview — slides up from bottom */}
+      {isTouch && mobileTapped && (() => {
+        const tappedUnit = getUnit(mobileTapped);
+        if (!tappedUnit) return null;
+        const imgSrc = tappedUnit.type_number
+          ? `/images/floorplans/${typeLabel}_Type_${tappedUnit.type_number}.png`
+          : null;
+        return (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 z-[9998] bg-black/20"
+              onClick={() => setMobileTapped(null)}
+            />
+            {/* Card */}
+            <div className="fixed bottom-0 left-0 right-0 z-[9999] p-3 pb-safe">
+              <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden max-w-sm mx-auto">
+                {imgSrc && (
+                  <div className="h-28 bg-gray-50 border-b border-gray-100">
+                    <img src={imgSrc} alt="" className="w-full h-full object-contain p-3" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  </div>
+                )}
+                <div className="px-4 py-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <div className="text-xs text-gray-400">{typeLabel} Type {tappedUnit.type_number}</div>
+                      <div className="font-bold text-gray-900 text-base">Unit {tappedUnit.unit_number}</div>
+                    </div>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                      tappedUnit.status === 'available' ? 'bg-green-100 text-green-700' :
+                      tappedUnit.status === 'reserved'  ? 'bg-orange-100 text-orange-700' :
+                      'bg-gray-100 text-gray-500'
+                    }`}>
+                      {tappedUnit.status === 'available' ? 'Beschikbaar' :
+                       tappedUnit.status === 'reserved'  ? 'Gereserveerd' : 'Verkocht'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                    <span>{tappedUnit.gross_area} m²</span>
+                    <span className="font-semibold text-gray-900">€ {tappedUnit.sale_price?.toLocaleString('nl-NL')}</span>
+                  </div>
+                  <button
+                    onClick={() => { onUnitClick(tappedUnit); setMobileTapped(null); }}
+                    className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-xl text-sm transition-colors"
+                  >
+                    Bekijk details →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
       {/* Fixed viewport-level tooltip — rendered via portal logic with inline fixed style */}
       {hoveredUnitData && typeof window !== 'undefined' && (() => {

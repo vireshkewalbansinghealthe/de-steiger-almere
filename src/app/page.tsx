@@ -99,8 +99,18 @@ function TypeLegend({
                 : 'border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50'
             }`}
           >
+            {/* Checkbox */}
+            <div className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+              isSelected ? 'bg-yellow-400 border-yellow-500' : 'border-gray-300 bg-white'
+            }`}>
+              {isSelected && (
+                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 10">
+                  <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
             {/* Thumbnail */}
-            <div className="flex-shrink-0 w-12 h-12 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
+            <div className="flex-shrink-0 w-10 h-10 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
               <img
                 src={imgSrc}
                 alt={`Type ${g.typeNumber}`}
@@ -111,7 +121,7 @@ function TypeLegend({
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-gray-900 truncate">
-                {prefix} Type {g.typeNumber}
+                Type {g.typeNumber}
               </div>
               <div className="text-xs text-gray-500 mt-0.5">
                 {g.minArea === g.maxArea ? `${g.minArea}m²` : `${g.minArea}–${g.maxArea}m²`}
@@ -386,15 +396,16 @@ export default function HomePage() {
             <div className="lg:w-72 xl:w-80 flex-shrink-0">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-gray-900">
-                    Types
-                  </h2>
+                  <div>
+                    <h2 className="text-sm font-semibold text-gray-900">Types</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">Selecteer meerdere types</p>
+                  </div>
                   {selectedTypes.length > 0 && (
                     <button
                       onClick={() => setSelectedTypes([])}
                       className="text-xs text-gray-400 hover:text-gray-600 underline"
                     >
-                      Wis filter
+                      Wis ({selectedTypes.length})
                     </button>
                   )}
                 </div>
