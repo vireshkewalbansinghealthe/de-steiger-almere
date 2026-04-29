@@ -58,9 +58,14 @@ export default function SimpleFloorplan({
   onUnitClick,
 }: SimpleFloorplanProps) {
   const [hoveredUnit, setHoveredUnit] = useState<string | null>(null);
+  const [showAltImage, setShowAltImage] = useState(false);
+  const swipeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Track viewport-level cursor position for fixed tooltip
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Cleanup timer on unmount
+  useEffect(() => () => { if (swipeTimerRef.current) clearTimeout(swipeTimerRef.current); }, []);
 
   const relevantPolygons = polygons.filter(p => {
     const matchesType = p.type === unitType || (!p.type && unitType === 'bedrijfsunit');
@@ -127,8 +132,17 @@ export default function SimpleFloorplan({
               stroke={stroke}
               strokeWidth="0.3"
               className="cursor-pointer transition-all duration-150"
-              onMouseEnter={() => setHoveredUnit(poly.unit_number)}
-              onMouseLeave={() => setHoveredUnit(null)}
+              onMouseEnter={() => {
+                setHoveredUnit(poly.unit_number);
+                setShowAltImage(false);
+                if (swipeTimerRef.current) clearTimeout(swipeTimerRef.current);
+                swipeTimerRef.current = setTimeout(() => setShowAltImage(true), 2000);
+              }}
+              onMouseLeave={() => {
+                setHoveredUnit(null);
+                setShowAltImage(false);
+                if (swipeTimerRef.current) clearTimeout(swipeTimerRef.current);
+              }}
               onClick={() => unit && onUnitClick(unit)}
             />
           );
@@ -138,7 +152,7 @@ export default function SimpleFloorplan({
       {/* Fixed viewport-level tooltip — rendered via portal logic with inline fixed style */}
       {hoveredUnitData && typeof window !== 'undefined' && (() => {
         const TW = 230;
-        const TH = 200; // approx
+        const TH = 230;
         const vw = window.innerWidth;
         const vh = window.innerHeight;
         const left = cursorPos.x + 16 + TW > vw ? cursorPos.x - TW - 16 : cursorPos.x + 16;
@@ -152,15 +166,31 @@ export default function SimpleFloorplan({
             style={{ left, top, width: TW }}
           >
             <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-              {/* Floorplan image */}
+              {/* Image area — crossfades between type floorplan and building photo */}
               {imgSrc && (
-                <div className="bg-gray-50 flex items-center justify-center h-32 border-b border-gray-100">
-                  <img
-                    src={imgSrc}
-                    alt={`Type ${hoveredUnitData.type_number}`}
-                    className="max-h-full max-w-full object-contain p-2"
-                    onError={e => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
-                  />
+                <div className="relative h-32 border-b border-gray-100 overflow-hidden">
+                  {/* Type floorplan (shown first) */}
+                  <div className={`absolute inset-0 bg-gray-50 flex items-center justify-center transition-opacity duration-500 ${showAltImage ? 'opacity-0' : 'opacity-100'}`}>
+                    <img
+                      src={imgSrc}
+                      alt={`Type ${hoveredUnitData.type_number}`}
+                      className="max-h-full max-w-full object-contain p-2"
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  </div>
+                  {/* Building photo (fades in after 2s) */}
+                  <div className={`absolute inset-0 transition-opacity duration-500 ${showAltImage ? 'opacity-100' : 'opacity-0'}`}>
+                    <img
+                      src="/images/beide1.png"
+                      alt="De Steiger Almere"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {/* Tiny indicator dots */}
+                  <div className="absolute bottom-1.5 left-0 right-0 flex justify-center gap-1 z-10">
+                    <span className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${!showAltImage ? 'bg-white' : 'bg-white/40'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${showAltImage ? 'bg-white' : 'bg-white/40'}`} />
+                  </div>
                 </div>
               )}
               {/* Info */}
