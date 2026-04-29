@@ -339,11 +339,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Mobile stats */}
-        <div className="sm:hidden text-sm text-gray-500 mb-4">
-          <span className="font-semibold text-green-600">{totalAvailable}</span> beschikbaar van {totalUnits} units
-        </div>
-
         {/* Color key */}
         <div className="flex flex-wrap items-center gap-4 mb-4 text-xs text-gray-500">
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-green-400 opacity-80 inline-block" />Beschikbaar</span>
