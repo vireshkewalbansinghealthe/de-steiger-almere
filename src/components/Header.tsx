@@ -23,8 +23,14 @@ export default function Header() {
   useEffect(() => {
     if (typeof window === 'undefined') return; // Ensure this runs only on the client
     
-    // Force scrolled state on reservation pages (no hero section)
-    const isReservationPage = pathname?.startsWith('/reserveren') || false;
+    // Force scrolled state on pages without a hero section
+    const isReservationPage = pathname?.startsWith('/reserveren') ||
+      pathname?.startsWith('/reservering') ||
+      pathname?.startsWith('/betaling') ||
+      pathname?.startsWith('/profiel') ||
+      pathname?.startsWith('/login') ||
+      pathname?.startsWith('/downloads') ||
+      false;
     
     if (isReservationPage) {
       setIsScrolled(true);
