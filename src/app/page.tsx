@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useReducer } from 'react';
 import SimpleFloorplan, { FloorplanUnit } from '../components/SimpleFloorplan';
 import UnitDrawer from '../components/UnitDrawer';
 
@@ -62,6 +62,21 @@ function groupByType(units: FloorplanUnit[]): TypeGroup[] {
     }));
 }
 
+// ─── Type selection reducer ───────────────────────────────────────────────────
+
+type TypesAction =
+  | { type: 'toggle'; typeNumber: number }
+  | { type: 'clear' };
+
+function typesReducer(state: number[], action: TypesAction): number[] {
+  if (action.type === 'toggle') {
+    return state.includes(action.typeNumber)
+      ? state.filter(t => t !== action.typeNumber)
+      : [...state, action.typeNumber];
+  }
+  return [];
+}
+
 // ─── TypeLegend ───────────────────────────────────────────────────────────────
 
 function TypeLegend({
@@ -90,17 +105,23 @@ function TypeLegend({
         const availCount = g.available;
 
         return (
-          <button
+          <label
             key={g.typeNumber}
-            onClick={() => onToggleType(g.typeNumber)}
-            className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all duration-150 ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-all duration-150 ${
               isSelected
                 ? 'border-yellow-400 bg-yellow-50 ring-1 ring-yellow-300'
                 : 'border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50'
             }`}
           >
-            {/* Checkbox */}
-            <div className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+            {/* Native checkbox — hidden, but drives the state */}
+            <input
+              type="checkbox"
+              className="sr-only"
+              checked={isSelected}
+              onChange={() => onToggleType(g.typeNumber)}
+            />
+            {/* Visual checkbox */}
+            <div className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors pointer-events-none ${
               isSelected ? 'bg-yellow-400 border-yellow-500' : 'border-gray-300 bg-white'
             }`}>
               {isSelected && (
@@ -143,7 +164,7 @@ function TypeLegend({
                 </span>
               )}
             </div>
-          </button>
+          </label>
         );
       })}
     </div>
@@ -155,7 +176,7 @@ function TypeLegend({
 export default function HomePage() {
   const [category, setCategory] = useState<Category>('opslagboxen');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
+  const [selectedTypes, dispatchTypes] = useReducer(typesReducer, []);
   const [selectedUnit, setSelectedUnit] = useState<FloorplanUnit | null>(null);
 
   // Contact form
@@ -211,7 +232,7 @@ export default function HomePage() {
   }, []);
 
   // Reset selected types when category changes
-  useEffect(() => { setSelectedTypes([]); }, [category]);
+  useEffect(() => { dispatchTypes({ type: 'clear' }); }, [category]);
 
   const currentUnits = units.filter(u =>
     u.type === (category === 'bedrijfsunits' ? 'bedrijfsunit' : 'opslagbox')
@@ -221,11 +242,7 @@ export default function HomePage() {
 
   const floorImage = BEDRIJFSUNITS_IMAGE;
 
-  const toggleType = (tn: number) => {
-    setSelectedTypes(prev =>
-      prev.includes(tn) ? prev.filter(t => t !== tn) : [...prev, tn]
-    );
-  };
+  const toggleType = (tn: number) => dispatchTypes({ type: 'toggle', typeNumber: tn });
 
   const totalAvailable = currentUnits.filter(u => u.status === 'available').length;
   const totalUnits = currentUnits.length;
@@ -402,7 +419,7 @@ export default function HomePage() {
                   </div>
                   {selectedTypes.length > 0 && (
                     <button
-                      onClick={() => setSelectedTypes([])}
+                      onClick={() => dispatchTypes({ type: 'clear' })}
                       className="text-xs text-gray-400 hover:text-gray-600 underline"
                     >
                       Wis ({selectedTypes.length})
