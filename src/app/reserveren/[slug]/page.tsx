@@ -5,7 +5,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Check, User, Mail, Lock, Eye, EyeOff,
-  AlertCircle, CreditCard, PenLine, Building2,
+  AlertCircle, CreditCard, ChevronDown, PenLine, Building2,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import { loadStripe } from '@stripe/stripe-js';
