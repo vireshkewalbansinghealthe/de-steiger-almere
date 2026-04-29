@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useReducer } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import SimpleFloorplan, { FloorplanUnit } from '../components/SimpleFloorplan';
 import UnitDrawer from '../components/UnitDrawer';
@@ -308,7 +309,12 @@ function TypeDetail({
 // ─── HomePage ────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
-  const [category, setCategory] = useState<Category>('opslagboxen');
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const initialCategory: Category =
+    tabParam === 'bedrijfsunits' ? 'bedrijfsunits' : 'opslagboxen';
+
+  const [category, setCategory] = useState<Category>(initialCategory);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedTypes, dispatchTypes] = useReducer(typesReducer, []);
   const [selectedUnit, setSelectedUnit] = useState<FloorplanUnit | null>(null);
