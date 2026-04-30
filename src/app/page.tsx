@@ -135,8 +135,8 @@ function TypeLegend({
               </div>
               <div className="text-xs font-semibold text-gray-800 whitespace-nowrap">
                 {g.minPrice === g.maxPrice
-                  ? <><span className="text-yellow-600">€</span> {g.minPrice.toLocaleString('nl-NL')}</>
-                  : <><span className="text-yellow-600">v.a. €</span> {g.minPrice.toLocaleString('nl-NL')}</>}
+                  ? `€ ${g.minPrice.toLocaleString('nl-NL')}`
+                  : `vanaf € ${g.minPrice.toLocaleString('nl-NL')}`}
               </div>
             </div>
             {/* Availability badge */}
@@ -494,10 +494,8 @@ function HomePageContent() {
         {/* Starting price banner */}
         {!isLoading && lowestPrice !== null && (
           <div className="flex items-center justify-end gap-1.5 mb-4 text-sm text-gray-500">
-            <span>{category === 'opslagboxen' ? 'Opslagboxen' : 'Bedrijfsunits'} v.a.</span>
-            <span className="font-bold text-gray-900">
-              <span className="text-yellow-600">€</span> {lowestPrice.toLocaleString('nl-NL')}
-            </span>
+            <span>{category === 'opslagboxen' ? 'Opslagboxen' : 'Bedrijfsunits'} vanaf</span>
+            <span className="font-bold text-gray-900">€ {lowestPrice.toLocaleString('nl-NL')}</span>
           </div>
         )}
 
