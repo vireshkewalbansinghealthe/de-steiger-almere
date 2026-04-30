@@ -130,12 +130,13 @@ function TypeLegend({
               <div className="text-sm font-semibold text-gray-900 truncate">
                 Type {g.typeNumber}
               </div>
-              <div className="text-xs text-gray-500 mt-0.5">
-                {g.minArea === g.maxArea ? `${g.minArea}m²` : `${g.minArea}–${g.maxArea}m²`}
-                {' · '}
+              <div className="text-xs text-gray-500 mt-0.5 whitespace-nowrap">
+                {g.minArea === g.maxArea ? `${g.minArea} m²` : `${g.minArea}–${g.maxArea} m²`}
+              </div>
+              <div className="text-xs font-semibold text-gray-800 whitespace-nowrap">
                 {g.minPrice === g.maxPrice
-                  ? `€ ${g.minPrice.toLocaleString('nl-NL')}`
-                  : `v.a. € ${g.minPrice.toLocaleString('nl-NL')}`}
+                  ? <><span className="text-yellow-600">€</span> {g.minPrice.toLocaleString('nl-NL')}</>
+                  : <><span className="text-yellow-600">v.a. €</span> {g.minPrice.toLocaleString('nl-NL')}</>}
               </div>
             </div>
             {/* Availability badge */}
@@ -483,16 +484,6 @@ function HomePageContent() {
               </button>
             ))}
           </div>
-        </div>
-
-        {/* Color key */}
-        <div className="flex flex-wrap items-center gap-4 mb-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-green-400 opacity-80 inline-block" />Beschikbaar</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-400 opacity-80 inline-block" />Gereserveerd</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-gray-400 opacity-80 inline-block" />Verkocht</span>
-          {selectedTypes.length > 0 && (
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-yellow-400 opacity-80 inline-block" />Geselecteerd type</span>
-          )}
         </div>
 
         {/* Loading state */}
