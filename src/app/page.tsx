@@ -394,6 +394,11 @@ function HomePageContent() {
   const totalAvailable = currentUnits.filter(u => u.status === 'available').length;
   const totalUnits = currentUnits.length;
 
+  const availablePrices = currentUnits
+    .filter(u => u.status === 'available' && u.sale_price > 0)
+    .map(u => u.sale_price);
+  const lowestPrice = availablePrices.length > 0 ? Math.min(...availablePrices) : null;
+
   const isLoading = loadingUnits || loadingPolygons;
 
   return (
@@ -460,7 +465,7 @@ function HomePageContent() {
       <main className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-8">
 
         {/* Status filter + stats bar */}
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-gray-500">
             <span className="font-semibold text-green-600">{totalAvailable}</span>
             <span className="hidden sm:inline"> beschikbaar</span>
@@ -485,6 +490,16 @@ function HomePageContent() {
             ))}
           </div>
         </div>
+
+        {/* Starting price banner */}
+        {!isLoading && lowestPrice !== null && (
+          <div className="flex items-center justify-end gap-1.5 mb-4 text-sm text-gray-500">
+            <span>{category === 'opslagboxen' ? 'Opslagboxen' : 'Bedrijfsunits'} v.a.</span>
+            <span className="font-bold text-gray-900">
+              <span className="text-yellow-600">€</span> {lowestPrice.toLocaleString('nl-NL')}
+            </span>
+          </div>
+        )}
 
         {/* Loading state */}
         {isLoading ? (
