@@ -260,7 +260,7 @@ export default function AdminSignupPage() {
           
           <div className="text-center">
             <Link
-              href="/"
+              href="/aanbod"
               className="text-slate-600 hover:text-slate-800 text-sm"
             >
               ← Terug naar website

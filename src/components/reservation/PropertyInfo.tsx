@@ -90,15 +90,9 @@ export default function PropertyInfo({ project, reservationData, updateData, onN
                 
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex justify-between">
-                    <span>Bruto oppervlak:</span>
+                    <span>Oppervlakte:</span>
                     <span className="font-medium">{unit.grossArea}m²</span>
                   </div>
-                  {unit.netArea && (
-                    <div className="flex justify-between">
-                      <span>Netto oppervlak:</span>
-                      <span className="font-medium">{unit.netArea}m²</span>
-                    </div>
-                  )}
                   <div className="flex justify-between">
                     <span>Prijs:</span>
                     <span className="font-bold text-gray-900">{unit.price}</span>

@@ -38,7 +38,7 @@ export default function LocationPage({ params }: PageProps) {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link 
-            href="/" 
+            href="/aanbod" 
             className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
@@ -97,7 +97,7 @@ export default function LocationPage({ params }: PageProps) {
               <p className="text-lg text-gray-600 mb-8">
                 We zijn altijd op zoek naar nieuwe locaties. Houd onze website in de gaten voor updates.
               </p>
-              <Link href="/" className="unity-btn-primary">
+              <Link href="/aanbod" className="unity-btn-primary">
                 Bekijk alle projecten
               </Link>
             </div>

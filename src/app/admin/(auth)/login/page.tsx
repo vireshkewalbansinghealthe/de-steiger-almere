@@ -239,7 +239,7 @@ export default function AdminLoginPage() {
               </div>
               <div className="pt-4 border-t border-gray-200">
                 <Link
-                  href="/"
+                  href="/aanbod"
                   className="inline-flex items-center text-slate-600 hover:text-slate-800 text-sm transition-colors"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

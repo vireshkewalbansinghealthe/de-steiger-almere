@@ -220,7 +220,7 @@ export default function MyReservationsPage() {
               <p className="text-gray-600">Overzicht van je reserveringen bij De Steiger</p>
             </div>
             <Link
-              href="/"
+              href="/aanbod"
               className="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-900 transition-colors"
             >
               Terug naar website
@@ -240,7 +240,7 @@ export default function MyReservationsPage() {
             </p>
             <div className="mt-6">
               <Link
-                href="/"
+                href="/aanbod"
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-slate-800 hover:bg-slate-900"
               >
                 Bekijk beschikbare units

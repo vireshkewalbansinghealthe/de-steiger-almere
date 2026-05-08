@@ -9,9 +9,9 @@ export default function Footer() {
 
           {/* Brand + contact */}
           <div className="md:col-span-2">
-            <div className="text-lg font-bold text-yellow-400 mb-1">
+            <Link href="/" className="text-lg font-bold text-yellow-400 mb-1 block">
               A6 Bedrijfsunits en Opslagboxen
-            </div>
+            </Link>
             <p className="text-slate-400 text-sm mb-6 leading-relaxed">
               Moderne bedrijfsunits en opslagboxen op een toplocatie in Almere.
             </p>
@@ -36,12 +36,12 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Aanbod</h3>
             <ul className="space-y-2.5 text-sm text-slate-300">
               <li>
-                <Link href="/?tab=bedrijfsunits" className="hover:text-yellow-400 transition-colors">
+                <Link href="/aanbod?tab=bedrijfsunits" className="hover:text-yellow-400 transition-colors">
                   Bedrijfsunits
                 </Link>
               </li>
               <li>
-                <Link href="/?tab=opslagboxen" className="hover:text-yellow-400 transition-colors">
+                <Link href="/aanbod?tab=opslagboxen" className="hover:text-yellow-400 transition-colors">
                   Opslagboxen
                 </Link>
               </li>

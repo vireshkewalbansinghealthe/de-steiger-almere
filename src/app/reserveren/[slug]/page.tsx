@@ -391,7 +391,7 @@ function ReservationContent() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-xl font-bold text-gray-900 mb-4">Project niet gevonden</h1>
-          <Link href="/" className="text-yellow-600 hover:text-yellow-700">Terug naar home</Link>
+          <Link href="/aanbod" className="text-yellow-600 hover:text-yellow-700">Terug naar aanbod</Link>
         </div>
       </div>
     );
@@ -404,7 +404,7 @@ function ReservationContent() {
       {/* Sticky top bar */}
       <div className="sticky top-16 sm:top-20 z-40 bg-white border-b shadow-sm">
         <div className="max-w-2xl mx-auto px-4 h-13 flex items-center gap-3 py-3">
-          <Link href="/" className="flex items-center text-gray-500 hover:text-gray-700 transition-colors">
+          <Link href="/aanbod" className="flex items-center text-gray-500 hover:text-gray-700 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-1" />
             <span className="text-sm">Terug</span>
           </Link>
@@ -431,7 +431,7 @@ function ReservationContent() {
             <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-gray-900 mb-2">Unit niet beschikbaar</h2>
             <p className="text-gray-500 mb-6">{unavailableMsg}</p>
-            <Link href="/" className="inline-block bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-800 font-medium">
+            <Link href="/aanbod" className="inline-block bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-gray-800 font-medium">
               Terug naar overzicht
             </Link>
           </div>

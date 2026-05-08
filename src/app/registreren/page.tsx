@@ -132,7 +132,7 @@ export default function RegisterPage() {
                   Opnieuw proberen
                 </button>
                 <Link
-                  href="/"
+                  href="/aanbod"
                   className="block w-full text-slate-500 hover:text-slate-700 transition-colors text-sm"
                 >
                   Terug naar home
@@ -185,7 +185,7 @@ export default function RegisterPage() {
                 </Link>
                 
                 <Link
-                  href="/"
+                  href="/aanbod"
                   className="block w-full text-slate-600 hover:text-slate-800 transition-colors"
                 >
                   Terug naar home

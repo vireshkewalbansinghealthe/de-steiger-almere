@@ -47,7 +47,7 @@ export default function OndernemersPage() {
             <div className="text-center">
               {/* Breadcrumb - Hidden on Mobile */}
               <Link 
-                href="/"
+                href="/aanbod"
                 className="hidden md:inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />

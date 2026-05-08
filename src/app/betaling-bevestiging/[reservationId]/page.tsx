@@ -213,7 +213,7 @@ export default function PaymentConfirmationPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Oppervlakte:</span>
-                        <span className="font-medium">{property?.net_area}m² (netto)</span>
+                        <span className="font-medium">{property?.gross_area}m²</span>
                       </div>
                     </div>
                   </div>
@@ -343,7 +343,7 @@ export default function PaymentConfirmationPage() {
                   </Link>
                   
                   <Link
-                    href="/"
+                    href="/aanbod"
                     className="inline-flex items-center justify-center bg-slate-800 text-white font-semibold px-6 py-3 rounded-lg hover:bg-slate-900 transition-colors"
                   >
                     <Home className="h-5 w-5 mr-2" />

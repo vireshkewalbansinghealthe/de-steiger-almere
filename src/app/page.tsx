@@ -1,821 +1,322 @@
-'use client';
-
-import { useState, useEffect, useReducer, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, Calendar, Download, FileText, Map as MapIcon } from 'lucide-react';
-import SimpleFloorplan, { FloorplanUnit } from '../components/SimpleFloorplan';
-import UnitDrawer from '../components/UnitDrawer';
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-interface UnitPolygon {
-  unit_number: string;
-  type?: 'bedrijfsunit' | 'opslagbox';
-  points: string;
-  floor?: string;
-}
-
-type Category = 'bedrijfsunits' | 'opslagboxen';
-type StatusFilter = 'all' | 'available';
-
-interface TypeGroup {
-  typeNumber: number;
-  units: FloorplanUnit[];
-  minPrice: number;
-  maxPrice: number;
-  minArea: number;
-  maxArea: number;
-  available: number;
-  reserved: number;
-  sold: number;
-}
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const OPSLAGBOX_FLOORS: { id: string; label: string; image: string }[] = [
-  { id: 'bg',  label: 'Begane grond', image: '/images/floorplans/opslagbox0.png' },
-  { id: '1e', label: '1e verdieping', image: '/images/floorplans/opslagbox1.png' },
-  { id: '2e', label: '2e verdieping', image: '/images/floorplans/opslagbox2.png' },
-];
-
-const BEDRIJFSUNITS_IMAGE = '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png';
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function groupByType(units: FloorplanUnit[]): TypeGroup[] {
-  const map = new Map<number, FloorplanUnit[]>();
-  for (const u of units) {
-    const tn = u.type_number ?? 0;
-    if (!map.has(tn)) map.set(tn, []);
-    map.get(tn)!.push(u);
-  }
-  return Array.from(map.entries())
-    .sort(([a], [b]) => a - b)
-    .map(([typeNumber, us]) => ({
-      typeNumber,
-      units: us,
-      minPrice: Math.min(...us.map(u => u.sale_price)),
-      maxPrice: Math.max(...us.map(u => u.sale_price)),
-      minArea: Math.min(...us.map(u => u.gross_area)),
-      maxArea: Math.max(...us.map(u => u.gross_area)),
-      available: us.filter(u => u.status === 'available').length,
-      reserved: us.filter(u => u.status === 'reserved').length,
-      sold: us.filter(u => u.status === 'sold').length,
-    }));
-}
-
-// ─── Type selection reducer ───────────────────────────────────────────────────
-
-type TypesAction =
-  | { type: 'toggle'; typeNumber: number }
-  | { type: 'clear' };
-
-function typesReducer(state: number[], action: TypesAction): number[] {
-  if (action.type === 'toggle') {
-    return state.includes(action.typeNumber)
-      ? state.filter(t => t !== action.typeNumber)
-      : [...state, action.typeNumber];
-  }
-  return [];
-}
-
-// ─── TypeLegend ───────────────────────────────────────────────────────────────
-
-function TypeLegend({
-  groups,
-  category,
-  selectedTypeDetail,
-  onSelectType,
-  statusFilter,
-}: {
-  groups: TypeGroup[];
-  category: Category;
-  selectedTypeDetail: number | null;
-  onSelectType: (tn: number) => void;
-  statusFilter: StatusFilter;
-}) {
-  const prefix = category === 'bedrijfsunits' ? 'Bedrijfsunit' : 'Opslagbox';
-  const visibleGroups = statusFilter === 'available'
-    ? groups.filter(g => g.available > 0)
-    : groups;
-
-  return (
-    <div className="space-y-2">
-      {visibleGroups.map(g => {
-        const isSelected = selectedTypeDetail === g.typeNumber;
-        const imgSrc = `/images/floorplans/${prefix}_Type_${g.typeNumber}.png`;
-
-        return (
-          <button
-            key={g.typeNumber}
-            onClick={() => onSelectType(g.typeNumber)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-all duration-150 text-left ${
-              isSelected
-                ? 'border-yellow-400 bg-yellow-50 ring-1 ring-yellow-300'
-                : 'border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            {/* Thumbnail */}
-            <div className="flex-shrink-0 w-10 h-10 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
-              <img
-                src={imgSrc}
-                alt={`Type ${g.typeNumber}`}
-                className="w-full h-full object-contain p-1"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-            </div>
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-gray-900 truncate">
-                Type {g.typeNumber}
-              </div>
-              <div className="text-xs text-gray-500 mt-0.5 whitespace-nowrap">
-                {g.minArea === g.maxArea ? `${g.minArea} m²` : `${g.minArea}–${g.maxArea} m²`}
-              </div>
-              <div className="text-xs font-semibold text-gray-800 whitespace-nowrap">
-                {g.minPrice === g.maxPrice
-                  ? `€ ${g.minPrice.toLocaleString('nl-NL')}`
-                  : `vanaf € ${g.minPrice.toLocaleString('nl-NL')}`}
-              </div>
-            </div>
-            {/* Availability badge */}
-            <div className="flex-shrink-0 flex items-center gap-1">
-              {g.available > 0 ? (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                  {g.available} vrij
-                </span>
-              ) : (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
-                  vol
-                </span>
-              )}
-              <svg className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── TypeDetail ───────────────────────────────────────────────────────────────
-
-function TypeDetail({
-  group,
-  category,
-  units,
-  highlightedUnitNumber,
-  onBack,
-  onUnitClick,
-}: {
-  group: TypeGroup;
-  category: Category;
-  units: FloorplanUnit[];
-  highlightedUnitNumber: string | null;
-  onBack: () => void;
-  onUnitClick: (unit: FloorplanUnit) => void;
-}) {
-  const prefix = category === 'bedrijfsunits' ? 'Bedrijfsunit' : 'Opslagbox';
-  const imgSrc = `/images/floorplans/${prefix}_Type_${group.typeNumber}.png`;
-  const typeUnits = units
-    .filter(u => u.type_number === group.typeNumber)
-    .sort((a, b) => parseInt(a.unit_number) - parseInt(b.unit_number));
-
-  const typeSlug = category === 'bedrijfsunits' ? 'bedrijfsunit' : 'opslagbox';
-
-  const statusLabel = (status: string) => {
-    if (status === 'available') return { label: 'Vrij', cls: 'bg-green-100 text-green-700' };
-    if (status === 'reserved')  return { label: 'Bezet', cls: 'bg-orange-100 text-orange-700' };
-    return { label: 'Verkocht', cls: 'bg-gray-100 text-gray-500' };
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-        <button
-          onClick={onBack}
-          className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-800 transition-colors flex-shrink-0"
-          title="Terug naar overzicht"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold text-gray-900">{prefix} Type {group.typeNumber}</div>
-          <div className="text-xs text-gray-400">{typeUnits.length} units totaal</div>
-        </div>
-      </div>
-
-      {/* Scrollable body */}
-      <div className="flex-1 overflow-y-auto">
-
-        {/* Floorplan image */}
-        <div className="bg-gray-50 border-b border-gray-100 p-4 flex items-center justify-center min-h-[120px]">
-          <img
-            src={imgSrc}
-            alt={`Type ${group.typeNumber} plattegrond`}
-            className="max-h-36 w-full object-contain"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-        </div>
-
-        {/* Specs grid */}
-        <div className="p-3 grid grid-cols-2 gap-2 border-b border-gray-100">
-          <div className="bg-gray-50 rounded-xl p-2.5">
-            <div className="text-xs text-gray-400 mb-0.5">Oppervlakte</div>
-            <div className="text-sm font-bold text-gray-900">
-              {group.minArea === group.maxArea
-                ? `${group.minArea} m²`
-                : `${group.minArea}–${group.maxArea} m²`}
-            </div>
-          </div>
-          <div className="bg-yellow-50 rounded-xl p-2.5">
-            <div className="text-xs text-yellow-600 mb-0.5">v.a. koopprijs</div>
-            <div className="text-sm font-bold text-yellow-900">
-              € {group.minPrice.toLocaleString('nl-NL')}
-            </div>
-          </div>
-        </div>
-
-        {/* Availability summary */}
-        <div className="px-3 py-2.5 flex items-center justify-between border-b border-gray-100">
-          <div className="flex gap-1.5 flex-wrap">
-            <span className="text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-medium">
-              {group.available} beschikbaar
-            </span>
-            {group.reserved > 0 && (
-              <span className="text-xs bg-orange-100 text-orange-700 px-2.5 py-0.5 rounded-full font-medium">
-                {group.reserved} gereserveerd
-              </span>
-            )}
-          </div>
-          <a 
-            href={category === 'bedrijfsunits' ? '/pdf/technische_omschrijving_bedrijfsunits.pdf' : '/pdf/technische_omschrijving_opslagboxen.pdf'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-yellow-600 transition-colors"
-            title="Download technische omschrijving"
-          >
-            <Download className="h-4 w-4" />
-          </a>
-        </div>
-
-        {/* Unit list */}
-        <div className="p-3 space-y-1.5">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-1">
-            Alle units
-          </p>
-          {typeUnits.map(unit => {
-            const { label, cls } = statusLabel(unit.status);
-            const isActive = highlightedUnitNumber === unit.unit_number;
-            return (
-              <div
-                key={unit.unit_number}
-                onClick={() => onUnitClick(unit)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-all duration-150 group ${
-                  isActive
-                    ? 'border-yellow-400 bg-yellow-50 ring-1 ring-yellow-300'
-                    : 'border-gray-100 bg-white hover:border-yellow-200 hover:bg-yellow-50/40'
-                }`}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-gray-900">
-                    Unit {unit.unit_number}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {unit.gross_area} m² · € {unit.sale_price.toLocaleString('nl-NL')}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cls}`}>
-                    {label}
-                  </span>
-                  {unit.status === 'available' && (
-                    <Link
-                      href={`/reserveren/${typeSlug}-${unit.unit_number}`}
-                      onClick={e => e.stopPropagation()}
-                      className="text-xs bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-semibold px-2 py-0.5 rounded-full transition-colors flex items-center gap-0.5"
-                    >
-                      <Calendar className="h-2.5 w-2.5" />
-                      <span>Reserveer</span>
-                    </Link>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DownloadsSection({ category }: { category: Category }) {
-  const downloads = [
-    {
-      label: 'Technische Omschrijving',
-      file: category === 'bedrijfsunits' 
-        ? '/pdf/technische_omschrijving_bedrijfsunits.pdf' 
-        : '/pdf/technische_omschrijving_opslagboxen.pdf',
-      icon: <FileText className="h-4 w-4" />
-    },
-    {
-      label: 'Optielijst Afbouw',
-      file: '/pdf/optielijst_afbouw.pdf',
-      icon: <FileText className="h-4 w-4" />
-    },
-    {
-      label: 'Projectplan Financiering',
-      file: '/pdf/projectplan_financiering_kopers.pdf',
-      icon: <FileText className="h-4 w-4" />
-    },
-    {
-      label: 'Plattegrond (PDF)',
-      file: '/pdf/technische_omschrijving_bedrijfsunits.pdf', // Fallback to TO if specific floorplan PDF isn't clear
-      icon: <MapIcon className="h-4 w-4" />
-    }
-  ];
-
-  return (
-    <div className="mt-4 space-y-2">
-      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Downloads</h3>
-      <div className="grid grid-cols-1 gap-2">
-        {downloads.map((d, i) => (
-          <a
-            key={i}
-            href={d.file}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 px-3 py-2 bg-white border border-gray-100 rounded-xl hover:border-yellow-400 hover:bg-yellow-50 transition-all group"
-          >
-            <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-yellow-100 text-gray-400 group-hover:text-yellow-600 transition-colors">
-              {d.icon}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold text-gray-900 truncate">{d.label}</div>
-              <div className="text-[10px] text-gray-400">PDF Document</div>
-            </div>
-            <Download className="h-3.5 w-3.5 text-gray-300 group-hover:text-yellow-500" />
-          </a>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── HomePage ────────────────────────────────────────────────────────────────
-
-function HomePageContent() {
-  const searchParams = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const initialCategory: Category =
-    tabParam === 'bedrijfsunits' ? 'bedrijfsunits' : 'opslagboxen';
-
-  const [category, setCategory] = useState<Category>(initialCategory);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [selectedTypes, dispatchTypes] = useReducer(typesReducer, []);
-  const [selectedUnit, setSelectedUnit] = useState<FloorplanUnit | null>(null);
-  const [selectedTypeDetail, setSelectedTypeDetail] = useState<number | null>(null);
-  const [highlightedUnitNumber, setHighlightedUnitNumber] = useState<string | null>(null);
-
-  // Contact form
-  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', message: '' });
-  const [contactSubmitting, setContactSubmitting] = useState(false);
-  const [contactSubmitted, setContactSubmitted] = useState(false);
-
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setContactSubmitting(true);
-    try {
-      await fetch('/api/bezichtiging', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: contactForm.name,
-          email: contactForm.email,
-          phone: contactForm.phone,
-          unitInfo: contactForm.message || undefined,
-        }),
-      });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setContactSubmitting(false);
-      setContactSubmitted(true);
-      setContactForm({ name: '', email: '', phone: '', message: '' });
-    }
-  };
-
-  const [units, setUnits] = useState<FloorplanUnit[]>([]);
-  const [polygons, setPolygons] = useState<UnitPolygon[]>([]);
-  const [loadingUnits, setLoadingUnits] = useState(true);
-  const [loadingPolygons, setLoadingPolygons] = useState(true);
-
-  // Fetch units
-  useEffect(() => {
-    setLoadingUnits(true);
-    fetch('/api/units')
-      .then(r => r.json())
-      .then(d => setUnits(d.units ?? []))
-      .catch(console.error)
-      .finally(() => setLoadingUnits(false));
-  }, []);
-
-  // Fetch polygons
-  useEffect(() => {
-    fetch('/api/polygons')
-      .then(r => r.json())
-      .then(d => setPolygons(Array.isArray(d) ? d : []))
-      .catch(console.error)
-      .finally(() => setLoadingPolygons(false));
-  }, []);
-
-  // Reset selected types and detail view when category changes
-  useEffect(() => {
-    dispatchTypes({ type: 'clear' });
-    setSelectedTypeDetail(null);
-    setHighlightedUnitNumber(null);
-  }, [category]);
-
-  const currentUnits = units.filter(u =>
-    u.type === (category === 'bedrijfsunits' ? 'bedrijfsunit' : 'opslagbox')
-  );
-
-  const typeGroups = groupByType(currentUnits);
-
-  const floorImage = BEDRIJFSUNITS_IMAGE;
-
-  const toggleType = (tn: number) => dispatchTypes({ type: 'toggle', typeNumber: tn });
-
-  const totalAvailable = currentUnits.filter(u => u.status === 'available').length;
-  const totalUnits = currentUnits.length;
-
-  const availablePrices = currentUnits
-    .filter(u => u.status === 'available' && u.sale_price > 0)
-    .map(u => u.sale_price);
-  const lowestPrice = availablePrices.length > 0 ? Math.min(...availablePrices) : null;
-
-  const isLoading = loadingUnits || loadingPolygons;
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden pt-24 pb-0 px-4 text-center">
-        {/* Background photo */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/images/beide2.png')" }}
-        />
-        {/* Dark overlay — fades out at bottom so it flows into the content */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-950/95" />
-
-        {/* Content */}
-        <div className="relative z-10 max-w-3xl mx-auto">
-          <p className="text-yellow-400 text-xs font-bold uppercase tracking-[0.22em] mb-4">
-            Steiger 74–77 &nbsp;·&nbsp; Almere
-          </p>
-          <h1 className="text-4xl sm:text-6xl font-black text-white mb-4 leading-[1.06] tracking-tight">
-            Vind uw ideale<br />
-            <span className="text-yellow-400">bedrijfsruimte</span>
-          </h1>
-          <p className="text-slate-400 text-sm sm:text-base max-w-sm mx-auto leading-relaxed mb-8">
-            Klik op een unit op de plattegrond voor details of reservering.
-          </p>
-
-          {/* ── Prominent category tabs inside hero ── */}
-          <div className="flex flex-col xs:flex-row sm:inline-flex bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-1.5 gap-1.5 shadow-2xl mb-8 w-full max-w-[280px] sm:w-auto mx-auto">
-            {(['opslagboxen', 'bedrijfsunits'] as Category[]).map(cat => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`px-8 py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-200 ${
-                  category === cat
-                    ? 'bg-white text-slate-900 shadow-lg'
-                    : 'text-white/80 hover:text-white hover:bg-white/15'
-                }`}
-              >
-                {cat === 'opslagboxen' ? 'Opslagboxen' : 'Bedrijfsunits'}
-                {!isLoading && (
-                  <span className={`ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                    category === cat ? 'bg-slate-100 text-slate-500' : 'bg-white/20 text-white/70'
-                  }`}>
-                    {cat === category
-                      ? totalAvailable + ' vrij'
-                      : units.filter(u =>
-                          u.type === (cat === 'bedrijfsunits' ? 'bedrijfsunit' : 'opslagbox') &&
-                          u.status === 'available'
-                        ).length + ' vrij'
-                    }
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom fade into page bg */}
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none" />
-      </section>
-
-      {/* ── Main section ─────────────────────────────────────────────────── */}
-      <main className="max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6 pt-4 pb-8">
-
-        {/* Status filter + stats bar */}
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-500">
-            <span className="font-semibold text-green-600">{totalAvailable}</span>
-            <span className="hidden sm:inline"> beschikbaar</span>
-            <span className="text-gray-400"> / {totalUnits} units</span>
-          </span>
-          <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1 shadow-sm">
-            {([
-              { id: 'all', label: 'Alle' },
-              { id: 'available', label: 'Beschikbaar' },
-            ] as { id: StatusFilter; label: string }[]).map(f => (
-              <button
-                key={f.id}
-                onClick={() => setStatusFilter(f.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
-                  statusFilter === f.id
-                    ? 'bg-green-600 text-white shadow'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Starting price banner */}
-        {!isLoading && lowestPrice !== null && (
-          <div className="flex items-center justify-end gap-1.5 mb-4 text-sm text-gray-500">
-            <span>{category === 'opslagboxen' ? 'Opslagboxen' : 'Bedrijfsunits'} vanaf</span>
-            <span className="font-bold text-gray-900">€ {lowestPrice.toLocaleString('nl-NL')}</span>
-          </div>
-        )}
-
-        {/* Loading state */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-24">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm">Plattegrond laden...</p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col lg:flex-row gap-4">
-
-            {/* ── Floorplan(s) ───────────────────────────────────────────── */}
-            <div className="flex-1 min-w-0 space-y-4">
-
-              {category === 'opslagboxen' ? (
-                /* All 3 floors stacked side-by-side */
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {OPSLAGBOX_FLOORS.map(fl => (
-                    <div key={fl.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                      <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                        <span className="text-xs font-semibold text-gray-700">{fl.label}</span>
-                      </div>
-                      <SimpleFloorplan
-                        units={currentUnits}
-                        polygons={polygons}
-                        image={fl.image}
-                        floorFilter={fl.id}
-                        unitType="opslagbox"
-                        highlightTypeNumbers={highlightedUnitNumber ? undefined : selectedTypeDetail !== null ? [selectedTypeDetail] : selectedTypes.length > 0 ? selectedTypes : undefined}
-                        highlightUnitNumber={highlightedUnitNumber ?? undefined}
-                        statusFilter={statusFilter}
-                        onUnitClick={unit => {
-                          setHighlightedUnitNumber(unit.unit_number);
-                          setSelectedUnit(unit);
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                /* Single bedrijfsunits floorplan */
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <SimpleFloorplan
-                    units={currentUnits}
-                    polygons={polygons}
-                    image={floorImage}
-                    unitType="bedrijfsunit"
-                    highlightTypeNumbers={highlightedUnitNumber ? undefined : selectedTypeDetail !== null ? [selectedTypeDetail] : selectedTypes.length > 0 ? selectedTypes : undefined}
-                    highlightUnitNumber={highlightedUnitNumber ?? undefined}
-                    statusFilter={statusFilter}
-                    onUnitClick={unit => {
-                      setHighlightedUnitNumber(unit.unit_number);
-                      setSelectedUnit(unit);
-                    }}
-                  />
-                </div>
-              )}
-
-              {/* Legend */}
-              <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 py-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-4 h-4 rounded-md bg-green-500/30 border border-green-600 shadow-sm"></div>
-                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Beschikbaar</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-4 h-4 rounded-md bg-red-500/30 border border-red-600 shadow-sm"></div>
-                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Gereserveerd</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-4 h-4 rounded-md bg-gray-400/40 border border-gray-500 shadow-sm"></div>
-                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Verkocht</span>
-                </div>
-                <div className="h-4 w-px bg-gray-200 hidden sm:block"></div>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-4 h-4 rounded-md bg-yellow-400/50 border border-yellow-600 shadow-sm"></div>
-                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Geselecteerd</span>
-                </div>
-                <div className="h-4 w-px bg-gray-200 hidden md:block"></div>
-                <a 
-                  href={category === 'bedrijfsunits' ? '/pdf/technische_omschrijving_bedrijfsunits.pdf' : '/pdf/technische_omschrijving_opslagboxen.pdf'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-yellow-50 border border-gray-200 hover:border-yellow-400 rounded-lg transition-all group"
-                >
-                  <Download className="h-3.5 w-3.5 text-gray-400 group-hover:text-yellow-600" />
-                  <span className="text-xs font-bold text-gray-600 group-hover:text-yellow-700 uppercase tracking-wider">Download Details</span>
-                </a>
-              </div>
-
-              <p className="text-center text-xs text-gray-400">
-                Klik op een unit om details te bekijken
-              </p>
-            </div>
-
-            {/* ── Type sidebar (legend or detail) ──────────────────── */}
-            <div className="lg:w-72 xl:w-80 flex-shrink-0">
-              <div
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col"
-                style={{ maxHeight: 'calc(100vh - 200px)' }}
-              >
-                {selectedTypeDetail !== null ? (
-                  /* ── Detail view ── */
-                  (() => {
-                    const group = typeGroups.find(g => g.typeNumber === selectedTypeDetail);
-                    if (!group) return null;
-                    return (
-                      <TypeDetail
-                        group={group}
-                        category={category}
-                        units={currentUnits}
-                        highlightedUnitNumber={highlightedUnitNumber}
-                        onBack={() => {
-                          setSelectedTypeDetail(null);
-                          setHighlightedUnitNumber(null);
-                          dispatchTypes({ type: 'clear' });
-                        }}
-                        onUnitClick={unit => {
-                          setHighlightedUnitNumber(unit.unit_number);
-                          setSelectedUnit(unit);
-                        }}
-                      />
-                    );
-                  })()
-                ) : (
-                  /* ── Legend list ── */
-                  <>
-                    <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-                      <h2 className="text-sm font-semibold text-gray-900">Types</h2>
-                      <p className="text-xs text-gray-400 mt-0.5">Klik voor details en beschikbaarheid</p>
-                    </div>
-                    <div className="p-3 overflow-y-auto flex-1">
-                      <TypeLegend
-                        groups={typeGroups}
-                        category={category}
-                        selectedTypeDetail={selectedTypeDetail}
-                        onSelectType={tn => {
-                          setSelectedTypeDetail(tn);
-                          dispatchTypes({ type: 'clear' });
-                          dispatchTypes({ type: 'toggle', typeNumber: tn });
-                        }}
-                        statusFilter={statusFilter}
-                      />
-                      {typeGroups.length === 0 && (
-                        <div className="text-center py-8 text-gray-400 text-sm">
-                          Geen types gevonden
-                        </div>
-                      )}
-
-                      <DownloadsSection category={category} />
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {selectedTypeDetail === null && (
-                <p className="text-xs text-gray-400 text-center mt-3 px-2">
-                  Selecteer een type om de details te bekijken
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* ── Contact section ──────────────────────────────────────────────── */}
-      <section className="bg-slate-900 text-white mt-12 py-14 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-            {/* Left: copy */}
-            <div>
-              <p className="text-yellow-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Contact</p>
-              <h2 className="text-3xl font-black mb-4 leading-tight">
-                Vragen of meer<br />informatie?
-              </h2>
-              <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                Wij helpen u graag verder. Vul het formulier in en we nemen zo snel mogelijk contact met u op.
-              </p>
-              <div className="space-y-2 text-sm text-slate-300">
-                <div>VVS Projectontwikkeling B.V.</div>
-                <div>Steiger 74–77, Almere</div>
-                <a href="mailto:administratie@vvsbouw.nl" className="block text-yellow-400 hover:text-yellow-300 transition-colors">
-                  administratie@vvsbouw.nl
-                </a>
-                <a href="tel:0685727480" className="block text-yellow-400 hover:text-yellow-300 transition-colors">
-                  06 – 857 27 480
-                </a>
-              </div>
-            </div>
-
-            {/* Right: form */}
-            <div>
-              {contactSubmitted ? (
-                <div className="bg-white/10 rounded-2xl p-8 text-center">
-                  <div className="text-4xl mb-3">✓</div>
-                  <p className="font-bold text-lg">Bericht ontvangen!</p>
-                  <p className="text-slate-400 text-sm mt-1">We nemen zo snel mogelijk contact met u op.</p>
-                  <button
-                    onClick={() => setContactSubmitted(false)}
-                    className="mt-4 text-xs text-slate-400 underline hover:text-white"
-                  >
-                    Nog een bericht sturen
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleContactSubmit} className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      required type="text" placeholder="Uw naam"
-                      value={contactForm.name}
-                      onChange={e => setContactForm(f => ({ ...f, name: e.target.value }))}
-                      className="col-span-2 sm:col-span-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    />
-                    <input
-                      required type="email" placeholder="E-mailadres"
-                      value={contactForm.email}
-                      onChange={e => setContactForm(f => ({ ...f, email: e.target.value }))}
-                      className="col-span-2 sm:col-span-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    />
-                  </div>
-                  <input
-                    required type="tel" placeholder="Telefoonnummer"
-                    value={contactForm.phone}
-                    onChange={e => setContactForm(f => ({ ...f, phone: e.target.value }))}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                  />
-                  <textarea
-                    rows={3} placeholder="Uw vraag of bericht (optioneel)"
-                    value={contactForm.message}
-                    onChange={e => setContactForm(f => ({ ...f, message: e.target.value }))}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"
-                  />
-                  <button
-                    type="submit" disabled={contactSubmitting}
-                    className="w-full bg-yellow-500 hover:bg-yellow-400 disabled:opacity-60 text-slate-900 font-bold py-3.5 rounded-xl text-sm transition-colors"
-                  >
-                    {contactSubmitting ? 'Versturen...' : 'Stuur bericht'}
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Unit Drawer ────────────────────────────────────────────────────── */}
-      <UnitDrawer unit={selectedUnit} onClose={() => setSelectedUnit(null)} />
-    </div>
-  );
-}
+import { Building, Leaf, Users, TrendingUp, Award, Target, Lightbulb, Shield, Wallet } from 'lucide-react';
 
 export default function HomePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-500" />
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <div className="relative h-screen overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center transform scale-105"
+          style={{
+            backgroundImage: 'url(/images/Image12.png)'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
+        
+        <div className="relative z-10 h-full flex items-center justify-center">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+              Over De Steiger
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed max-w-3xl mx-auto">
+              Duurzame bedrijfsruimtes die de toekomst van werk vormgeven in Almere
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="#missie"
+                className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-slate-50 transition-colors duration-200"
+              >
+                Onze Missie
+              </a>
+              <a
+                href="#waarden"
+                className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
+              >
+                Onze Waarden
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
-    }>
-      <HomePageContent />
-    </Suspense>
+
+      {/* Mission Section */}
+      <div id="missie" className="bg-gradient-to-br from-slate-50 to-gray-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                Onze Missie
+              </h2>
+              <p className="text-xl text-gray-700 leading-relaxed mb-8">
+                De Steiger ontwikkelt duurzame, koppelbare en multifunctionele werkruimtes op toplocaties in Almere op 15 minuten van Amsterdam.
+              </p>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Onze bedrijfspanden staan voor duurzaamheid, kwaliteit en veelzijdigheid, en vormen daarmee de perfecte 
+                basis voor een inspirerende werkomgeving met alle ruimte voor lef, creativiteit en rendement.
+              </p>
+            </div>
+            <div className="relative">
+              <img 
+                src="/images/Image2.png" 
+                alt="De Steiger bedrijfspand" 
+                className="w-full h-96 object-cover rounded-2xl shadow-xl"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-2xl"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-8">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center bg-white/90 backdrop-blur-sm rounded-lg p-4">
+                    <div className="text-2xl font-bold text-slate-800 mb-1">79</div>
+                    <div className="text-xs text-slate-600">Bedrijfsunits</div>
+                  </div>
+                  <div className="text-center bg-white/90 backdrop-blur-sm rounded-lg p-4">
+                    <div className="text-2xl font-bold text-slate-800 mb-1">247</div>
+                    <div className="text-xs text-slate-600">Opslagboxen</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Professional Features Section */}
+      <div id="waarden" className="bg-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Wat maakt De Steiger uniek?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Ontdek de voordelen van onze moderne bedrijfsruimtes en opslagfaciliteiten
+            </p>
+          </div>
+
+          {/* Financing Section */}
+          <div className="bg-slate-900 rounded-3xl overflow-hidden mb-20 shadow-2xl">
+            <div className="grid lg:grid-cols-2 items-center">
+              <div className="p-12 lg:p-16">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-400 rounded-2xl mb-8">
+                  <Wallet className="h-8 w-8 text-slate-900" />
+                </div>
+                <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">
+                  100% Financiering Mogelijk
+                </h3>
+                <p className="text-xl text-slate-300 leading-relaxed mb-8">
+                  Bij De Steiger maken we het ondernemers makkelijk. In samenwerking met onze partners bieden we de mogelijkheid tot 100% financiering van uw bedrijfsruimte.
+                </p>
+                <div className="space-y-4 mb-10">
+                  <div className="flex items-center text-slate-200">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                    Geen eigen vermogen nodig
+                  </div>
+                  <div className="flex items-center text-slate-200">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                    Scherpe rentetarieven
+                  </div>
+                  <div className="flex items-center text-slate-200">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                    Snel en transparant proces
+                  </div>
+                </div>
+                <a
+                  href="https://clarencefinance.nl/desteiger/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center bg-yellow-400 hover:bg-yellow-500 text-slate-900 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 transform hover:scale-105"
+                >
+                  Bereken uw Financiering
+                </a>
+              </div>
+              <div className="relative h-full min-h-[400px]">
+                <img 
+                  src="/images/up/Image10.png" 
+                  alt="Financiering mogelijkheden" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-60"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-transparent to-transparent"></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+            <div className="relative">
+              <img 
+                src="/images/Image10.png" 
+                alt="Duurzame bedrijfsruimtes" 
+                className="w-full h-80 object-cover rounded-2xl shadow-xl"
+              />
+              <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                Energielabel A+
+              </div>
+            </div>
+            <div>
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">Duurzaam & Toekomstbestendig</h3>
+              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                Alle units zijn voorzien van energielabel A+ en moderne, milieuvriendelijke technologieën. 
+                Investeer in de toekomst met ruimtes die meegroeien met veranderende behoeften.
+              </p>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  Zonnepanelen (optie) en LED-verlichting
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  Hoogwaardige isolatie
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  Smart building technologie
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+            <div className="order-2 lg:order-1">
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">Strategische Locatie</h3>
+              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                Almere biedt de perfecte balans tussen bereikbaarheid en betaalbaarheid. 
+                Op slechts 15 minuten van Amsterdam, met uitstekende verbindingen.
+              </p>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-slate-500 rounded-full mr-3"></div>
+                  Directe toegang tot A6 en A27
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-slate-500 rounded-full mr-3"></div>
+                  NS-station binnen 10 minuten
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-slate-500 rounded-full mr-3"></div>
+                  Ruime parkeerfaciliteiten (158 plaatsen)
+                </li>
+              </ul>
+            </div>
+            <div className="order-1 lg:order-2 relative">
+              <img 
+                src="/images/Image4.png" 
+                alt="Locatie Almere" 
+                className="w-full h-80 object-cover rounded-2xl shadow-xl"
+              />
+              <div className="absolute bottom-4 left-4 bg-slate-800 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                15 min naar Amsterdam
+              </div>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="relative">
+              <img 
+                src="/images/Image11.png" 
+                alt="Moderne faciliteiten" 
+                className="w-full h-80 object-cover rounded-2xl shadow-xl"
+              />
+              <div className="absolute top-4 right-4 bg-slate-800 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                24/7 Toegang
+              </div>
+            </div>
+            <div>
+              <h3 className="text-3xl font-bold text-gray-900 mb-6">Moderne Faciliteiten</h3>
+              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                Van kleine opslagboxen tot grote bedrijfsunits - alle ruimtes zijn uitgerust 
+                met moderne faciliteiten en hoogwaardige afwerking.
+              </p>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-slate-500 rounded-full mr-3"></div>
+                  Glasvezelinternet en moderne elektra
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-slate-500 rounded-full mr-3"></div>
+                  Beveiligingssysteem met toegangscontrole
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-slate-500 rounded-full mr-3"></div>
+                  Flexibele ruimte-indeling mogelijk
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Why Choose Section */}
+      <div className="bg-slate-900 text-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Waarom De Steiger?
+            </h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              De perfecte combinatie van locatie, duurzaamheid en rendement
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-6">
+                <Award className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Strategische Locatie</h3>
+              <p className="text-slate-300 leading-relaxed">
+                Almere, op slechts 15 minuten van Amsterdam. Uitstekende bereikbaarheid en groeiende economie.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-2xl mb-6">
+                <Shield className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Veilige Investering</h3>
+              <p className="text-slate-300 leading-relaxed">
+                Stabiele waardegroei in een groeiende markt met bewezen track record en solide fundamenten.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-600 rounded-2xl mb-6">
+                <Lightbulb className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-4">Toekomstbestendig</h3>
+              <p className="text-slate-300 leading-relaxed">
+                Energielabel A+, moderne technieken en flexibele ruimtes die meegroeien met de tijd.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Klaar om te groeien met De Steiger?
+          </h2>
+          <p className="text-xl mb-10 text-slate-300 max-w-2xl mx-auto">
+            Ontdek onze bedrijfsunits en opslagboxen en vind de perfecte ruimte voor jouw onderneming
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              href="/aanbod?tab=bedrijfsunits" 
+              className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-slate-50 transition-colors duration-200"
+            >
+              Bedrijfsunits
+            </Link>
+            <Link 
+              href="/aanbod?tab=opslagboxen" 
+              className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
+            >
+              Opslagboxen
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

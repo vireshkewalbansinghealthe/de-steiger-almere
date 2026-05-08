@@ -195,9 +195,6 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
             <div className="grid grid-cols-2 gap-2.5">
               <Spec icon={<Euro className="h-4 w-4" />} label="Koopprijs" value={`€ ${unit?.sale_price?.toLocaleString('nl-NL')}`} highlight />
               <Spec icon={<Ruler className="h-4 w-4" />} label="Bruto opp." value={`${unit?.gross_area} m²`} />
-              {unit?.net_area && (
-                <Spec icon={<Ruler className="h-4 w-4" />} label="Netto opp." value={`${unit.net_area} m²`} />
-              )}
               {pricePerM2 && (
                 <Spec icon={<Euro className="h-4 w-4" />} label="Prijs per m²" value={`€ ${pricePerM2}`} />
               )}

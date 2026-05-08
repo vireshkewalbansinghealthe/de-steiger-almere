@@ -145,9 +145,9 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-1">
             {/* Aanbod */}
             <Link
-              href="/"
+              href="/aanbod"
               className={`px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                pathname === '/'
+                pathname === '/aanbod'
                   ? isScrolled ? 'text-yellow-600 bg-yellow-50' : 'text-yellow-400'
                   : isScrolled
                   ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50'
@@ -238,9 +238,11 @@ export default function Header() {
             </div>
 
             <Link
-              href="/over-unity"
+              href="/"
               className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isScrolled 
+                pathname === '/'
+                  ? isScrolled ? 'text-yellow-600 bg-yellow-50' : 'text-yellow-400'
+                  : isScrolled 
                   ? 'text-gray-700 hover:text-slate-800 hover:bg-slate-50' 
                   : 'text-white hover:text-slate-300 hover:bg-white/10'
               }`}
@@ -413,7 +415,7 @@ export default function Header() {
                 <div className="space-y-1">
 
                   <Link
-                    href="/"
+                    href="/aanbod"
                     className="flex items-center px-4 py-3 text-base font-semibold text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
                     onClick={() => setIsMenuOpen(false)}
                   >
@@ -513,7 +515,7 @@ export default function Header() {
                 </div>
 
                 <Link
-                  href="/over-unity"
+                  href="/"
                   className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-all duration-200 transform hover:translate-x-1"
                   onClick={() => setIsMenuOpen(false)}
                 >

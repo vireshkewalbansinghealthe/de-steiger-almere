@@ -69,7 +69,7 @@ function CustomerLoginContent() {
         <div className="pt-20 pb-8">
           <div className="max-w-md mx-auto px-4">
             <Link 
-              href="/"
+              href="/aanbod"
               className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
