@@ -24,6 +24,7 @@ const BUILDING_PHOTOS = [
 export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
   const [slide, setSlide] = useState(0);
   const [floorplanOk, setFloorplanOk] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const typeLabel = unit?.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
@@ -59,10 +60,18 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
 
   // Close on Escape
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isFullscreen) {
+          setIsFullscreen(false);
+        } else {
+          onClose();
+        }
+      }
+    };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  }, [onClose, isFullscreen]);
 
   const goTo = (i: number) => {
     setSlide((i + totalSlides) % totalSlides);
@@ -103,7 +112,7 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
         </div>
 
         {/* Image slider */}
-        <div className="relative flex-shrink-0 bg-gray-100 overflow-hidden" style={{ height: 220 }}>
+        <div className="relative flex-shrink-0 bg-gray-100 overflow-hidden cursor-pointer group/slider" style={{ height: 220 }} onClick={() => setIsFullscreen(true)}>
           {slides.map((sl, i) => (
             <div
               key={sl.src}
@@ -118,18 +127,25 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
             </div>
           ))}
 
+          {/* Hover overlay hint */}
+          <div className="absolute inset-0 bg-black/0 group-hover/slider:bg-black/10 transition-colors flex items-center justify-center">
+            <div className="bg-white/90 text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full opacity-0 group-hover/slider:opacity-100 transition-opacity shadow-sm">
+              Klik voor vergroting
+            </div>
+          </div>
+
           {/* Prev / next arrows */}
           {totalSlides > 1 && (
             <>
               <button
-                onClick={() => goTo(slide - 1)}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center transition-colors"
+                onClick={(e) => { e.stopPropagation(); goTo(slide - 1); }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center transition-colors z-10"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
-                onClick={() => goTo(slide + 1)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center transition-colors"
+                onClick={(e) => { e.stopPropagation(); goTo(slide + 1); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center transition-colors z-10"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -231,6 +247,72 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
           )}
         </div>
       </div>
+
+      {/* Fullscreen Carousel Modal */}
+      {isFullscreen && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center animate-in fade-in duration-200">
+          {/* Close button */}
+          <button
+            onClick={() => setIsFullscreen(false)}
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-50"
+          >
+            <X className="h-6 w-6" />
+          </button>
+
+          {/* Main image container */}
+          <div className="relative w-full h-full flex items-center justify-center p-4 md:p-12">
+            {slides.map((sl, i) => (
+              <div
+                key={sl.src}
+                className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${i === slide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              >
+                <img
+                  src={sl.src}
+                  alt={sl.label}
+                  className="max-w-full max-h-full object-contain select-none"
+                />
+              </div>
+            ))}
+
+            {/* Navigation arrows */}
+            {totalSlides > 1 && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); goTo(slide - 1); }}
+                  className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all hover:scale-110"
+                >
+                  <ChevronLeft className="h-8 w-8 md:h-10 md:w-10" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); goTo(slide + 1); }}
+                  className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all hover:scale-110"
+                >
+                  <ChevronRight className="h-8 w-8 md:h-10 md:w-10" />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Bottom info & indicators */}
+          <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col items-center gap-6 bg-gradient-to-t from-black/80 to-transparent">
+            <div className="text-center">
+              <p className="text-white font-bold text-lg">{slides[slide]?.label}</p>
+              <p className="text-white/60 text-sm">Unit {unit?.unit_number} · Type {unit?.type_number}</p>
+            </div>
+
+            {/* Dot indicators */}
+            <div className="flex justify-center gap-2">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => goTo(i)}
+                  className={`rounded-full transition-all duration-300 ${i === slide ? 'w-8 h-2 bg-yellow-400' : 'w-2 h-2 bg-white/30 hover:bg-white/50'}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
