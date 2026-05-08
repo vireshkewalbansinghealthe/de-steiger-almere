@@ -247,6 +247,22 @@ export default function DownloadsPage() {
           url: '/pdf/Verkoopbrochure de Steiger Almere.pdf'
         }
       ]
+    },
+    {
+      id: 'legenda',
+      title: 'Legenda & Status',
+      icon: Map,
+      description: 'Uitleg over de kleuren en statussen op de plattegrond',
+      items: [
+        {
+          name: 'Legenda Plattegrond',
+          description: 'Uitleg over beschikbaarheid (vrij, bezet, verkocht)',
+          type: 'PDF',
+          size: '0.2 MB',
+          date: '2026-05-08',
+          url: '/pdf/technische_omschrijving_bedrijfsunits.pdf'
+        }
+      ]
     }
   ];
 
