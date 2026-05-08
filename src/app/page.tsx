@@ -3,7 +3,7 @@
 import { useState, useEffect, useReducer, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft, Calendar } from 'lucide-react';
+import { ArrowLeft, Calendar, Download, FileText, Map as MapIcon } from 'lucide-react';
 import SimpleFloorplan, { FloorplanUnit } from '../components/SimpleFloorplan';
 import UnitDrawer from '../components/UnitDrawer';
 
@@ -241,20 +241,26 @@ function TypeDetail({
         </div>
 
         {/* Availability summary */}
-        <div className="px-3 py-2.5 flex gap-1.5 flex-wrap border-b border-gray-100">
-          <span className="text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-medium">
-            {group.available} beschikbaar
-          </span>
-          {group.reserved > 0 && (
-            <span className="text-xs bg-orange-100 text-orange-700 px-2.5 py-0.5 rounded-full font-medium">
-              {group.reserved} gereserveerd
+        <div className="px-3 py-2.5 flex items-center justify-between border-b border-gray-100">
+          <div className="flex gap-1.5 flex-wrap">
+            <span className="text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-medium">
+              {group.available} beschikbaar
             </span>
-          )}
-          {group.sold > 0 && (
-            <span className="text-xs bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-full font-medium">
-              {group.sold} verkocht
-            </span>
-          )}
+            {group.reserved > 0 && (
+              <span className="text-xs bg-orange-100 text-orange-700 px-2.5 py-0.5 rounded-full font-medium">
+                {group.reserved} gereserveerd
+              </span>
+            )}
+          </div>
+          <a 
+            href={category === 'bedrijfsunits' ? '/pdf/technische_omschrijving_bedrijfsunits.pdf' : '/pdf/technische_omschrijving_opslagboxen.pdf'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-yellow-600 transition-colors"
+            title="Download technische omschrijving"
+          >
+            <Download className="h-4 w-4" />
+          </a>
         </div>
 
         {/* Unit list */}
@@ -302,6 +308,59 @@ function TypeDetail({
             );
           })}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function DownloadsSection({ category }: { category: Category }) {
+  const downloads = [
+    {
+      label: 'Technische Omschrijving',
+      file: category === 'bedrijfsunits' 
+        ? '/pdf/technische_omschrijving_bedrijfsunits.pdf' 
+        : '/pdf/technische_omschrijving_opslagboxen.pdf',
+      icon: <FileText className="h-4 w-4" />
+    },
+    {
+      label: 'Optielijst Afbouw',
+      file: '/pdf/optielijst_afbouw.pdf',
+      icon: <FileText className="h-4 w-4" />
+    },
+    {
+      label: 'Projectplan Financiering',
+      file: '/pdf/projectplan_financiering_kopers.pdf',
+      icon: <FileText className="h-4 w-4" />
+    },
+    {
+      label: 'Plattegrond (PDF)',
+      file: '/pdf/technische_omschrijving_bedrijfsunits.pdf', // Fallback to TO if specific floorplan PDF isn't clear
+      icon: <MapIcon className="h-4 w-4" />
+    }
+  ];
+
+  return (
+    <div className="mt-4 space-y-2">
+      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Downloads</h3>
+      <div className="grid grid-cols-1 gap-2">
+        {downloads.map((d, i) => (
+          <a
+            key={i}
+            href={d.file}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-3 py-2 bg-white border border-gray-100 rounded-xl hover:border-yellow-400 hover:bg-yellow-50 transition-all group"
+          >
+            <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-yellow-100 text-gray-400 group-hover:text-yellow-600 transition-colors">
+              {d.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-semibold text-gray-900 truncate">{d.label}</div>
+              <div className="text-[10px] text-gray-400">PDF Document</div>
+            </div>
+            <Download className="h-3.5 w-3.5 text-gray-300 group-hover:text-yellow-500" />
+          </a>
+        ))}
       </div>
     </div>
   );
@@ -557,6 +616,37 @@ function HomePageContent() {
                 </div>
               )}
 
+              {/* Legend */}
+              <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 py-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-4 h-4 rounded-md bg-green-500/30 border border-green-600 shadow-sm"></div>
+                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Beschikbaar</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-4 h-4 rounded-md bg-red-500/30 border border-red-600 shadow-sm"></div>
+                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Gereserveerd</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-4 h-4 rounded-md bg-gray-400/40 border border-gray-500 shadow-sm"></div>
+                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Verkocht</span>
+                </div>
+                <div className="h-4 w-px bg-gray-200 hidden sm:block"></div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-4 h-4 rounded-md bg-yellow-400/50 border border-yellow-600 shadow-sm"></div>
+                  <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Geselecteerd</span>
+                </div>
+                <div className="h-4 w-px bg-gray-200 hidden md:block"></div>
+                <a 
+                  href={category === 'bedrijfsunits' ? '/pdf/technische_omschrijving_bedrijfsunits.pdf' : '/pdf/technische_omschrijving_opslagboxen.pdf'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-yellow-50 border border-gray-200 hover:border-yellow-400 rounded-lg transition-all group"
+                >
+                  <Download className="h-3.5 w-3.5 text-gray-400 group-hover:text-yellow-600" />
+                  <span className="text-xs font-bold text-gray-600 group-hover:text-yellow-700 uppercase tracking-wider">Download Details</span>
+                </a>
+              </div>
+
               <p className="text-center text-xs text-gray-400">
                 Klik op een unit om details te bekijken
               </p>
@@ -615,6 +705,8 @@ function HomePageContent() {
                           Geen types gevonden
                         </div>
                       )}
+
+                      <DownloadsSection category={category} />
                     </div>
                   </>
                 )}
