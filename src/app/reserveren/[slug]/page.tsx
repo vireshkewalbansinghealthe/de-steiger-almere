@@ -31,7 +31,7 @@ De ondergetekenden:
 
 VVS Projectontwikkeling B.V.
 Hammerstraat 10 A, 8161 PH EPE, Nederland
-administratie@vvsbouw.nl | 0578-769056 | www.vvsprojectontwikkeling.nl
+administratie@vvsbouw.nl | 06-85727480 | www.vvsprojectontwikkeling.nl
 hierna te noemen: "Verkoper";
 
 EN

@@ -741,8 +741,8 @@ function HomePageContent() {
                 <a href="mailto:administratie@vvsbouw.nl" className="block text-yellow-400 hover:text-yellow-300 transition-colors">
                   administratie@vvsbouw.nl
                 </a>
-                <a href="tel:0578769056" className="block text-yellow-400 hover:text-yellow-300 transition-colors">
-                  0578 – 769 056
+                <a href="tel:0685727480" className="block text-yellow-400 hover:text-yellow-300 transition-colors">
+                  06 – 857 27 480
                 </a>
               </div>
             </div>

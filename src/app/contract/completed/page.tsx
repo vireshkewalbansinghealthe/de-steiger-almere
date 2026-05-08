@@ -213,7 +213,7 @@ function ContractCompletedContent() {
               </h3>
               <ul className="text-sm space-y-1">
                 <li>• 📧 info@desteigeralmere.nl</li>
-                <li>• 📞 0578-769056</li>
+                <li>• 📞 06-85727480</li>
                 <li>• 🕒 Ma-Vr 9:00-17:00</li>
               </ul>
             </div>

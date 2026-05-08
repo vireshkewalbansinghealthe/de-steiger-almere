@@ -11,7 +11,7 @@ const VVS = {
   adres: 'Hammerstraat 10 A',
   postcode: '8161 PH EPE',
   land: 'Nederland',
-  telefoon: '0578-769056',
+  telefoon: '06-85727480',
   email: 'administratie@vvsbouw.nl',
   website: 'www.vvsprojectontwikkeling.nl',
   iban: 'NL17RABO0318905388',
@@ -71,7 +71,7 @@ export async function generateContractPdf(reservation: any, property: any): Prom
     doc.font('Helvetica')
       .text('VVS Projectontwikkeling B.V.')
       .text('Hammerstraat 10 A, 8161 PH EPE, Nederland')
-      .text('administratie@vvsbouw.nl | 0578-769056 | www.vvsprojectontwikkeling.nl')
+      .text('administratie@vvsbouw.nl | 06-85727480 | www.vvsprojectontwikkeling.nl')
       .text('KVK: 91341280 | BTW: NL865623661B01 | IBAN: NL17RABO0318905388')
       .text('hierna te noemen: "Verkoper";');
     doc.moveDown(0.5);
@@ -323,7 +323,7 @@ function baseLayout(content: string) {
   <div class="body">${content}</div>
   <div class="footer">
     De Steiger B.V. · De Steiger 74-77, 1317 AZ Almere<br>
-    info@desteigeralmere.nl · 0578-769056<br><br>
+    info@desteigeralmere.nl · 06-85727480<br><br>
     <a href="https://www.desteigeralmere.nl">www.desteigeralmere.nl</a>
   </div>
 </div>
@@ -404,7 +404,7 @@ export async function sendReservationReminderEmail(data: {
     <p>Laat ons binnen de reserveringsperiode weten of u tot aankoop wenst over te gaan.</p>
     <p>Neem contact op:<br>
       📧 <a href="mailto:info@desteigeralmere.nl">info@desteigeralmere.nl</a><br>
-      📞 0578-769056
+      📞 06-85727480
     </p>
     <p>Met vriendelijke groet,<br><strong>Team De Steiger Almere</strong></p>
   `);
@@ -437,7 +437,7 @@ export async function sendReservationExpiredEmail(data: {
     </div>
     <p>Bent u nog geïnteresseerd? Neem contact met ons op om de mogelijkheden te bespreken.</p>
     <p>📧 <a href="mailto:info@desteigeralmere.nl">info@desteigeralmere.nl</a><br>
-      📞 0578-769056
+      📞 06-85727480
     </p>
     <p>Met vriendelijke groet,<br><strong>Team De Steiger Almere</strong></p>
   `);
@@ -492,7 +492,7 @@ export async function sendReservationConfirmationEmails(reservation: any, proper
     <p>Binnen <strong>8 weken</strong> dient u schriftelijk te laten weten of u tot aankoop wenst over te gaan.</p>
     <p>Heeft u vragen? Neem contact op:<br>
       📧 <a href="mailto:info@desteigeralmere.nl">info@desteigeralmere.nl</a><br>
-      📞 0578-769056
+      📞 06-85727480
     </p>
     <p>Met vriendelijke groet,<br><strong>Team De Steiger Almere</strong></p>
   `);

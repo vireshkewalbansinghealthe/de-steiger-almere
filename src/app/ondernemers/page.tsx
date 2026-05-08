@@ -484,10 +484,10 @@ export default function OndernemersPage() {
               Plan Bezichtiging
             </Link>
             <a
-              href="tel:0578769056"
+              href="tel:0685727480"
               className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
             >
-              Bel Direct: 0578-769056
+              Bel Direct: 06-85727480
             </a>
           </div>
         </div>

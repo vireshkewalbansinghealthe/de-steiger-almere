@@ -1008,7 +1008,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   <Phone className="h-5 w-5 mr-3 text-slate-600" />
                   <div>
                     <div className="font-medium text-gray-900">Telefoon</div>
-                    <div className="text-gray-600">0578-769056</div>
+                    <div className="text-gray-600">06-85727480</div>
                   </div>
                 </div>
                 <div className="flex items-center">
@@ -1636,7 +1636,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                                   <Phone className="h-5 w-5 mr-3 text-slate-600" />
                                   <div>
                                     <div className="font-medium text-gray-900">Telefoon</div>
-                                    <div className="text-gray-600">0578-769056</div>
+                                    <div className="text-gray-600">06-85727480</div>
                                   </div>
                                 </div>
                                 <div className="flex items-center">

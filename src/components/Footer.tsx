@@ -20,9 +20,9 @@ export default function Footer() {
                 <Mail className="h-4 w-4 text-yellow-500 flex-shrink-0" />
                 info@desteigeralmere.nl
               </a>
-              <a href="tel:0578769056" className="flex items-center gap-2.5 hover:text-yellow-400 transition-colors">
+              <a href="tel:0685727480" className="flex items-center gap-2.5 hover:text-yellow-400 transition-colors">
                 <Phone className="h-4 w-4 text-yellow-500 flex-shrink-0" />
-                0578-769056
+                06-85727480
               </a>
               <div className="flex items-start gap-2.5">
                 <MapPin className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />

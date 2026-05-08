@@ -1,4 +1,5 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient, createServerClient, type CookieOptions } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -6,6 +7,37 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 // Browser client for client-side operations
 export const createClient = () =>
   createBrowserClient(supabaseUrl, supabaseAnonKey)
+
+// Server client for server-side operations (Server Components, API Routes, Middleware)
+export const createServerSupabaseClient = () => {
+  const cookieStore = cookies()
+
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        return cookieStore.get(name)?.value
+      },
+      set(name: string, value: string, options: CookieOptions) {
+        try {
+          cookieStore.set({ name, value, ...options })
+        } catch (error) {
+          // The `set` method was called from a Server Component.
+          // This can be ignored if you have middleware refreshing
+          // user sessions.
+        }
+      },
+      remove(name: string, options: CookieOptions) {
+        try {
+          cookieStore.set({ name, value: '', ...options })
+        } catch (error) {
+          // The `delete` method was called from a Server Component.
+          // This can be ignored if you have middleware refreshing
+          // user sessions.
+        }
+      },
+    },
+  })
+}
 
 // Legacy export for backward compatibility
 export const supabase = createClient()

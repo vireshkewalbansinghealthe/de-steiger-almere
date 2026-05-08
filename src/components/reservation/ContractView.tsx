@@ -32,7 +32,7 @@ export default function ContractView({
     // Verkoper (Seller) info
     verkoperNaam: 'VVS Projectontwikkeling B.V.',
     verkoperAdres: 'Hammerstraat 10 A, 8161 PH EPE, Nederland',
-    verkoperContact: 'administratie@vvsbouw.nl | 0578-769056 | www.vvsprojectontwikkeling.nl',
+    verkoperContact: 'administratie@vvsbouw.nl | 06-85727480 | www.vvsprojectontwikkeling.nl',
     
     // Gegadigde (Buyer) info
     gegadigdeNaam: `${reservationData.customerInfo?.firstName || ''} ${reservationData.customerInfo?.lastName || ''}`.trim(),

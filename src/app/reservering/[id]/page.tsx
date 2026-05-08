@@ -252,8 +252,8 @@ export default function ReservationPage() {
             <a href="mailto:administratie@vvsbouw.nl" className="flex items-center gap-2 text-sm text-yellow-400 hover:text-yellow-300">
               <Mail className="h-4 w-4" /> administratie@vvsbouw.nl
             </a>
-            <a href="tel:0578769056" className="flex items-center gap-2 text-sm text-yellow-400 hover:text-yellow-300">
-              <Phone className="h-4 w-4" /> 0578 – 769 056
+            <a href="tel:0685727480" className="flex items-center gap-2 text-sm text-yellow-400 hover:text-yellow-300">
+              <Phone className="h-4 w-4" /> 06 – 857 27 480
             </a>
           </div>
         </div>
