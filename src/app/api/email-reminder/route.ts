@@ -347,7 +347,7 @@ function generateUrgentReminderEmailContent(data: ReminderEmailData): string {
             <li>U verliest uw claim op deze gewilde locaties</li>
           </ul>
 
-          <p><strong>Hulp nodig?</strong> Bel ons direct: 036-123-4567</p>
+          <p><strong>Hulp nodig?</strong> Bel ons direct: 06-85727480</p>
 
           <p>Met vriendelijke groet,<br>Het team van De Steiger</p>
         </div>

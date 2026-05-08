@@ -79,7 +79,7 @@ export default function ContactPage() {
                   href="tel:0685727480"
                   className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
                 >
-                  Bel ons direct
+                  Bel ons direct: 06-85727480
                 </a>
               </div>
             </div>
