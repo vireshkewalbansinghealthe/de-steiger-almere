@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Building, Leaf, Users, TrendingUp, Award, Target, Lightbulb, Shield } from 'lucide-react';
+import { Building, Leaf, Users, TrendingUp, Award, Target, Lightbulb, Shield, Wallet } from 'lucide-react';
 
 export default function AboutUnityPage() {
   return (
@@ -92,6 +92,53 @@ export default function AboutUnityPage() {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Ontdek de voordelen van onze moderne bedrijfsruimtes en opslagfaciliteiten
             </p>
+          </div>
+
+          {/* Financing Section */}
+          <div className="bg-slate-900 rounded-3xl overflow-hidden mb-20 shadow-2xl">
+            <div className="grid lg:grid-cols-2 items-center">
+              <div className="p-12 lg:p-16">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-400 rounded-2xl mb-8">
+                  <Wallet className="h-8 w-8 text-slate-900" />
+                </div>
+                <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">
+                  100% Financiering Mogelijk
+                </h3>
+                <p className="text-xl text-slate-300 leading-relaxed mb-8">
+                  Bij De Steiger maken we het ondernemers makkelijk. In samenwerking met onze partners bieden we de mogelijkheid tot 100% financiering van uw bedrijfsruimte.
+                </p>
+                <div className="space-y-4 mb-10">
+                  <div className="flex items-center text-slate-200">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                    Geen eigen vermogen nodig
+                  </div>
+                  <div className="flex items-center text-slate-200">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                    Scherpe rentetarieven
+                  </div>
+                  <div className="flex items-center text-slate-200">
+                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
+                    Snel en transparant proces
+                  </div>
+                </div>
+                <a
+                  href="https://clarencefinance.nl/desteiger/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center bg-yellow-400 hover:bg-yellow-500 text-slate-900 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 transform hover:scale-105"
+                >
+                  Bereken uw Financiering
+                </a>
+              </div>
+              <div className="relative h-full min-h-[400px]">
+                <img 
+                  src="/images/up/Image10.png" 
+                  alt="Financiering mogelijkheden" 
+                  className="absolute inset-0 w-full h-full object-cover opacity-60"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-transparent to-transparent"></div>
+              </div>
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
