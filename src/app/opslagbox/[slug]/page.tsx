@@ -1327,10 +1327,10 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                       <div className="py-4">
                         <div className="bg-gray-50 rounded-lg p-4 mb-4">
                           <div className="flex items-center justify-between mb-4">
-                            <div>
+                          <div>
                             <h3 className="text-lg font-semibold text-gray-900">Vloerplan Unit {selectedUnit}</h3>
-                            <p className="text-gray-600 text-sm">{unitDetails.size} • {unitDetails.grossSize}</p>
-                            </div>
+                            <p className="text-gray-600 text-sm">{unitDetails.grossSize} bruto</p>
+                          </div>
                             <div className="flex space-x-2">
                               <button
                                 onClick={() => window.open(floorplanImage, '_blank')}
@@ -1382,11 +1382,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
                           </p>
                         </div>
                         
-                        <div className="grid md:grid-cols-3 gap-4 text-sm">
-                          <div className="bg-blue-50 p-4 rounded-lg">
-                            <h4 className="font-semibold text-blue-900 mb-2">Afmetingen</h4>
-                          <p className="text-blue-700">{unitDetails.size}</p>
-                          </div>
+                        <div className="grid md:grid-cols-2 gap-4 text-sm">
                           <div className="bg-green-50 p-4 rounded-lg">
                             <h4 className="font-semibold text-green-900 mb-2">Hoogte</h4>
                           <p className="text-green-700">3.00m vrije hoogte</p>

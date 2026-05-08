@@ -80,9 +80,6 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
 
   const isAvailable = unit?.status === 'available';
   const reserveSlug = unit ? `${unit.type}-type-${unit.type_number}` : null;
-  const pricePerM2 = unit && unit.gross_area > 0
-    ? Math.round(unit.sale_price / unit.gross_area).toLocaleString('nl-NL')
-    : null;
 
   const floorLabel = (floor?: string) => {
     if (!floor) return null;
@@ -210,10 +207,7 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
             {/* Specs grid */}
             <div className="grid grid-cols-2 gap-2.5">
               <Spec icon={<Euro className="h-4 w-4" />} label="Koopprijs" value={`€ ${unit?.sale_price?.toLocaleString('nl-NL')}`} highlight />
-              <Spec icon={<Ruler className="h-4 w-4" />} label="Bruto opp." value={`${unit?.gross_area} m²`} />
-              {pricePerM2 && (
-                <Spec icon={<Euro className="h-4 w-4" />} label="Prijs per m²" value={`€ ${pricePerM2}`} />
-              )}
+              <Spec icon={<Ruler className="h-4 w-4" />} label="Bruto oppervlakte" value={`${unit?.gross_area} m²`} />
               {unit?.floor !== undefined && floorLabel(unit.floor) && (
                 <Spec icon={<Layers className="h-4 w-4" />} label="Verdieping" value={floorLabel(unit.floor)!} />
               )}

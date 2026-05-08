@@ -1438,14 +1438,13 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                           </div>
                         </div>
                         
-                        {/* Area Details - PRESERVED DATA */}
+                            {/* Area Details - PRESERVED DATA */}
                         <div className="space-y-2 mb-3">
                           <div className="bg-gray-50 rounded-lg p-3">
-                            <h4 className="font-semibold text-gray-900 mb-2 text-sm">Oppervlakte Details</h4>
+                            <h4 className="font-semibold text-gray-900 mb-2 text-sm">Oppervlakte</h4>
                             <div className="space-y-2">
                               {/* Total Area - bruto only */}
                               <div className="pb-2 border-b border-gray-200">
-                                <h5 className="font-medium text-gray-900 mb-1">Totaal</h5>
                                 <div className="flex justify-between text-sm">
                                   <span className="text-gray-600">Bruto:</span>
                                   <span className="font-semibold">{unitDetails.grossSize}</span>
@@ -1519,10 +1518,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                     <div className="py-4">
                       <div className="bg-gray-50 rounded-lg p-4 mb-4">
                         <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">Vloerplan Unit {selectedUnit}</h3>
-                            <p className="text-gray-600 text-sm">{unitDetails.size} • {unitDetails.grossSize}</p>
-                          </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900">Vloerplan Unit {selectedUnit}</h3>
+                              <p className="text-gray-600 text-sm">{unitDetails.grossSize} bruto</p>
+                            </div>
                           <div className="flex space-x-2">
                             <button
                               onClick={() => window.open(project.images[0], '_blank')}
@@ -1594,11 +1593,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                         </p>
                       </div>
                       
-                      <div className="grid md:grid-cols-3 gap-4 text-sm">
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                          <h4 className="font-semibold text-blue-900 mb-2">Afmetingen</h4>
-                          <p className="text-blue-700">{unitDetails.size}</p>
-                        </div>
+                      <div className="grid md:grid-cols-2 gap-4 text-sm">
                         <div className="bg-green-50 p-4 rounded-lg">
                           <h4 className="font-semibold text-green-900 mb-2">Hoogte</h4>
                           <p className="text-green-700">3.70m vrije hoogte</p>
