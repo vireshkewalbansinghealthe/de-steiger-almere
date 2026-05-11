@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import PostHogProvider from '@/components/PostHogProvider';
 import ClientLayout from '@/components/ClientLayout';
 
@@ -32,6 +33,7 @@ export default function RootLayout({
         </PostHogProvider>
         <Analytics />
         <SpeedInsights />
+        <GoogleAnalytics gaId="G-Q9WQKJ7V1D" />
       </body>
     </html>
   );
