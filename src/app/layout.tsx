@@ -33,7 +33,7 @@ export default function RootLayout({
         </PostHogProvider>
         <Analytics />
         <SpeedInsights />
-        <GoogleAnalytics gaId="G-Q9WQKJ7V1D" />
+        <GoogleAnalytics gaId="G-YFB9KZPDX9" />
       </body>
     </html>
   );
