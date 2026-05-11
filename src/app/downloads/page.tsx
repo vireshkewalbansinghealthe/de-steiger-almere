@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Download, FileText, Image, Map, Building2, Package, Users, Eye, Calendar } from 'lucide-react';
 
+import FAQSection from '@/components/FAQSection';
+
 interface DownloadItem {
   name: string;
   description: string;
@@ -433,11 +435,14 @@ export default function DownloadsPage() {
                           </div>
                         </div>
                       ))}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <FAQSection />
+    </div>
+  );
+})}
           </div>
         </div>
       </section>

@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { Building, Leaf, Users, TrendingUp, Award, Target, Lightbulb, Shield, Wallet } from 'lucide-react';
+import ContactSection from '@/components/ContactSection';
+import FAQSection from '@/components/FAQSection';
 
 export default function HomePage() {
   return (
@@ -25,20 +27,23 @@ export default function HomePage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="#missie"
-                className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-slate-50 transition-colors duration-200"
+              <Link
+                href="/aanbod"
+                className="bg-yellow-400 text-slate-900 px-8 py-4 rounded-lg font-bold text-lg hover:bg-yellow-500 transition-all duration-200 transform hover:scale-105 shadow-lg shadow-yellow-400/20"
               >
-                Onze Missie
-              </a>
+                Bekijk Aanbod & Reserveer
+              </Link>
               <a
-                href="#waarden"
-                className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
+                href="tel:0685727480"
+                className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 flex items-center justify-center gap-2"
               >
-                Onze Waarden
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                06 - 857 27 480
               </a>
             </div>
-          </div>
+    </div>
         </div>
       </div>
 
@@ -74,13 +79,13 @@ export default function HomePage() {
                   <div className="text-center bg-white/90 backdrop-blur-sm rounded-lg p-4">
                     <div className="text-2xl font-bold text-slate-800 mb-1">247</div>
                     <div className="text-xs text-slate-600">Opslagboxen</div>
-                  </div>
-                </div>
-              </div>
+        </div>
+            </div>
+          </div>
+            </div>
             </div>
           </div>
         </div>
-      </div>
 
       {/* Professional Features Section */}
       <div id="waarden" className="bg-white py-20">
@@ -92,7 +97,7 @@ export default function HomePage() {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Ontdek de voordelen van onze moderne bedrijfsruimtes en opslagfaciliteiten
             </p>
-          </div>
+        </div>
 
           {/* Financing Section */}
           <div className="bg-slate-900 rounded-3xl overflow-hidden mb-20 shadow-2xl">
@@ -137,9 +142,9 @@ export default function HomePage() {
                   className="absolute inset-0 w-full h-full object-cover opacity-60"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-transparent to-transparent"></div>
-              </div>
-            </div>
-          </div>
+        </div>
+      </div>
+    </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="relative">
@@ -206,8 +211,8 @@ export default function HomePage() {
               <div className="absolute bottom-4 left-4 bg-slate-800 text-white px-3 py-1 rounded-full text-sm font-semibold">
                 15 min naar Amsterdam
               </div>
-            </div>
           </div>
+        </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
@@ -242,8 +247,8 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
+          </div>
         </div>
-      </div>
 
       {/* Why Choose Section */}
       <div className="bg-slate-900 text-white py-20">
@@ -271,7 +276,7 @@ export default function HomePage() {
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-600 rounded-2xl mb-6">
                 <Shield className="h-8 w-8 text-white" />
-              </div>
+                      </div>
               <h3 className="text-xl font-bold mb-4">Veilige Investering</h3>
               <p className="text-slate-300 leading-relaxed">
                 Stabiele waardegroei in een groeiende markt met bewezen track record en solide fundamenten.
@@ -288,8 +293,14 @@ export default function HomePage() {
               </p>
             </div>
           </div>
-        </div>
-      </div>
+              </div>
+            </div>
+
+      {/* FAQ Section */}
+      <FAQSection />
+
+      {/* Contact Section */}
+      <ContactSection />
 
       {/* CTA Section */}
       <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white py-20">

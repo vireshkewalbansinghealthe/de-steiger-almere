@@ -6,6 +6,8 @@ import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Calendar, Download, FileText, Map as MapIcon } from 'lucide-react';
 import SimpleFloorplan, { FloorplanUnit } from '@/components/SimpleFloorplan';
 import UnitDrawer from '@/components/UnitDrawer';
+import ContactSection from '@/components/ContactSection';
+import FAQSection from '@/components/FAQSection';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -722,85 +724,11 @@ function AanbodPageContent() {
         )}
       </main>
 
-      {/* ── Contact section ──────────────────────────────────────────────── */}
-      <section className="bg-slate-900 text-white mt-12 py-14 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-            {/* Left: copy */}
-            <div>
-              <p className="text-yellow-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Contact</p>
-              <h2 className="text-3xl font-black mb-4 leading-tight">
-                Vragen of meer<br />informatie?
-              </h2>
-              <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                Wij helpen u graag verder. Vul het formulier in en we nemen zo snel mogelijk contact met u op.
-              </p>
-              <div className="space-y-2 text-sm text-slate-300">
-                <div>VVS Projectontwikkeling B.V.</div>
-                <div>Steiger 74–77, Almere</div>
-                <a href="mailto:administratie@vvsbouw.nl" className="block text-yellow-400 hover:text-yellow-300 transition-colors">
-                  administratie@vvsbouw.nl
-                </a>
-                <a href="tel:0685727480" className="block text-yellow-400 hover:text-yellow-300 transition-colors">
-                  06 – 857 27 480
-                </a>
-              </div>
-            </div>
+      {/* ── FAQ section ──────────────────────────────────────────────── */}
+      <FAQSection />
 
-            {/* Right: form */}
-            <div>
-              {contactSubmitted ? (
-                <div className="bg-white/10 rounded-2xl p-8 text-center">
-                  <div className="text-4xl mb-3">✓</div>
-                  <p className="font-bold text-lg">Bericht ontvangen!</p>
-                  <p className="text-slate-400 text-sm mt-1">We nemen zo snel mogelijk contact met u op.</p>
-                  <button
-                    onClick={() => setContactSubmitted(false)}
-                    className="mt-4 text-xs text-slate-400 underline hover:text-white"
-                  >
-                    Nog een bericht sturen
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleContactSubmit} className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      required type="text" placeholder="Uw naam"
-                      value={contactForm.name}
-                      onChange={e => setContactForm(f => ({ ...f, name: e.target.value }))}
-                      className="col-span-2 sm:col-span-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    />
-                    <input
-                      required type="email" placeholder="E-mailadres"
-                      value={contactForm.email}
-                      onChange={e => setContactForm(f => ({ ...f, email: e.target.value }))}
-                      className="col-span-2 sm:col-span-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                    />
-                  </div>
-                  <input
-                    required type="tel" placeholder="Telefoonnummer"
-                    value={contactForm.phone}
-                    onChange={e => setContactForm(f => ({ ...f, phone: e.target.value }))}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                  />
-                  <textarea
-                    rows={3} placeholder="Uw vraag of bericht (optioneel)"
-                    value={contactForm.message}
-                    onChange={e => setContactForm(f => ({ ...f, message: e.target.value }))}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"
-                  />
-                  <button
-                    type="submit" disabled={contactSubmitting}
-                    className="w-full bg-yellow-500 hover:bg-yellow-400 disabled:opacity-60 text-slate-900 font-bold py-3.5 rounded-xl text-sm transition-colors"
-                  >
-                    {contactSubmitting ? 'Versturen...' : 'Stuur bericht'}
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── Contact section ──────────────────────────────────────────────── */}
+      <ContactSection />
 
       {/* ── Unit Drawer ────────────────────────────────────────────────────── */}
       <UnitDrawer unit={selectedUnit} onClose={() => setSelectedUnit(null)} />

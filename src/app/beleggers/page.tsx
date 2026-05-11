@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Building2, Shield, TrendingUp, ArrowLeft, Users, Award, Target, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import FAQSection from '@/components/FAQSection';
+import ContactSection from '@/components/ContactSection';
 
 export default function InvestorsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -288,32 +290,11 @@ export default function InvestorsPage() {
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="bg-slate-800 text-white py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Klaar om te investeren?
-          </h2>
-          <p className="text-xl mb-8 text-slate-100">
-            Neem contact op voor een persoonlijk gesprek over de mogelijkheden
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/#contact"
-              className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200"
-            >
-              Plan een gesprek
-            </Link>
-            <Link
-              href="/brochure"
-              className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-slate-800 transition-colors duration-200"
-            >
-              Download brochure
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* FAQ Section */}
+      <FAQSection />
+
+      {/* Contact Section */}
+      <ContactSection />
     </div>
   );
 }

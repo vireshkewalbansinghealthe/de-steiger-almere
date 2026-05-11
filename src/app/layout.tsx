@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import FloatingCallButton from '@/components/FloatingCallButton';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import PostHogProvider from '@/components/PostHogProvider';
+import ClientLayout from '@/components/ClientLayout';
 
 export const metadata: Metadata = {
   title: 'A6 Bedrijfsunits en Opslagboxen - Steiger 74-77 Almere',
@@ -22,12 +22,13 @@ export default function RootLayout({
     <html lang="nl">
       <body className="min-h-screen flex flex-col bg-white">
         <PostHogProvider>
-          <Header />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-          <FloatingCallButton />
+          <ClientLayout>
+            <Header />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </ClientLayout>
         </PostHogProvider>
         <Analytics />
         <SpeedInsights />

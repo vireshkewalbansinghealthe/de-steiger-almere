@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Building2, MapPin, Wifi, Zap, Shield, Users, ArrowLeft, CheckCircle, Clock, Car, Award, Target } from 'lucide-react';
 import Link from 'next/link';
+import FAQSection from '@/components/FAQSection';
+import ContactSection from '@/components/ContactSection';
 
 export default function OndernemersPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -466,32 +468,11 @@ export default function OndernemersPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-slate-800 text-white py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Klaar om uw bedrijf te laten groeien?
-          </h2>
-          <p className="text-xl text-slate-300 mb-8">
-            Plan een bezichtiging of neem contact op voor meer informatie over onze beschikbare ruimtes.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/contact" 
-              className="bg-white text-slate-800 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-slate-50 transition-colors duration-200"
-            >
-              Plan Bezichtiging
-            </Link>
-            <a
-              href="tel:0685727480"
-              className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
-            >
-              Bel Direct: 06-85727480
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* FAQ Section */}
+      <FAQSection />
+
+      {/* Contact Section */}
+      <ContactSection />
     </div>
   );
 }

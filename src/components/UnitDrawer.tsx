@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { X, ArrowRight, Calendar, MapPin, ChevronLeft, ChevronRight, Layers, Ruler, Euro } from 'lucide-react';
 import { FloorplanUnit } from './SimpleFloorplan';
+import { useLayoutContext } from './ClientLayout';
 
 interface UnitDrawerProps {
   unit: FloorplanUnit | null;
@@ -11,14 +12,25 @@ interface UnitDrawerProps {
 }
 
 // Building photos shown after the type floorplan
-const BUILDING_PHOTOS = [
+const BEDRIJFSUNIT_PHOTOS = [
+  '/images/Image13.png',
+  '/images/Image14.png',
+  '/images/Image15.png',
   '/images/beide2.png',
   '/images/Image1.png',
   '/images/Image2.png',
   '/images/beide1.png',
   '/images/Image4.png',
-  '/images/Image6.png',
-  '/images/Image8.png',
+];
+
+const OPSLAGBOX_PHOTOS = [
+  '/images/up/opslagbox3.png',
+  '/images/up/opslagbox4.png',
+  '/images/beide2.png',
+  '/images/Image1.png',
+  '/images/Image2.png',
+  '/images/beide1.png',
+  '/images/Image4.png',
 ];
 
 export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
@@ -26,14 +38,17 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
   const [floorplanOk, setFloorplanOk] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { setIsDrawerOpen } = useLayoutContext();
 
   const typeLabel = unit?.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
   const floorplanSrc = unit ? `/images/floorplans/${typeLabel}_Type_${unit.type_number}.png` : null;
 
+  const buildingPhotos = unit?.type === 'bedrijfsunit' ? BEDRIJFSUNIT_PHOTOS : OPSLAGBOX_PHOTOS;
+
   // Slides: index 0 = floorplan (if loaded), rest = building photos
   const slides: { src: string; label: string }[] = [
     ...(floorplanOk && floorplanSrc ? [{ src: floorplanSrc, label: 'Plattegrond' }] : []),
-    ...BUILDING_PHOTOS.map(src => ({ src, label: 'Foto' })),
+    ...buildingPhotos.map(src => ({ src, label: 'Foto' })),
   ];
 
   const totalSlides = slides.length;
@@ -49,7 +64,8 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
   useEffect(() => {
     setSlide(0);
     setFloorplanOk(true);
-  }, [unit?.unit_number]);
+    setIsDrawerOpen(!!unit);
+  }, [unit?.unit_number, setIsDrawerOpen, unit]);
 
   // Autoplay
   useEffect(() => {
@@ -214,11 +230,34 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
               <Spec icon={<Layers className="h-4 w-4" />} label="Type" value={`Type ${unit?.type_number}`} />
             </div>
 
+            {/* FAQ Section */}
+            <div className="mt-6 border-t border-gray-100 pt-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Veelgestelde vragen</h3>
+              <div className="space-y-4">
+                <FAQItem 
+                  question="Wat is de minimale huurtermijn?" 
+                  answer="De units worden uitsluitend verkocht, niet verhuurd door De Steiger. Na aankoop bent u vrij om de unit zelf te verhuren." 
+                />
+                <FAQItem 
+                  question="Is er 100% financiering mogelijk?" 
+                  answer="Ja, via onze partners is 100% financiering mogelijk. U heeft geen eigen vermogen nodig." 
+                />
+                <FAQItem 
+                  question="Wat zijn de servicekosten (VvE)?" 
+                  answer="De indicatieve VvE bijdrage wordt binnenkort vastgesteld en dekt o.a. opstalverzekering en buitenonderhoud." 
+                />
+                <FAQItem 
+                  question="Wanneer is de oplevering?" 
+                  answer="De verwachte oplevering is in het derde kwartaal van 2026." 
+                />
+              </div>
+            </div>
+
           </div>
         </div>
 
         {/* Bottom CTA */}
-        <div className="flex-shrink-0 p-5 border-t border-gray-100 bg-white">
+        <div className="flex-shrink-0 p-5 border-t border-gray-100 bg-white pb-24 sm:pb-5">
           {isAvailable && reserveSlug ? (
             <>
               <Link
@@ -319,6 +358,26 @@ function Spec({ icon, label, value, highlight }: { icon: React.ReactNode; label:
         {label}
       </div>
       <div className={`text-base font-bold ${highlight ? 'text-yellow-900' : 'text-gray-900'}`}>{value}</div>
+    </div>
+  );
+}
+
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border border-gray-100 rounded-lg overflow-hidden bg-white">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex justify-between items-center"
+      >
+        <span className="font-semibold text-sm text-gray-900">{question}</span>
+        <span className="text-gray-400 ml-2">{isOpen ? '−' : '+'}</span>
+      </button>
+      {isOpen && (
+        <div className="px-4 py-3 text-sm text-gray-600 bg-white">
+          {answer}
+        </div>
+      )}
     </div>
   );
 }

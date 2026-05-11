@@ -221,21 +221,21 @@ export default function Header() {
                       <div className="text-xs text-gray-500">Toekomstvisie 2040</div>
                     </div>
                   </a>
-                  <a
-                    href="https://www.onderneeminalmere.nl/nl/nieuws/eerste-vestiging-op-high-tech-campus-almere"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 hover:text-slate-800 rounded-lg transition-colors duration-150"
-                  >
-                    <div className="mr-3 text-slate-800">🚀</div>
-                    <div>
-                      <div className="font-medium">Hi Tech Campus</div>
-                      <div className="text-xs text-gray-500">Eerste vestiging Almere</div>
+                      <a
+                        href="https://www.onderneeminalmere.nl/nl/nieuws/eerste-vestiging-op-high-tech-campus-almere"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 hover:text-slate-800 rounded-lg transition-colors duration-150"
+                      >
+                        <div className="mr-3 text-slate-800">🚀</div>
+                        <div>
+                          <div className="font-medium">Hi Tech Campus</div>
+                          <div className="text-xs text-gray-500">Eerste vestiging Almere</div>
+                        </div>
+                      </a>
                     </div>
-                  </a>
+                  </div>
                 </div>
-              </div>
-            </div>
 
             <Link
               href="/"
