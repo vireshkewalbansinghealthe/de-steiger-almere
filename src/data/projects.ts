@@ -99,6 +99,7 @@ export const projects: Project[] = [
     features: ['153.4m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(0),
     slug: 'bedrijfsunit-type-1',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -138,6 +139,7 @@ export const projects: Project[] = [
     features: ['101.2m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(1),
     slug: 'bedrijfsunit-type-2',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -178,6 +180,7 @@ export const projects: Project[] = [
     features: ['101.2m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(2),
     slug: 'bedrijfsunit-type-3',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -284,6 +287,7 @@ export const projects: Project[] = [
     features: ['356.6m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(3),
     slug: 'bedrijfsunit-type-4',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -313,6 +317,7 @@ export const projects: Project[] = [
     features: ['305.2m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(4),
     slug: 'bedrijfsunit-type-5',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -375,6 +380,7 @@ export const projects: Project[] = [
     features: ['101.2m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(5),
     slug: 'bedrijfsunit-type-6',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -789,6 +795,7 @@ export const projects: Project[] = [
     features: ['102.8m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(6),
     slug: 'bedrijfsunit-type-7',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -851,6 +858,7 @@ export const projects: Project[] = [
     features: ['420.3m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(7),
     slug: 'bedrijfsunit-type-8',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -880,6 +888,7 @@ export const projects: Project[] = [
     features: ['126.4m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(8),
     slug: 'bedrijfsunit-type-9',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -997,6 +1006,7 @@ export const projects: Project[] = [
     features: ['128.4m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(9),
     slug: 'bedrijfsunit-type-10',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -1026,6 +1036,7 @@ export const projects: Project[] = [
     features: ['101.2 - 102.8m² bruto', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(10),
     slug: 'bedrijfsunit-type-11',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -1066,6 +1077,7 @@ export const projects: Project[] = [
     features: ['101.2m² oppervlakte', 'Industrie + Kantoor', '2 parkeerplaatsen', 'Energielabel A+'],
     images: getBedrijfsunitImages(11),
     slug: 'bedrijfsunit-type-12',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       unitDetails: [
@@ -1103,6 +1115,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(0),
     slug: 'opslagbox-type-1',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -1226,6 +1239,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(1),
     slug: 'opslagbox-type-2',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -1265,6 +1279,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(2),
     slug: 'opslagbox-type-3',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -1388,6 +1403,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(3),
     slug: 'opslagbox-type-4',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -1511,6 +1527,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(4),
     slug: 'opslagbox-type-5',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -1641,6 +1658,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(6),
     slug: 'opslagbox-type-7',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -1680,6 +1698,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(5),
     slug: 'opslagbox-type-6',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -1719,6 +1738,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(7),
     slug: 'opslagbox-type-8',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -1765,6 +1785,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(8),
     slug: 'opslagbox-type-9',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -1811,6 +1832,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(9),
     slug: 'opslagbox-type-10',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -1857,6 +1879,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(10),
     slug: 'opslagbox-type-11',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -2029,6 +2052,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(11),
     slug: 'opslagbox-type-12',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -2075,6 +2099,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(12),
     slug: 'opslagbox-type-13',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -2331,6 +2356,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(13),
     slug: 'opslagbox-type-14',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -2587,6 +2613,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(14),
     slug: 'opslagbox-type-15',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
@@ -3067,6 +3094,7 @@ export const projects: Project[] = [
     ],
     images: getOpslagboxImages(15),
     slug: 'opslagbox-type-16',
+    buildingStart: 'medio 2028',
     details: {
       location: 'De Steiger 74/77, Almere',
       specifications: {
