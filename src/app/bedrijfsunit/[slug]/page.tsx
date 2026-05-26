@@ -154,7 +154,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
     status: 'NU IN DE VERKOOP',
     startPrice: `€ ${Math.min(...units.map(u => u.sale_price)).toLocaleString('nl-NL')} (v.o.n. ex. BTW)`,
     brutoStartPrice: `€ ${(Math.min(...units.map(u => u.sale_price)) * 1.1).toLocaleString('nl-NL')} (v.o.n. incl. BTW)`,
-    buildingStart: '2026',
+    buildingStart: 'medio 2028',
     details: {
       unitDetails: units.map(unit => ({
         unitNumber: parseInt(unit.unit_number) || 0,
@@ -517,7 +517,7 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                     <Calendar className="h-8 w-8 mx-auto text-white" />
                   </div>
                   <div className="text-white/80 text-sm">Bouwstart</div>
-                  <div className="text-xl font-bold text-white">2026</div>
+                  <div className="text-xl font-bold text-white">medio 2028</div>
                 </div>
                 <div className="text-center">
                   <div className="bg-white/20 rounded-lg p-4 mb-2">

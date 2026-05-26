@@ -54,7 +54,7 @@ export default function FAQSection() {
           />
           <FAQItem 
             question="Wanneer is de oplevering?" 
-            answer="De verwachte oplevering van het project is in het derde kwartaal van 2026." 
+            answer="De verwachte oplevering van het project is medio 2028." 
           />
           <FAQItem 
             question="Zijn de units voorzien van nutsvoorzieningen?" 

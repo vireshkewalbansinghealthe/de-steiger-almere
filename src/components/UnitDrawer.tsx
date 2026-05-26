@@ -248,7 +248,7 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
                 />
                 <FAQItem 
                   question="Wanneer is de oplevering?" 
-                  answer="De verwachte oplevering is in het derde kwartaal van 2026." 
+                  answer="De verwachte oplevering is medio 2028." 
                 />
               </div>
             </div>
