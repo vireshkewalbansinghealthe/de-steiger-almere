@@ -63,8 +63,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, availability }) => {
     return null;
   })();
 
-  // Derive per-type floorplan image path from project name, e.g. "Opslagbox Type 13" → "/images/floorplans/Opslagbox_Type_13.png"
-  const floorplanImage = `/images/floorplans/${project.name.replace(/\s+/g, '_')}.png`;
+  // Derive per-type floorplan image path from project name, e.g. "Opslagbox Type 13" → "/images/floorplans/Opslagbox_Type_13.webp"
+  const floorplanImage = `/images/floorplans/${project.name.replace(/\s+/g, '_')}.webp`;
   const fallbackImage = project.images?.[0] || null;
   const [imgSrc, setImgSrc] = useState<string>(floorplanImage);
   const [imgError, setImgError] = useState(false);

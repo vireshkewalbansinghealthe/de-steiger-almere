@@ -111,7 +111,7 @@ export default function Header() {
                 <div className="relative transition-all duration-300 group-hover:scale-110">
                   <div className="bg-black rounded-lg px-2 py-1.5 shadow-lg">
                     <img
-                      src="/images/vvs-projectontwikkeling.png"
+                      src="/images/vvs-projectontwikkeling.webp"
                       alt="VVS Projectontwikkeling"
                       className="h-8 w-auto object-contain"
                     />
@@ -389,7 +389,7 @@ export default function Header() {
               <div className="flex items-center">
                 <div className="bg-black rounded-lg px-2 py-1 mr-3">
                   <img
-                    src="/images/vvs-projectontwikkeling.png"
+                    src="/images/vvs-projectontwikkeling.webp"
                     alt="VVS Projectontwikkeling"
                     className="h-6 w-auto object-contain"
                   />

@@ -19,10 +19,10 @@ export default function DownloadsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const heroImages = [
-    '/images/Image1.png',
-    '/images/Image2.png',
-    '/images/Image3.png',
-    '/images/Image12.png'
+    '/images/Image1.webp',
+    '/images/Image2.webp',
+    '/images/Image3.webp',
+    '/images/Image12.webp'
   ];
 
   useEffect(() => {

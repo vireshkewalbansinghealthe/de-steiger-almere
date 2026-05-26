@@ -80,18 +80,18 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   // Get floorplan image based on type number
   const getFloorplanImage = (typeNumber: number): { plattegrond: string; gevels?: string } => {
     const floorplanMap: Record<number, { plattegrond: string; gevels?: string }> = {
-      1: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_1.png' },
-      2: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_2.png' },
-      3: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_3.png' },
-      4: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_4_plattegrond.png', gevels: '/images/floorplans/Bedrijfsunit_Type_4_gevels.png' },
-      5: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_5_plattegrond.png', gevels: '/images/floorplans/Bedrijfsunit_Type_5_gevels.png' },
-      6: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_6.png' },
-      7: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_7.png' },
-      8: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_8_plattegrond.png', gevels: '/images/floorplans/Bedrijfsunit_Type_8_gevels.png' },
-      9: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_9.png' },
-      10: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_10.png' },
-      11: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_11.png' },
-      12: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_12.png' },
+      1: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_1.webp' },
+      2: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_2.webp' },
+      3: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_3.webp' },
+      4: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_4_plattegrond.webp', gevels: '/images/floorplans/Bedrijfsunit_Type_4_gevels.webp' },
+      5: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_5_plattegrond.webp', gevels: '/images/floorplans/Bedrijfsunit_Type_5_gevels.webp' },
+      6: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_6.webp' },
+      7: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_7.webp' },
+      8: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_8_plattegrond.webp', gevels: '/images/floorplans/Bedrijfsunit_Type_8_gevels.webp' },
+      9: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_9.webp' },
+      10: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_10.webp' },
+      11: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_11.webp' },
+      12: { plattegrond: '/images/floorplans/Bedrijfsunit_Type_12.webp' },
     };
     return floorplanMap[typeNumber] || { plattegrond: '/images/placeholder.png' };
   };
@@ -919,10 +919,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   src={
                     floorView === 'type' ? floorplanImages.plattegrond :
                     floorView === 'gevels' ? (floorplanImages.gevels || floorplanImages.plattegrond) :
-                    floorView === 'totaal' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png' :
-                    floorView === 'bg' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_Begane_Grond.png' :
-                    floorView === '1e' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_1e_Verdieping.png' :
-                    '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_2e_Verdieping.png'
+                    floorView === 'totaal' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.webp' :
+                    floorView === 'bg' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_Begane_Grond.webp' :
+                    floorView === '1e' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_1e_Verdieping.webp' :
+                    '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_2e_Verdieping.webp'
                   }
                   alt={`Plattegrond ${
                     floorView === 'type' ? `Type ${typeNumberFromSlug}` :
@@ -935,10 +935,10 @@ export default function ProjectDetailPage({ params }: ProjectDetailPageProps) {
                   onClick={() => window.open(
                     floorView === 'type' ? floorplanImages.plattegrond :
                     floorView === 'gevels' ? (floorplanImages.gevels || floorplanImages.plattegrond) :
-                    floorView === 'totaal' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png' :
-                    floorView === 'bg' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_Begane_Grond.png' :
-                    floorView === '1e' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_1e_Verdieping.png' :
-                    '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_2e_Verdieping.png',
+                    floorView === 'totaal' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.webp' :
+                    floorView === 'bg' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_Begane_Grond.webp' :
+                    floorView === '1e' ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_1e_Verdieping.webp' :
+                    '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Bedrijfsunits_2e_Verdieping.webp',
                     '_blank'
                   )}
                 />

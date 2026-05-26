@@ -11,7 +11,7 @@ export default function HomePage() {
         <div 
           className="absolute inset-0 bg-cover bg-center transform scale-105"
           style={{
-            backgroundImage: 'url(/images/Image12.png)'
+            backgroundImage: 'url(/images/Image12.webp)'
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
@@ -65,7 +65,7 @@ export default function HomePage() {
             </div>
             <div className="relative">
               <img 
-                src="/images/Image2.png" 
+                src="/images/Image2.webp" 
                 alt="De Steiger bedrijfspand" 
                 className="w-full h-96 object-cover rounded-2xl shadow-xl"
               />
@@ -137,7 +137,7 @@ export default function HomePage() {
               </div>
               <div className="relative h-full min-h-[400px]">
                 <img 
-                  src="/images/up/Image10.png" 
+                  src="/images/Image10.webp" 
                   alt="Financiering mogelijkheden" 
                   className="absolute inset-0 w-full h-full object-cover opacity-60"
                 />
@@ -149,7 +149,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="relative">
               <img 
-                src="/images/Image10.png" 
+                src="/images/Image10.webp" 
                 alt="Duurzame bedrijfsruimtes" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -204,7 +204,7 @@ export default function HomePage() {
             </div>
             <div className="order-1 lg:order-2 relative">
               <img 
-                src="/images/Image4.png" 
+                src="/images/Image4.webp" 
                 alt="Locatie Almere" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -217,7 +217,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
               <img 
-                src="/images/Image11.png" 
+                src="/images/Image11.webp" 
                 alt="Moderne faciliteiten" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />

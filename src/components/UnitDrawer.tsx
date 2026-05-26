@@ -13,24 +13,24 @@ interface UnitDrawerProps {
 
 // Building photos shown after the type floorplan
 const BEDRIJFSUNIT_PHOTOS = [
-  '/images/Image13.png',
-  '/images/Image14.png',
-  '/images/Image15.png',
-  '/images/beide2.png',
-  '/images/Image1.png',
-  '/images/Image2.png',
-  '/images/beide1.png',
-  '/images/Image4.png',
+  '/images/Image13.webp',
+  '/images/Image14.webp',
+  '/images/Image15.webp',
+  '/images/beide2.webp',
+  '/images/Image1.webp',
+  '/images/Image2.webp',
+  '/images/beide1.webp',
+  '/images/Image4.webp',
 ];
 
 const OPSLAGBOX_PHOTOS = [
-  '/images/up/opslagbox3.png',
-  '/images/up/opslagbox4.png',
-  '/images/beide2.png',
-  '/images/Image1.png',
-  '/images/Image2.png',
-  '/images/beide1.png',
-  '/images/Image4.png',
+  '/images/opslagbox3.webp',
+  '/images/opslagbox4.webp',
+  '/images/beide2.webp',
+  '/images/Image1.webp',
+  '/images/Image2.webp',
+  '/images/beide1.webp',
+  '/images/Image4.webp',
 ];
 
 export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
@@ -41,7 +41,7 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
   const { setIsDrawerOpen } = useLayoutContext();
 
   const typeLabel = unit?.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
-  const floorplanSrc = unit ? `/images/floorplans/${typeLabel}_Type_${unit.type_number}.png` : null;
+  const floorplanSrc = unit ? `/images/floorplans/${typeLabel}_Type_${unit.type_number}.webp` : null;
 
   const buildingPhotos = unit?.type === 'bedrijfsunit' ? BEDRIJFSUNIT_PHOTOS : OPSLAGBOX_PHOTOS;
 

@@ -61,13 +61,13 @@ export default function InteractiveFloorplan({
   const [opslagboxFloor, setOpslagboxFloor] = useState<'bg' | '1e' | '2e'>('bg');
 
   const OPSLAGBOX_FLOORS = [
-    { id: 'bg' as const, label: 'Begane Grond', image: '/images/floorplans/opslagbox0.png' },
-    { id: '1e' as const, label: '1e Verdieping', image: '/images/floorplans/opslagbox1.png' },
-    { id: '2e' as const, label: '2e Verdieping', image: '/images/floorplans/opslagbox2.png' },
+    { id: 'bg' as const, label: 'Begane Grond', image: '/images/floorplans/opslagbox0.webp' },
+    { id: '1e' as const, label: '1e Verdieping', image: '/images/floorplans/opslagbox1.webp' },
+    { id: '2e' as const, label: '2e Verdieping', image: '/images/floorplans/opslagbox2.webp' },
   ];
 
   const currentImage = activeFloorplan === 'bedrijfsunits'
-    ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png'
+    ? '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.webp'
     : OPSLAGBOX_FLOORS.find(f => f.id === opslagboxFloor)?.image || OPSLAGBOX_FLOORS[0].image;
 
   useEffect(() => {
@@ -464,7 +464,7 @@ export default function InteractiveFloorplan({
           }}
         >
           <img
-            src={`/images/floorplans/${hoveredUnit.name.replace(/\s+/g, '_')}.png`}
+            src={`/images/floorplans/${hoveredUnit.name.replace(/\s+/g, '_')}.webp`}
             alt={hoveredUnit.name}
             className="w-full h-32 object-contain bg-white rounded-lg mb-3"
             onError={(e) => {

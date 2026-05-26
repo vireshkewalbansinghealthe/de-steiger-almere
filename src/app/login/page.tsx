@@ -56,7 +56,7 @@ function CustomerLoginContent() {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: 'url(/images/up/Image2.png)'
+          backgroundImage: 'url(/images/Image2.webp)'
         }}
       />
       

@@ -134,7 +134,7 @@ export default function ResetPasswordPage() {
       <div className="min-h-screen relative overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/images/up/Image2.png)' }}
+          style={{ backgroundImage: 'url(/images/Image2.webp)' }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/70" />
         
@@ -176,7 +176,7 @@ export default function ResetPasswordPage() {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: 'url(/images/up/Image2.png)'
+          backgroundImage: 'url(/images/Image2.webp)'
         }}
       />
       

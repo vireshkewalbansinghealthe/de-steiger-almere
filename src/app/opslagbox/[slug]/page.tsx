@@ -75,22 +75,22 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
   // Get floorplan image based on type number (Opslagbox types 1-16)
   const getFloorplanImage = (typeNumber: number): string => {
     const floorplanMap: Record<number, string> = {
-      1: '/images/floorplans/Opslagbox_Type_1.png',
-      2: '/images/floorplans/Opslagbox_Type_2.png',
-      3: '/images/floorplans/Opslagbox_Type_3.png',
-      4: '/images/floorplans/Opslagbox_Type_4.png',
-      5: '/images/floorplans/Opslagbox_Type_5.png',
-      6: '/images/floorplans/Opslagbox_Type_6.png',
-      7: '/images/floorplans/Opslagbox_Type_7.png',
-      8: '/images/floorplans/Opslagbox_Type_8.png',
-      9: '/images/floorplans/Opslagbox_Type_9.png',
-      10: '/images/floorplans/Opslagbox_Type_10.png',
-      11: '/images/floorplans/Opslagbox_Type_11.png',
-      12: '/images/floorplans/Opslagbox_Type_12.png',
-      13: '/images/floorplans/Opslagbox_Type_13.png',
-      14: '/images/floorplans/Opslagbox_Type_14.png',
-      15: '/images/floorplans/Opslagbox_Type_15.png',
-      16: '/images/floorplans/Opslagbox_Type_16.png',
+      1: '/images/floorplans/Opslagbox_Type_1.webp',
+      2: '/images/floorplans/Opslagbox_Type_2.webp',
+      3: '/images/floorplans/Opslagbox_Type_3.webp',
+      4: '/images/floorplans/Opslagbox_Type_4.webp',
+      5: '/images/floorplans/Opslagbox_Type_5.webp',
+      6: '/images/floorplans/Opslagbox_Type_6.webp',
+      7: '/images/floorplans/Opslagbox_Type_7.webp',
+      8: '/images/floorplans/Opslagbox_Type_8.webp',
+      9: '/images/floorplans/Opslagbox_Type_9.webp',
+      10: '/images/floorplans/Opslagbox_Type_10.webp',
+      11: '/images/floorplans/Opslagbox_Type_11.webp',
+      12: '/images/floorplans/Opslagbox_Type_12.webp',
+      13: '/images/floorplans/Opslagbox_Type_13.webp',
+      14: '/images/floorplans/Opslagbox_Type_14.webp',
+      15: '/images/floorplans/Opslagbox_Type_15.webp',
+      16: '/images/floorplans/Opslagbox_Type_16.webp',
     };
     return floorplanMap[typeNumber] || '/images/placeholder.png';
   };

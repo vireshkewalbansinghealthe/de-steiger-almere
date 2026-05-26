@@ -44,7 +44,7 @@ export default function ContactPage() {
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url(/images/Image1.png)`
+            backgroundImage: `url(/images/Image1.webp)`
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />

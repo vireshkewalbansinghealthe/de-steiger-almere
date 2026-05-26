@@ -2,29 +2,29 @@ import { Project, Location } from '../types';
 
 // Images for bedrijfsunits ONLY - Image1-21 + beide1-2 from /up folder ONLY
 const bedrijfsunitImages = [
-  '/images/up/beide1.png',
-  '/images/up/beide2.png', 
-  '/images/up/Image1.png',
-  '/images/up/Image2.png',
+  '/images/beide1.webp',
+  '/images/beide2.webp', 
+  '/images/Image1.webp',
+  '/images/Image2.webp',
   // Skip Image3.png - doesn't exist in up folder
-  '/images/up/Image4.png',
-  '/images/up/Image5.png',
+  '/images/Image4.webp',
+  '/images/Image5.webp',
   // Skip Image6.png - deleted by user
   // Skip Image7.png - deleted by user
-  '/images/up/Image8.png',
-  '/images/up/Image9.png',
-  '/images/up/Image10.png',
-  '/images/up/Image11.png',
-  '/images/up/Image12.png',
-  '/images/up/Image13.png',
-  '/images/up/Image14.png',
-  '/images/up/Image15.png',
-  '/images/up/Image16.png',
-  '/images/up/Image17.png',
-  '/images/up/Image18.png',
-  '/images/up/Image19.png',
-  '/images/up/Image20.png',
-  '/images/up/Image21.png'
+  '/images/Image8.webp',
+  '/images/Image9.webp',
+  '/images/Image10.webp',
+  '/images/Image11.webp',
+  '/images/Image12.webp',
+  '/images/Image13.webp',
+  '/images/Image14.webp',
+  '/images/Image15.webp',
+  '/images/Image16.webp',
+  '/images/Image17.webp',
+  '/images/Image18.webp',
+  '/images/Image19.webp',
+  '/images/Image20.webp',
+  '/images/Image21.webp'
   // ONLY 20 images: beide1-2 + Image1-21 (missing Image3, Image6 & Image7) for bedrijfsunits!
 ];
 
@@ -45,28 +45,28 @@ const getBedrijfsunitImages = (typeIndex: number) => {
 
 // Images specifically for opslagboxen (Image3,6,7,22-29 + opslagbox images)
 const opslagboxImages = [
-  '/images/up/opslagbox3.png',
-  '/images/up/opslagbox4.png',
-  '/images/up/Image1.png',
-  '/images/up/Image2.png',
-  '/images/up/Image4.png',
-  '/images/up/Image5.png',
-  '/images/up/Image8.png',
-  '/images/up/Image9.png',
-  '/images/up/Image10.png',
-  '/images/up/Image11.png',
-  '/images/up/Image12.png',
-  '/images/up/Image13.png',
-  '/images/up/Image14.png',
-  '/images/up/Image15.png',
-  '/images/up/Image16.png',
-  '/images/up/Image17.png',
-  '/images/up/Image18.png',
-  '/images/up/Image19.png',
-  '/images/up/Image20.png',
-  '/images/up/Image21.png',
-  '/images/up/beide1.png',
-  '/images/up/beide2.png'
+  '/images/opslagbox3.webp',
+  '/images/opslagbox4.webp',
+  '/images/Image1.webp',
+  '/images/Image2.webp',
+  '/images/Image4.webp',
+  '/images/Image5.webp',
+  '/images/Image8.webp',
+  '/images/Image9.webp',
+  '/images/Image10.webp',
+  '/images/Image11.webp',
+  '/images/Image12.webp',
+  '/images/Image13.webp',
+  '/images/Image14.webp',
+  '/images/Image15.webp',
+  '/images/Image16.webp',
+  '/images/Image17.webp',
+  '/images/Image18.webp',
+  '/images/Image19.webp',
+  '/images/Image20.webp',
+  '/images/Image21.webp',
+  '/images/beide1.webp',
+  '/images/beide2.webp'
 ];
 
 // Function to distribute opslagbox images across 16 types - GIVE EACH TYPE 6+ IMAGES!

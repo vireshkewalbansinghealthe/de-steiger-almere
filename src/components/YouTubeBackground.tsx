@@ -18,7 +18,7 @@ export default function YouTubeBackground({
   const [isMounted, setIsMounted] = useState(false);
 
   // Fallback image in case video fails to load
-  const fallbackImage = '/images/up/Image1.png';
+  const fallbackImage = '/images/Image1.webp';
 
   useEffect(() => {
     // Set mounted state to prevent hydration issues

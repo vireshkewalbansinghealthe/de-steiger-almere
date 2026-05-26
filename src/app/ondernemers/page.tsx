@@ -10,9 +10,9 @@ export default function OndernemersPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const heroImages = [
-    '/images/up/Image8.png',
-    '/images/up/Image9.png',
-    '/images/up/Image10.png'
+    '/images/Image8.webp',
+    '/images/Image9.webp',
+    '/images/Image10.webp'
   ];
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function OndernemersPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div>
               <img 
-                src="/images/up/Image1.png" 
+                src="/images/Image1.webp" 
                 alt="Bedrijfsunits voor ondernemers" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -202,7 +202,7 @@ export default function OndernemersPage() {
             </div>
             <div className="order-1 lg:order-2">
               <img 
-                src="/images/up/opslagbox3.png" 
+                src="/images/opslagbox3.webp" 
                 alt="Opslagboxen voor ondernemers" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -226,7 +226,7 @@ export default function OndernemersPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div className="relative">
               <img 
-                src="/images/up/Image4.png" 
+                src="/images/Image4.webp" 
                 alt="Strategische locatie Almere" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -281,7 +281,7 @@ export default function OndernemersPage() {
             </div>
             <div className="order-1 lg:order-2 relative">
               <img 
-                src="/images/up/Image5.png" 
+                src="/images/Image5.webp" 
                 alt="Moderne faciliteiten" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -294,7 +294,7 @@ export default function OndernemersPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative">
               <img 
-                src="/images/up/Image2.png" 
+                src="/images/Image2.webp" 
                 alt="Flexibele bedrijfsruimtes" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />

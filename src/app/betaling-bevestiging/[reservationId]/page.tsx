@@ -140,7 +140,7 @@ export default function PaymentConfirmationPage() {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: property?.images?.[0] ? `url(${property.images[0]})` : 'url(/images/up/Image2.png)'
+          backgroundImage: property?.images?.[0] ? `url(${property.images[0]})` : 'url(/images/Image2.webp)'
         }}
       />
       

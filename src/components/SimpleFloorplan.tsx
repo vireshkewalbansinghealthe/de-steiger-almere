@@ -74,24 +74,24 @@ export default function SimpleFloorplan({
   }, []);
 
   const BUILDING_PHOTOS = [
-    '/images/beide1.png',
-    '/images/beide2.png',
-    '/images/Image1.png',
-    '/images/Image2.png',
-    '/images/Image4.png',
-    '/images/Image6.png',
-    '/images/Image8.png',
-    '/images/Image9.png',
-    '/images/Image10.png',
-    '/images/Image11.png',
-    '/images/Image12.png',
-    '/images/Image13.png',
-    '/images/Image14.png',
-    '/images/Image15.png',
-    '/images/Image16.png',
-    '/images/Image17.png',
-    '/images/Image19.png',
-    '/images/Image20.png',
+    '/images/beide1.webp',
+    '/images/beide2.webp',
+    '/images/Image1.webp',
+    '/images/Image2.webp',
+    '/images/Image4.webp',
+    '/images/Image6.webp',
+    '/images/Image8.webp',
+    '/images/Image9.webp',
+    '/images/Image10.webp',
+    '/images/Image11.webp',
+    '/images/Image12.webp',
+    '/images/Image13.webp',
+    '/images/Image14.webp',
+    '/images/Image15.webp',
+    '/images/Image16.webp',
+    '/images/Image17.webp',
+    '/images/Image19.webp',
+    '/images/Image20.webp',
   ];
   const TOTAL_SLIDES = 1 + BUILDING_PHOTOS.length; // slide 0 = floorplan, rest = photos
 
@@ -198,7 +198,7 @@ export default function SimpleFloorplan({
         const tappedUnit = getUnit(mobileTapped);
         if (!tappedUnit) return null;
         const imgSrc = tappedUnit.type_number
-          ? `/images/floorplans/${typeLabel}_Type_${tappedUnit.type_number}.png`
+          ? `/images/floorplans/${typeLabel}_Type_${tappedUnit.type_number}.webp`
           : null;
         return (
           <>
@@ -256,7 +256,7 @@ export default function SimpleFloorplan({
         const left = cursorPos.x + 16 + TW > vw ? cursorPos.x - TW - 16 : cursorPos.x + 16;
         const top  = cursorPos.y - 20 + TH > vh ? cursorPos.y - TH - 8  : cursorPos.y - 20;
         const imgSrc = hoveredUnitData.type_number
-          ? `/images/floorplans/${typeLabel}_Type_${hoveredUnitData.type_number}.png`
+          ? `/images/floorplans/${typeLabel}_Type_${hoveredUnitData.type_number}.webp`
           : null;
         return (
           <div

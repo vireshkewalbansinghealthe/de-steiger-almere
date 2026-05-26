@@ -36,12 +36,12 @@ interface TypeGroup {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const OPSLAGBOX_FLOORS: { id: string; label: string; image: string }[] = [
-  { id: 'bg',  label: 'Begane grond', image: '/images/floorplans/opslagbox0.png' },
-  { id: '1e', label: '1e verdieping', image: '/images/floorplans/opslagbox1.png' },
-  { id: '2e', label: '2e verdieping', image: '/images/floorplans/opslagbox2.png' },
+  { id: 'bg',  label: 'Begane grond', image: '/images/floorplans/opslagbox0.webp' },
+  { id: '1e', label: '1e verdieping', image: '/images/floorplans/opslagbox1.webp' },
+  { id: '2e', label: '2e verdieping', image: '/images/floorplans/opslagbox2.webp' },
 ];
 
-const BEDRIJFSUNITS_IMAGE = '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.png';
+const BEDRIJFSUNITS_IMAGE = '/images/floorplans/Plattegronden_Hoge_Kwaliteit/Plattegrond_Totaal.webp';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -106,7 +106,7 @@ function TypeLegend({
     <div className="space-y-2">
       {visibleGroups.map(g => {
         const isSelected = selectedTypeDetail === g.typeNumber;
-        const imgSrc = `/images/floorplans/${prefix}_Type_${g.typeNumber}.png`;
+        const imgSrc = `/images/floorplans/${prefix}_Type_${g.typeNumber}.webp`;
 
         return (
           <button
@@ -181,7 +181,7 @@ function TypeDetail({
   onUnitClick: (unit: FloorplanUnit) => void;
 }) {
   const prefix = category === 'bedrijfsunits' ? 'Bedrijfsunit' : 'Opslagbox';
-  const imgSrc = `/images/floorplans/${prefix}_Type_${group.typeNumber}.png`;
+  const imgSrc = `/images/floorplans/${prefix}_Type_${group.typeNumber}.webp`;
   const typeUnits = units
     .filter(u => u.type_number === group.typeNumber)
     .sort((a, b) => parseInt(a.unit_number) - parseInt(b.unit_number));
@@ -469,7 +469,7 @@ function AanbodPageContent() {
         {/* Background photo */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/images/beide2.png')" }}
+          style={{ backgroundImage: "url('/images/beide2.webp')" }}
         />
         {/* Dark overlay — fades out at bottom so it flows into the content */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-900/85 via-slate-900/75 to-slate-950/95" />

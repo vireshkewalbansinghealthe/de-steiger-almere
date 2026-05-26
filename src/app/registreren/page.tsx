@@ -102,7 +102,7 @@ export default function RegisterPage() {
       <div className="min-h-screen relative overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/images/up/Image2.png)' }}
+          style={{ backgroundImage: 'url(/images/Image2.webp)' }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/80" />
         <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
@@ -152,7 +152,7 @@ export default function RegisterPage() {
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: 'url(/images/up/Image2.png)'
+            backgroundImage: 'url(/images/Image2.webp)'
           }}
         />
         
@@ -204,7 +204,7 @@ export default function RegisterPage() {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: 'url(/images/up/Image2.png)'
+          backgroundImage: 'url(/images/Image2.webp)'
         }}
       />
       

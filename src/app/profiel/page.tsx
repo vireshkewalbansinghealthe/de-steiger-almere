@@ -264,7 +264,7 @@ export default function ProfilePage() {
       <div className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 py-16 overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent"></div>
-        <div className="absolute inset-0 bg-[url('/images/up/Image1.png')] bg-cover bg-center opacity-10"></div>
+        <div className="absolute inset-0 bg-[url('/images/Image1.webp')] bg-cover bg-center opacity-10"></div>
         
         {/* Content */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

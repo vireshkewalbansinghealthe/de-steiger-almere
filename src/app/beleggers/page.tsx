@@ -10,9 +10,9 @@ export default function InvestorsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const heroImages = [
-    '/images/up/Image20.png',
-    '/images/up/Image21.png',
-    '/images/up/Image19.png'
+    '/images/Image20.webp',
+    '/images/Image21.webp',
+    '/images/Image19.webp'
   ];
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function InvestorsPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
             <div>
               <img 
-                src="/images/up/Image2.png" 
+                src="/images/Image2.webp" 
                 alt="Bedrijfsunits investering" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
@@ -202,7 +202,7 @@ export default function InvestorsPage() {
             </div>
             <div className="order-1 lg:order-2">
               <img 
-                src="/images/up/opslagbox4.png" 
+                src="/images/opslagbox4.webp" 
                 alt="Opslagboxen investering" 
                 className="w-full h-80 object-cover rounded-2xl shadow-xl"
               />
