@@ -128,8 +128,8 @@ export async function POST(request: NextRequest) {
     let reservationFee = parseInt(process.env.RESERVATION_FEE_AMOUNT || '150000', 10);
     
     // Exception for specific test units (set to €1.00)
-    const testUnits = ['12', '79'];
-    if (testUnits.includes(property.unit_number) && property.type === 'bedrijfsunit') {
+    const testUnits = ['83', '84', '85'];
+    if (testUnits.includes(property.unit_number)) {
       reservationFee = 100;
     }
     
