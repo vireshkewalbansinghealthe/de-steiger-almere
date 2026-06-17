@@ -2,12 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Phone, Building2, CheckCircle, KeyRound } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, User, Phone, Building2, CheckCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-
-// Pre-registration access code — change NEXT_PUBLIC_REGISTRATION_CODE in .env to update
-const REGISTRATION_CODE = process.env.NEXT_PUBLIC_REGISTRATION_CODE || 'STEIGER';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -17,13 +14,11 @@ export default function RegisterPage() {
     phone: '',
     password: '',
     confirmPassword: '',
-    accessCode: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [accessDenied, setAccessDenied] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
   const supabase = createClient();
@@ -32,14 +27,6 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    setAccessDenied(false);
-
-    // Check access code first
-    if (formData.accessCode.trim().toUpperCase() !== REGISTRATION_CODE.toUpperCase()) {
-      setAccessDenied(true);
-      setIsLoading(false);
-      return;
-    }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Wachtwoorden komen niet overeen');
@@ -96,54 +83,6 @@ export default function RegisterPage() {
       [e.target.name]: e.target.value
     });
   };
-
-  if (accessDenied) {
-    return (
-      <div className="min-h-screen relative overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(/images/Image2.webp)' }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/80" />
-        <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
-          <div className="max-w-md w-full">
-            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-              <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-slate-700 to-slate-900 rounded-full flex items-center justify-center">
-                  <KeyRound className="w-8 h-8 text-yellow-400" />
-                </div>
-              </div>
-              <h1 className="text-2xl font-bold text-slate-900 mb-3">Registreren tijdelijk niet mogelijk</h1>
-              <p className="text-slate-600 mb-6 leading-relaxed">
-                Sorry, registreren is op dit moment <strong>alleen mogelijk met een toegangscode</strong>. 
-                De publieke registratie gaat over <strong>2 weken</strong> open. Heeft u een uitnodiging ontvangen? Vraag dan naar de code via:
-              </p>
-              <a
-                href="mailto:info@desteigeralmere.nl"
-                className="inline-block text-yellow-600 font-semibold hover:text-yellow-700 mb-6 transition-colors"
-              >
-                info@desteigeralmere.nl
-              </a>
-              <div className="space-y-3">
-                <button
-                  onClick={() => { setAccessDenied(false); setFormData(prev => ({ ...prev, accessCode: '' })); }}
-                  className="block w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-slate-900 font-semibold py-3 px-4 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200"
-                >
-                  Opnieuw proberen
-                </button>
-                <Link
-                  href="/aanbod"
-                  className="block w-full text-slate-500 hover:text-slate-700 transition-colors text-sm"
-                >
-                  Terug naar home
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (success) {
     return (
@@ -256,32 +195,6 @@ export default function RegisterPage() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Access Code Field */}
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                  <label htmlFor="accessCode" className="block text-sm font-semibold text-slate-800 mb-1">
-                    🔑 Toegangscode <span className="text-red-500">*</span>
-                  </label>
-                  <p className="text-xs text-slate-500 mb-3">
-                    Registreren is momenteel alleen op uitnodiging. Voer uw toegangscode in.
-                  </p>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <KeyRound className="h-5 w-5 text-slate-400" />
-                    </div>
-                    <input
-                      id="accessCode"
-                      name="accessCode"
-                      type="text"
-                      required
-                      value={formData.accessCode}
-                      onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-colors bg-white uppercase tracking-widest font-mono"
-                      placeholder="Voer uw code in"
-                      autoComplete="off"
-                    />
-                  </div>
-                </div>
-
                 {/* Name Fields */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
