@@ -72,7 +72,7 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
   
   console.log('🔄 Component render - units:', units.length, '| loading:', isLoading, '| error:', error);
 
-  // Get floorplan image based on type number (Opslagbox types 1-16)
+  // Get floorplan image based on type number (Opslagbox types 1-33)
   const getFloorplanImage = (typeNumber: number): string => {
     const floorplanMap: Record<number, string> = {
       1: '/images/floorplans/Opslagbox_Type_1.webp',
@@ -88,9 +88,25 @@ export default function OpslagboxDetailPage({ params }: ProjectDetailPageProps) 
       11: '/images/floorplans/Opslagbox_Type_11.webp',
       12: '/images/floorplans/Opslagbox_Type_12.webp',
       13: '/images/floorplans/Opslagbox_Type_13.webp',
-      14: '/images/floorplans/Opslagbox_Type_14.webp',
       15: '/images/floorplans/Opslagbox_Type_15.webp',
       16: '/images/floorplans/Opslagbox_Type_16.webp',
+      17: '/images/floorplans/Opslagbox_Type_17.webp',
+      18: '/images/floorplans/Opslagbox_Type_18.webp',
+      19: '/images/floorplans/Opslagbox_Type_19.webp',
+      20: '/images/floorplans/Opslagbox_Type_20.webp',
+      21: '/images/floorplans/Opslagbox_Type_21.webp',
+      22: '/images/floorplans/Opslagbox_Type_22.webp',
+      23: '/images/floorplans/Opslagbox_Type_23.webp',
+      24: '/images/floorplans/Opslagbox_Type_24.webp',
+      25: '/images/floorplans/Opslagbox_Type_25.webp',
+      26: '/images/floorplans/Opslagbox_Type_26.webp',
+      27: '/images/floorplans/Opslagbox_Type_27.webp',
+      28: '/images/floorplans/Opslagbox_Type_28.webp',
+      29: '/images/floorplans/Opslagbox_Type_29.webp',
+      30: '/images/floorplans/Opslagbox_Type_30.webp',
+      31: '/images/floorplans/Opslagbox_Type_31.webp',
+      32: '/images/floorplans/Opslagbox_Type_32.webp',
+      33: '/images/floorplans/Opslagbox_Type_33.webp',
     };
     return floorplanMap[typeNumber] || '/images/placeholder.png';
   };
