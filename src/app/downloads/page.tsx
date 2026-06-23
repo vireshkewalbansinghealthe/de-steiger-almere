@@ -60,8 +60,8 @@ export default function DownloadsPage() {
           name: 'Opslagboxen Catalogus',
           description: 'Alle 16 typen opslagboxen met specificaties en prijzen',
           type: 'PDF',
-          size: '1.5 MB',
-          date: '2024-01-10',
+          size: '3.0 MB',
+          date: '2026-06-23',
           url: '/pdf/verkoop_opslagboxen.pdf'
         },
         {
