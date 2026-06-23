@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { X, ArrowRight, Calendar, MapPin, ChevronLeft, ChevronRight, Layers, Ruler, Euro } from 'lucide-react';
 import { FloorplanUnit } from './SimpleFloorplan';
@@ -37,7 +37,6 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
   const [slide, setSlide] = useState(0);
   const [floorplanOk, setFloorplanOk] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { setIsDrawerOpen } = useLayoutContext();
 
   const typeLabel = unit?.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox';
@@ -53,26 +52,12 @@ export default function UnitDrawer({ unit, onClose }: UnitDrawerProps) {
 
   const totalSlides = slides.length;
 
-  const startAutoPlay = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setSlide(s => (s + 1) % totalSlides);
-    }, 3500);
-  }, [totalSlides]);
-
   // Reset on unit change
   useEffect(() => {
     setSlide(0);
     setFloorplanOk(true);
     setIsDrawerOpen(!!unit);
   }, [unit?.unit_number, setIsDrawerOpen, unit]);
-
-  // Autoplay
-  useEffect(() => {
-    if (!unit) return;
-    startAutoPlay();
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [unit, startAutoPlay]);
 
   // Close on Escape
   useEffect(() => {
