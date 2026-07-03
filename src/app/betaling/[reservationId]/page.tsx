@@ -188,7 +188,7 @@ export default function PaymentPage() {
               <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-lg">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Te betalen bedrag</h3>
                 <div className="text-3xl font-bold text-green-600">
-                  € {reservation.reservation_fee_amount.toLocaleString()}
+                  € {(reservation.reservation_fee_amount / 100).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
                   Reserveringskosten
@@ -279,7 +279,7 @@ export default function PaymentPage() {
                 ) : (
                   <>
                     <CreditCard className="h-5 w-5 mr-2" />
-                    Betaal € {reservation.reservation_fee_amount.toLocaleString()}
+                    Betaal € {(reservation.reservation_fee_amount / 100).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
                   </>
                 )}
               </button>
@@ -346,12 +346,12 @@ export default function PaymentPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Reserveringskosten:</span>
-                    <span className="font-medium">€ {reservation.reservation_fee_amount.toLocaleString()}</span>
+                    <span className="font-medium">€ {(reservation.reservation_fee_amount / 100).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="border-t pt-2 mt-2">
                     <div className="flex justify-between font-bold">
                       <span>Nu te betalen:</span>
-                      <span className="text-green-600">€ {reservation.reservation_fee_amount.toLocaleString()}</span>
+                      <span className="text-green-600">€ {(reservation.reservation_fee_amount / 100).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </div>
