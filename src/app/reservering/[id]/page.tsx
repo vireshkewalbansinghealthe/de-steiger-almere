@@ -201,7 +201,7 @@ export default function ReservationPage() {
         </div>
 
         {/* Pending payment CTA */}
-        {reservation.payment_status === 'pending' && (
+        {(reservation.payment_status === 'pending' || reservation.payment_status === 'failed') && (
           <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />
             <div>
