@@ -24,8 +24,8 @@ const BEDRIJFSUNIT_PHOTOS = [
 ];
 
 const OPSLAGBOX_PHOTOS = [
-  '/images/opslagbox3.webp',
-  '/images/opslagbox4.webp',
+  '/images/opslagbox1.webp',
+  '/images/opslagbox2.webp',
   '/images/beide2.webp',
   '/images/Image1.webp',
   '/images/Image2.webp',
