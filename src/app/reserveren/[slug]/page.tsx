@@ -184,6 +184,8 @@ function ReservationContent() {
   const unitParam = searchParams.get('unit');
   const unitNumber = unitParam ? parseInt(unitParam, 10) : null;
   const project = projects.find(p => p.slug === slug);
+  // Derive project name from slug if not in static projects array (e.g. new opslagbox types 17-33)
+  const projectName = project?.name ?? (slug.includes('bedrijfsunit') ? 'De Steiger - Bedrijfsunits' : 'De Steiger - Opslagboxen');
 
   type Phase = 'loading' | 'form' | 'payment' | 'unavailable';
   const [phase, setPhase] = useState<Phase>('loading');
@@ -386,17 +388,6 @@ function ReservationContent() {
     }
   };
 
-  if (!project) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-xl font-bold text-gray-900 mb-4">Project niet gevonden</h1>
-          <Link href="/aanbod" className="text-yellow-600 hover:text-yellow-700">Terug naar aanbod</Link>
-        </div>
-      </div>
-    );
-  }
-
   const contractText = buildContractText(info, propertyData, unitNumber);
 
   return (
@@ -449,7 +440,7 @@ function ReservationContent() {
                     <Building2 className="h-5 w-5 text-yellow-600" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs text-gray-400 uppercase tracking-wide">{project.name}</div>
+                    <div className="text-xs text-gray-400 uppercase tracking-wide">{projectName}</div>
                     <div className="font-bold text-gray-900 text-sm">
                       {propertyData.type === 'bedrijfsunit' ? 'Bedrijfsunit' : 'Opslagbox'} {unitNumber}
                       {propertyData.type_number !== null && (
