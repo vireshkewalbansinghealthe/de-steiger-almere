@@ -73,7 +73,12 @@ export default function ContactPage() {
               {/* Verkopend makelaar */}
               <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-5 py-3 mb-8">
                 <span className="text-white/70 text-sm font-medium">Verkopend makelaar:</span>
-                <div className="bg-white rounded-lg px-3 py-1.5">
+                <a
+                  href="https://www.arcuris.eu/aanbod/bedrijfsaanbod/almere/koop/bedrijf-880592-De-Steiger-74A/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white rounded-lg px-3 py-1.5 hover:opacity-80 transition-opacity"
+                >
                   <Image
                     src="/images/arcuris-logo.png"
                     alt="Arcuris Bedrijfsmakelaars"
@@ -81,7 +86,7 @@ export default function ContactPage() {
                     height={40}
                     className="object-contain"
                   />
-                </div>
+                </a>
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

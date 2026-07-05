@@ -68,7 +68,12 @@ export default function Footer() {
           <span>© {new Date().getFullYear()} A6 Bedrijfsunits en Opslagboxen. Alle rechten voorbehouden.</span>
           <div className="flex items-center gap-5">
             <span className="text-slate-600">Verkopend makelaar:</span>
-            <div className="bg-white rounded px-2 py-1">
+            <a
+              href="https://www.arcuris.eu/aanbod/bedrijfsaanbod/almere/koop/bedrijf-880592-De-Steiger-74A/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white rounded px-2 py-1 hover:opacity-80 transition-opacity"
+            >
               <Image
                 src="/images/arcuris-logo.png"
                 alt="Arcuris Bedrijfsmakelaars"
@@ -76,7 +81,7 @@ export default function Footer() {
                 height={28}
                 className="object-contain"
               />
-            </div>
+            </a>
             <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
             <Link href="/algemene-voorwaarden" className="hover:text-slate-300 transition-colors">Voorwaarden</Link>
           </div>
