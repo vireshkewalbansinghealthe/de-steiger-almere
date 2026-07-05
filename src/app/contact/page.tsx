@@ -77,10 +77,10 @@ export default function ContactPage() {
                   Stuur een bericht
                 </a>
                 <a
-                  href="tel:0685727480"
+                  href="tel:0365211900"
                   className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
                 >
-                  Bel ons direct: 06-85727480
+                  Bel ons direct: 036-5211900 / 06-85727480
                 </a>
               </div>
             </div>
@@ -121,8 +121,8 @@ export default function ContactPage() {
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">Telefoon</h3>
               <p className="text-gray-600">
-                <a href="tel:0685727480" className="hover:text-slate-600 transition-colors">
-                  06-85727480
+                <a href="tel:0365211900" className="hover:text-slate-600 transition-colors">
+                  036-5211900 / 06-85727480
                 </a>
               </p>
               <p className="text-sm text-gray-500 mt-1">

@@ -157,7 +157,7 @@ export default function FloatingCallButton({ hidden = false }: FloatingCallButto
           </button>
           
           <a
-            href="tel:0685727480"
+            href="tel:0365211900"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 bg-white hover:bg-gray-50 text-slate-900 px-5 py-3.5 rounded-2xl shadow-xl transition-colors border border-gray-100 whitespace-nowrap group"
           >
