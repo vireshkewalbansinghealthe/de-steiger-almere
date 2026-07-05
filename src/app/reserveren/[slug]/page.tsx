@@ -212,7 +212,7 @@ function ReservationContent() {
   // Terms & signature
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [signatureData, setSignatureData] = useState('');
-  const [contractDrawerOpen, setContractDrawerOpen] = useState(false);
+  const [contractDrawerOpen, setContractDrawerOpen] = useState(true);
   const sigCanvas = useRef<SignatureCanvas>(null);
 
   // Submission
