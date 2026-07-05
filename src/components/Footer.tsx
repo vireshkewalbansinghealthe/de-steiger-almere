@@ -65,13 +65,15 @@ export default function Footer() {
           <span>© {new Date().getFullYear()} A6 Bedrijfsunits en Opslagboxen. Alle rechten voorbehouden.</span>
           <div className="flex items-center gap-5">
             <span className="text-slate-600">Verkopend makelaar:</span>
-            <Image
-              src="/images/arcuris-logo.png"
-              alt="Arcuris Bedrijfsmakelaars"
-              width={80}
-              height={32}
-              className="object-contain opacity-50 brightness-0 invert"
-            />
+            <div className="bg-white rounded px-2 py-1">
+              <Image
+                src="/images/arcuris-logo.png"
+                alt="Arcuris Bedrijfsmakelaars"
+                width={70}
+                height={28}
+                className="object-contain"
+              />
+            </div>
             <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
             <Link href="/algemene-voorwaarden" className="hover:text-slate-300 transition-colors">Voorwaarden</Link>
           </div>

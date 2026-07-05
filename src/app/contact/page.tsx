@@ -73,13 +73,15 @@ export default function ContactPage() {
               {/* Verkopend makelaar */}
               <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-5 py-3 mb-8">
                 <span className="text-white/70 text-sm font-medium">Verkopend makelaar:</span>
-                <Image
-                  src="/images/arcuris-logo.png"
-                  alt="Arcuris Bedrijfsmakelaars"
-                  width={120}
-                  height={48}
-                  className="object-contain brightness-0 invert"
-                />
+                <div className="bg-white rounded-lg px-3 py-1.5">
+                  <Image
+                    src="/images/arcuris-logo.png"
+                    alt="Arcuris Bedrijfsmakelaars"
+                    width={100}
+                    height={40}
+                    className="object-contain"
+                  />
+                </div>
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
