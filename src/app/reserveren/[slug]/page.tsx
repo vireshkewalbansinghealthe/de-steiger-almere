@@ -73,13 +73,27 @@ ARTIKEL 3 - EINDE VAN DE OVEREENKOMST
 
 ═══════════════════════════════════════════
 
-ARTIKEL 4 - SLOTBEPALINGEN
+ARTIKEL 4 – NUTSVOORZIENINGEN EN ELEKTRA-AANSLUITING
 
-4.1 Deze Overeenkomst levert voor Gegadigde strikt persoonlijke rechten op en is niet overdraagbaar zonder schriftelijke toestemming van Verkoper.
+4.1 Verkoper zal de meterkast in de opslagbox bij oplevering plaatsen en gereedmaken voor aansluiting op het elektriciteitsnet.
 
-4.2 Deze Overeenkomst wordt beheerst door Nederlands recht.
+4.2 Partijen zijn ermee bekend dat voor het project een zwaardere elektriciteitsaansluiting door netbeheerder Liander noodzakelijk is. De definitieve aansluiting van de individuele meterkast in de opslagbox is afhankelijk van de planning en uitvoering door Liander en kan daarom na oplevering plaatsvinden.
 
-4.3 Geschillen worden voorgelegd aan de bevoegde rechter te Midden-Nederland.
+4.3 De eventuele latere aansluiting van de meterkast door Liander vormt geen tekortkoming aan de zijde van Verkoper en geeft de Gegadigde geen recht op ontbinding van deze overeenkomst, opschorting van betalingsverplichtingen, schadevergoeding of enige andere aanspraak jegens Verkoper.
+
+4.4 Tot het moment waarop Liander de definitieve aansluiting van de meterkast heeft gerealiseerd, zullen de algemene voorzieningen van het project, waaronder de verlichting in de opslagboxen, de elektrische roldeuren, de sprinklerinstallatie en de alarminstallatie, voor zover technisch mogelijk, reeds operationeel zijn.
+
+4.5 Verkoper zal zich inspannen om de aansluiting van de meterkast zo spoedig mogelijk na ontvangst van een uitvoeringsdatum van Liander te laten realiseren, zonder daarbij een fatale opleverings- of aansluittermijn te garanderen.
+
+═══════════════════════════════════════════
+
+ARTIKEL 5 – SLOTBEPALINGEN
+
+5.1 Deze Overeenkomst levert voor Gegadigde strikt persoonlijke rechten op en is niet overdraagbaar zonder schriftelijke toestemming van Verkoper.
+
+5.2 Deze Overeenkomst wordt beheerst door Nederlands recht.
+
+5.3 Geschillen worden voorgelegd aan de bevoegde rechter te Midden-Nederland.
 
 ═══════════════════════════════════════════
 
