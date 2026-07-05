@@ -95,7 +95,10 @@ export default function ContactPage() {
                   href="tel:0365211900"
                   className="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200"
                 >
-                  Bel ons direct: 036-5211900 / 06-85727480
+                  <span className="flex flex-col leading-snug">
+                    <span>Telefoon: 036-5211900</span>
+                    <span>Mobiel: 06-85727480</span>
+                  </span>
                 </a>
               </div>
             </div>
@@ -135,11 +138,14 @@ export default function ContactPage() {
                 <Phone className="h-8 w-8 text-slate-600" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">Telefoon</h3>
-              <p className="text-gray-600">
-                <a href="tel:0365211900" className="hover:text-slate-600 transition-colors">
-                  036-5211900 / 06-85727480
+              <div className="text-gray-600 flex flex-col gap-0.5">
+                <a href="tel:0365211900" className="hover:text-slate-800 transition-colors">
+                  Telefoon: 036-5211900
                 </a>
-              </p>
+                <a href="tel:0685727480" className="hover:text-slate-800 transition-colors">
+                  Mobiel: 06-85727480
+                </a>
+              </div>
               <p className="text-sm text-gray-500 mt-1">
                 Ma-Vr: 9:00-17:00
               </p>

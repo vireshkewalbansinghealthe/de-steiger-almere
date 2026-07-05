@@ -21,9 +21,12 @@ export default function Footer() {
                 <Mail className="h-4 w-4 text-yellow-500 flex-shrink-0" />
                 info@desteigeralmere.nl
               </a>
-              <a href="tel:0365211900" className="flex items-center gap-2.5 hover:text-yellow-400 transition-colors">
-                <Phone className="h-4 w-4 text-yellow-500 flex-shrink-0" />
-                036-5211900 / 06-85727480
+              <a href="tel:0365211900" className="flex items-start gap-2.5 hover:text-yellow-400 transition-colors">
+                <Phone className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <span className="flex flex-col leading-snug">
+                  <span>Telefoon: 036-5211900</span>
+                  <span>Mobiel: 06-85727480</span>
+                </span>
               </a>
               <div className="flex items-start gap-2.5">
                 <MapPin className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
