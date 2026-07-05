@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, MapPin, Phone, Mail, Clock, CheckCircle, Send } from 'lucide-react';
 import FAQSection from '@/components/FAQSection';
 
@@ -63,11 +64,23 @@ export default function ContactPage() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
                 Neem Contact Op
               </h1>
-              
+
               <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
-                Heeft u vragen over onze bedrijfsunits of opslagboxen? 
+                Heeft u vragen over onze bedrijfsunits of opslagboxen?
                 Ons team staat klaar om u te helpen.
               </p>
+
+              {/* Verkopend makelaar */}
+              <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-5 py-3 mb-8">
+                <span className="text-white/70 text-sm font-medium">Verkopend makelaar:</span>
+                <Image
+                  src="/images/arcuris-logo.png"
+                  alt="Arcuris Bedrijfsmakelaars"
+                  width={120}
+                  height={48}
+                  className="object-contain brightness-0 invert"
+                />
+              </div>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a

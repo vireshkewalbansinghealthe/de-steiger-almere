@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Mail, Phone, MapPin } from 'lucide-react';
 
 export default function Footer() {
@@ -62,7 +63,15 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-slate-700/60 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500">
           <span>© {new Date().getFullYear()} A6 Bedrijfsunits en Opslagboxen. Alle rechten voorbehouden.</span>
-          <div className="flex gap-5">
+          <div className="flex items-center gap-5">
+            <span className="text-slate-600">Verkopend makelaar:</span>
+            <Image
+              src="/images/arcuris-logo.png"
+              alt="Arcuris Bedrijfsmakelaars"
+              width={80}
+              height={32}
+              className="object-contain opacity-50 brightness-0 invert"
+            />
             <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
             <Link href="/algemene-voorwaarden" className="hover:text-slate-300 transition-colors">Voorwaarden</Link>
           </div>
