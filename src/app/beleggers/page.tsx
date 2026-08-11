@@ -76,7 +76,7 @@ export default function InvestorsPage() {
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-yellow-400 mb-2">Vanaf</div>
-                  <div className="text-white/80 text-sm sm:text-base">€ 34.080 ex. BTW</div>
+                  <div className="text-white/80 text-sm sm:text-base">€ 29.820 ex. BTW</div>
                 </div>
               </div>
               
@@ -178,7 +178,7 @@ export default function InvestorsPage() {
               <div className="space-y-4 mb-8">
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
-                  <span className="text-gray-700">Vanaf €34.080 per box</span>
+                  <span className="text-gray-700">Vanaf €29.820 per box</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
